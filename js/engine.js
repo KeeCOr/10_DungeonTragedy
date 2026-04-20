@@ -1,5 +1,7 @@
 import { createRng } from './rng.js';
 import { attackRangeBonus, attackDamageBonus, extraDrawChance } from './races.js';
+import { drawFromDeck } from './cards.js';
+import { assignMissions } from './missions.js';
 
 function roundRng(state) {
   // Distinct RNG per (seed, match, round) — keeps inter-round rolls independent.
@@ -118,16 +120,129 @@ function applyAttackCard(state, player, card, target) {
   };
 }
 
+function applyHideCard(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, statusEffects: { ...p.statusEffects, hiddenThisRound: true } }
+    : p);
+  return {
+    ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} hides`, player.id),
+  };
+}
+
+function applyHealCard(state, player, card, target) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  let newPlayers = state.players.map((p) => p.id === player.id ? { ...p, hand } : p);
+
+  let recipientId;
+  if (target.type === 'self') recipientId = player.id;
+  else if (target.type === 'player') {
+    const ally = findPlayer(state, target.id);
+    if (!ally || ally.isEliminated) throw new Error('invalid heal target');
+    if (manhattan(player.position, ally.position) !== 1) throw new Error('heal target not adjacent');
+    recipientId = target.id;
+  } else throw new Error('invalid heal target');
+
+  newPlayers = newPlayers.map((p) => p.id === recipientId
+    ? { ...p, hp: Math.min(p.maxHp, p.hp + 1) }
+    : p);
+
+  newPlayers = newPlayers.map((p) => p.id === player.id
+    ? { ...p, missionProgress: { ...p.missionProgress,
+        healCount: (p.missionProgress.healCount ?? 0) + 1 } }
+    : p);
+
+  return {
+    ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} heals ${recipientId}`, player.id),
+  };
+}
+
+function applyScoutCard(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, missionProgress: { ...p.missionProgress,
+        scoutCount: (p.missionProgress.scoutCount ?? 0) + 1 } } : p);
+  let newDragon = state.dragon;
+  if (state.dragon.deck.length > 0) {
+    const [next, ...rest] = state.dragon.deck;
+    newDragon = { ...state.dragon, deck: rest, revealed: [...state.dragon.revealed, next] };
+  }
+  return {
+    ...state, players: newPlayers, dragon: newDragon,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} scouts`, player.id),
+  };
+}
+
+function applyTauntCard(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, statusEffects: { ...p.statusEffects, tauntThisRound: true },
+        missionProgress: { ...p.missionProgress,
+          tauntCount: (p.missionProgress.tauntCount ?? 0) + 1 } } : p);
+  return {
+    ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} taunts`, player.id),
+  };
+}
+
+function applyDrawTwo(state, player) {
+  if (player.hand.length > 4) throw new Error('hand too large for draw action');
+  const rng = createRng(state.seed + state.round * 7919 + state.currentTurnIndex * 7);
+  let deck = state.commonDeck, discard = state.commonDiscard;
+  const drawn = [];
+  for (let i = 0; i < 2; i++) {
+    const step = drawFromDeck(deck, discard, rng);
+    if (step.drawn) drawn.push(step.drawn);
+    deck = step.deck; discard = step.discard;
+  }
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand: [...p.hand, ...drawn],
+        missionProgress: { ...p.missionProgress,
+          drawActionCount: (p.missionProgress.drawActionCount ?? 0) + 1 } } : p);
+  return {
+    ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
+    log: logEntry(state, `${player.id} draws 2`, player.id),
+  };
+}
+
+function applyDiscardAndSwapMissions(state, player) {
+  const racesPresent = new Set(state.players.filter((p) => !p.isEliminated).map((p) => p.race));
+  const rng = createRng(state.seed + state.round * 100003 + state.currentTurnIndex * 31);
+  const missions = assignMissions(player.race, racesPresent, rng);
+  const discardedHand = player.hand;
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand: [], missions,
+        missionProgress: { ...p.missionProgress,
+          missionSwapCount: (p.missionProgress.missionSwapCount ?? 0) + 1 } } : p);
+  return {
+    ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, ...discardedHand],
+    log: logEntry(state, `${player.id} discards hand and swaps missions`, player.id),
+  };
+}
+
 export function executePlayerAction(state, action) {
   const player = findPlayer(state, action.playerId);
   if (!player) throw new Error(`no player ${action.playerId}`);
+  if (action.type === 'drawTwo') return advanceTurn(applyDrawTwo(state, player));
+  if (action.type === 'discardAndSwapMissions') return advanceTurn(applyDiscardAndSwapMissions(state, player));
   if (action.type === 'playCard') {
     const card = player.hand.find((c) => c.id === action.cardId);
     if (!card) throw new Error(`card ${action.cardId} not in hand`);
     let next;
     switch (card.type) {
-      case 'move': next = applyMoveCard(state, player, card, action.target); break;
+      case 'move':   next = applyMoveCard(state, player, card, action.target); break;
       case 'attack': next = applyAttackCard(state, player, card, action.target); break;
+      case 'hide':   next = applyHideCard(state, player, card); break;
+      case 'heal':   next = applyHealCard(state, player, card, action.target); break;
+      case 'scout':  next = applyScoutCard(state, player, card); break;
+      case 'taunt':  next = applyTauntCard(state, player, card); break;
       default: throw new Error(`unsupported card type ${card.type}`);
     }
     return advanceTurn(next);
