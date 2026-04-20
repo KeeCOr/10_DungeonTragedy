@@ -227,6 +227,98 @@ function applyDiscardAndSwapMissions(state, player) {
   };
 }
 
+function applyTreasureCard(state, player, card, target) {
+  switch (card.treasure) {
+    case 'sword':  return applyTreasureSword(state, player, card);
+    case 'potion': return applyTreasurePotion(state, player, card);
+    case 'cloak':  return applyTreasureCloak(state, player, card, target);
+    case 'shield': return applyTreasureShield(state, player, card);
+    case 'rune':   return applyTreasureRune(state, player, card);
+    default: throw new Error(`unknown treasure ${card.treasure}`);
+  }
+}
+
+function incTreasuresUsed(player) {
+  return { ...player.missionProgress,
+    treasuresUsed: (player.missionProgress.treasuresUsed ?? 0) + 1 };
+}
+
+function applyTreasureSword(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newDragon = { ...state.dragon, hp: Math.max(0, state.dragon.hp - 3) };
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, dragonDamageDealt: p.dragonDamageDealt + 3,
+        missionProgress: { ...incTreasuresUsed(p),
+          killedDragon: newDragon.hp === 0 ? true : p.missionProgress.killedDragon,
+          phase1DragonDamage: state.dragon.phase === 1
+            ? (p.missionProgress.phase1DragonDamage ?? 0) + 3
+            : p.missionProgress.phase1DragonDamage } } : p);
+  return {
+    ...state, players: newPlayers, dragon: newDragon,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} strikes with the Hero's Sword`, player.id),
+  };
+}
+
+function applyTreasurePotion(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, hp: p.maxHp, missionProgress: incTreasuresUsed(p) } : p);
+  return { ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} drinks potion`, player.id) };
+}
+
+function applyTreasureCloak(state, player, card, target) {
+  if (!target || !inBounds(target.r, target.c)) throw new Error('invalid cloak target');
+  const dist = manhattan(player.position, target);
+  if (dist < 1 || dist > 2) throw new Error('cloak beyond range');
+  const occupant = state.board[target.r][target.c];
+  if (occupant === 'dragon') throw new Error('cannot enter dragon cell');
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+
+  const newBoard = state.board.map((row) => row.slice());
+  const newPlayers = state.players.map((p) => ({ ...p }));
+  const self = newPlayers.find((p) => p.id === player.id);
+  self.hand = hand;
+  const from = self.position;
+  self.position = { ...target };
+  self.missionProgress = { ...incTreasuresUsed(self),
+    moveCellsCumulative: (self.missionProgress.moveCellsCumulative ?? 0) + dist };
+
+  if (occupant && occupant !== player.id) {
+    const ally = newPlayers.find((p) => p.id === occupant);
+    ally.position = { ...from };
+    newBoard[from.r][from.c] = ally.id;
+  } else {
+    newBoard[from.r][from.c] = null;
+  }
+  newBoard[target.r][target.c] = player.id;
+
+  return { ...state, players: newPlayers, board: newBoard,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} uses cloak`, player.id) };
+}
+
+function applyTreasureShield(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, statusEffects: { ...p.statusEffects, shieldActive: true } } : p);
+  return { ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} readies the Dragon-Scale Shield`, player.id) };
+}
+
+function applyTreasureRune(state, player, card) {
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const newPlayers = state.players.map((p) => p.id === player.id
+    ? { ...p, hand, statusEffects: { ...p.statusEffects, runeBonusNext: 2 },
+        missionProgress: incTreasuresUsed(p) } : p);
+  return { ...state, players: newPlayers,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} invokes the Ancient Rune`, player.id) };
+}
+
 export function executePlayerAction(state, action) {
   const player = findPlayer(state, action.playerId);
   if (!player) throw new Error(`no player ${action.playerId}`);
@@ -242,7 +334,8 @@ export function executePlayerAction(state, action) {
       case 'hide':   next = applyHideCard(state, player, card); break;
       case 'heal':   next = applyHealCard(state, player, card, action.target); break;
       case 'scout':  next = applyScoutCard(state, player, card); break;
-      case 'taunt':  next = applyTauntCard(state, player, card); break;
+      case 'taunt':    next = applyTauntCard(state, player, card); break;
+      case 'treasure': next = applyTreasureCard(state, player, card, action.target); break;
       default: throw new Error(`unsupported card type ${card.type}`);
     }
     return advanceTurn(next);
