@@ -64,6 +64,60 @@ function applyMoveCard(state, player, card, target) {
   };
 }
 
+function applyAttackCard(state, player, card, target) {
+  const range = card.range + attackRangeBonus(player.race);
+  const damage = 1 + attackDamageBonus(player.race);
+  let targetPos;
+  if (target.type === 'dragon') targetPos = state.dragon.position;
+  else if (target.type === 'player') {
+    const t = findPlayer(state, target.id);
+    if (!t || t.isEliminated) throw new Error('invalid target');
+    targetPos = t.position;
+  } else throw new Error('unsupported target');
+  if (manhattan(player.position, targetPos) > range) throw new Error('attack out of range');
+
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  let newPlayers = state.players.map((p) => p.id === player.id ? { ...p, hand } : { ...p });
+  let newDragon = state.dragon;
+  let newBoard = state.board;
+
+  const attacker = newPlayers.find((p) => p.id === player.id);
+  attacker.missionProgress = {
+    ...attacker.missionProgress,
+    attackCount: (attacker.missionProgress.attackCount ?? 0) + 1,
+    rangedAttackCount: (attacker.missionProgress.rangedAttackCount ?? 0) + (card.range >= 2 ? 1 : 0),
+  };
+
+  if (target.type === 'dragon') {
+    newDragon = { ...newDragon, hp: Math.max(0, newDragon.hp - damage) };
+    attacker.dragonDamageDealt += damage;
+    if (state.dragon.phase === 1) {
+      attacker.missionProgress.phase1DragonDamage = (attacker.missionProgress.phase1DragonDamage ?? 0) + damage;
+    }
+    if (newDragon.hp === 0) attacker.missionProgress.killedDragon = true;
+  } else {
+    const idx = newPlayers.findIndex((p) => p.id === target.id);
+    const victim = { ...newPlayers[idx] };
+    victim.hp = Math.max(0, victim.hp - damage);
+    if (victim.hp === 0) {
+      victim.isEliminated = true;
+      newBoard = state.board.map((row) => row.slice());
+      newBoard[victim.position.r][victim.position.c] = null;
+      attacker.missionProgress.eliminatedAllyCount = (attacker.missionProgress.eliminatedAllyCount ?? 0) + 1;
+    }
+    newPlayers[idx] = victim;
+  }
+
+  return {
+    ...state,
+    players: newPlayers,
+    dragon: newDragon,
+    board: newBoard,
+    commonDiscard: [...state.commonDiscard, consumed],
+    log: logEntry(state, `${player.id} attacks ${target.type === 'dragon' ? 'dragon' : target.id} for ${damage}`, player.id),
+  };
+}
+
 export function executePlayerAction(state, action) {
   const player = findPlayer(state, action.playerId);
   if (!player) throw new Error(`no player ${action.playerId}`);
@@ -73,6 +127,7 @@ export function executePlayerAction(state, action) {
     let next;
     switch (card.type) {
       case 'move': next = applyMoveCard(state, player, card, action.target); break;
+      case 'attack': next = applyAttackCard(state, player, card, action.target); break;
       default: throw new Error(`unsupported card type ${card.type}`);
     }
     return advanceTurn(next);
