@@ -50,6 +50,33 @@ test('ally-ai: draws when hand is 2 or less and not critical', () => {
   assert.equal(action.type, 'drawTwo');
 });
 
+test('ally-ai: move target selection returns orthogonal-only cells', () => {
+  const s = {
+    seed: 1, round: 1, matchIndex: 0, currentTurnIndex: 0,
+    board: [
+      [null, null, null, null, null],
+      [null, 'P0', 'dragon', null, null],
+      [null, null, null, null, null],
+    ],
+    dragon: { hp: 15, phase: 1, deck: [], discard: [], revealed: [],
+      position: { r: 1, c: 2 }, markedCells: [] },
+    players: [{ id: 'P0', race: 'human', hp: 3, maxHp: 3,
+      hand: [
+        { id: 'm1', type: 'move', range: 3 },
+        { id: 'h1', type: 'hide' },
+        { id: 'h2', type: 'hide' },
+      ],
+      position: { r: 1, c: 1 }, isEliminated: false,
+      missions: {}, missionProgress: {}, statusEffects: {}, isAI: true, dragonDamageDealt: 0,
+    }],
+  };
+  const action = decideAllyAction(s, 'P0');
+  assert.equal(action.type, 'playCard');
+  const target = action.target;
+  // Chosen target must be orthogonal to player at (1,1)
+  assert.ok(target.r === 1 || target.c === 1, `target ${JSON.stringify(target)} is diagonal from (1,1)`);
+});
+
 test('ally-ai: orc with kill-player mission attacks low-HP adjacent ally (30% chance; with seed forcing true)', () => {
   const s = base();
   s.players.push({

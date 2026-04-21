@@ -8,6 +8,7 @@ function legalMoveTargets(state, player, card) {
   const dp = state.dragon.position;
   for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
     if (r === dp.r && c === dp.c) continue;
+    if (r !== player.position.r && c !== player.position.c) continue; // orthogonal only
     const d = manhattan(player.position, { r, c });
     if (d === 0 || d > card.range) continue;
     out.push({ r, c });
