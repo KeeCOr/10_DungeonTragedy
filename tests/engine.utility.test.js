@@ -79,7 +79,7 @@ test('utility: taunt marks self as taunting this round', () => {
   assert.equal(next.players[0].missionProgress.tauntCount, 1);
 });
 
-test('utility: drawTwo action adds 2 cards if hand <= 4', () => {
+test('utility: drawTwo action adds 2 cards if hand <= 3 (max hand 5)', () => {
   const s = baseState();
   s.players[0].hand = s.players[0].hand.slice(0, 2);
   s.commonDeck = [
@@ -91,14 +91,13 @@ test('utility: drawTwo action adds 2 cards if hand <= 4', () => {
   assert.equal(next.players[0].missionProgress.drawActionCount, 1);
 });
 
-test('utility: drawTwo rejected if hand > 4', () => {
+test('utility: drawTwo rejected if hand > 3 (max hand 5)', () => {
   const s = baseState();
   s.players[0].hand = [
     { id: 'x1', type: 'move', range: 1 },
     { id: 'x2', type: 'move', range: 1 },
     { id: 'x3', type: 'move', range: 1 },
     { id: 'x4', type: 'move', range: 1 },
-    { id: 'x5', type: 'move', range: 1 },
   ];
   assert.throws(() => executePlayerAction(s, { type: 'drawTwo', playerId: 'P0' }), /hand too large/i);
 });

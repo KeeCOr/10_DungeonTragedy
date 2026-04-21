@@ -20,15 +20,40 @@ let state = startMatch(createInitialState({ seed: SEED, players: PLAYERS }));
 state = rollTurnOrder(state);
 console.log(`Seed: ${SEED}`);
 
+// Concurrency guard: prevents double-scheduling of stepLoop and filters
+// inputs that arrive before the engine has advanced to the player's turn.
+let stepScheduled = false;
+function scheduleStep(delay) {
+  if (stepScheduled) return;
+  stepScheduled = true;
+  setTimeout(() => { stepScheduled = false; stepLoop(); }, delay);
+}
+
+function currentActorId() { return state.turnOrder[state.currentTurnIndex]; }
+function isHumanTurn() {
+  const id = currentActorId();
+  const actor = state.players.find((p) => p.id === id);
+  return !!actor && !actor.isAI && !actor.isEliminated;
+}
+
+function smoothRender() {
+  if (document.startViewTransition) {
+    document.startViewTransition(() => { render(state, input.ui); });
+  } else {
+    render(state, input.ui);
+  }
+}
+
 const input = createInputController({
   getState: () => state,
   setState: (s) => { state = s; },
-  render,
+  render: smoothRender,
   onAction: (action) => {
+    if (!isHumanTurn()) { console.warn('Ignored input: not your turn.'); return; }
     try {
       state = executePlayerAction(state, action);
-      render(state, input.ui);
-      setTimeout(stepLoop, 300);
+      smoothRender();
+      scheduleStep(350);
     } catch (e) { console.warn(e.message); }
   },
 });
@@ -40,22 +65,22 @@ function stepLoop() {
   if (state.currentTurnIndex >= state.turnOrder.length) {
     state = endRound(state);
     state = rollTurnOrder(state);
-    render(state, input.ui);
-    setTimeout(stepLoop, 300);
+    smoothRender();
+    scheduleStep(400);
     return;
   }
-  const actorId = state.turnOrder[state.currentTurnIndex];
+  const actorId = currentActorId();
   if (actorId === 'dragon') {
     state = executeDragonTurn(state, (s, card) => decideDragonAction(s, card));
     state = maybeTransitionPhase(state);
-    render(state, input.ui);
-    setTimeout(stepLoop, 400);
+    smoothRender();
+    scheduleStep(600);
     return;
   }
   const actor = state.players.find((p) => p.id === actorId);
   if (actor.isEliminated) {
     state = { ...state, currentTurnIndex: state.currentTurnIndex + 1 };
-    setTimeout(stepLoop, 50);
+    scheduleStep(100);
     return;
   }
   state = applyTurnStartPassives(state, actorId);
@@ -63,17 +88,17 @@ function stepLoop() {
     try {
       const action = decideAllyAction(state, actorId);
       state = executePlayerAction(state, action);
-      render(state, input.ui);
-      setTimeout(stepLoop, 400);
     } catch (e) {
       console.warn(e.message);
-      try { state = executePlayerAction(state, { type: 'drawTwo', playerId: actorId }); } catch {}
-      render(state, input.ui);
-      setTimeout(stepLoop, 400);
+      try { state = executePlayerAction(state, { type: 'drawTwo', playerId: actorId }); }
+      catch { state = { ...state, currentTurnIndex: state.currentTurnIndex + 1 }; }
     }
+    smoothRender();
+    scheduleStep(600);
     return;
   }
-  render(state, input.ui);
+  // Human turn: just render and wait for onAction.
+  smoothRender();
 }
 
 function onMatchEnd(reason) {
@@ -87,8 +112,8 @@ function onMatchEnd(reason) {
   state = { ...state, matchIndex: state.matchIndex + 1 };
   state = startMatch(state);
   state = rollTurnOrder(state);
-  render(state, input.ui);
-  setTimeout(stepLoop, 500);
+  smoothRender();
+  scheduleStep(700);
 }
 
 function onGameEnd() {
@@ -99,8 +124,8 @@ function onGameEnd() {
     }
   }
   const ranking = Object.entries(totals).sort((a,b) => b[1] - a[1]);
-  alert(`Game end!\n${ranking.map(([id,t]) => `${id}: ${t}`).join('\n')}`);
+  alert(`게임 종료!\n${ranking.map(([id,t], i) => `${i+1}위 ${id}: ${t}점`).join('\n')}`);
 }
 
-render(state, input.ui);
-setTimeout(stepLoop, 500);
+smoothRender();
+scheduleStep(600);

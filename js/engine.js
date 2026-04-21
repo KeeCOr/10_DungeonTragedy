@@ -195,7 +195,7 @@ function applyTauntCard(state, player, card) {
 }
 
 function applyDrawTwo(state, player) {
-  if (player.hand.length > 4) throw new Error('hand too large for draw action');
+  if (player.hand.length > 3) throw new Error('hand too large for draw action');
   const rng = createRng(state.seed + state.round * 7919 + state.currentTurnIndex * 7);
   let deck = state.commonDeck, discard = state.commonDiscard;
   const drawn = [];

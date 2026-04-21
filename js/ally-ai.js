@@ -82,6 +82,6 @@ export function decideAllyAction(state, playerId) {
   }
 
   // last resort
-  if (hand.length <= 4) return { type: 'drawTwo' };
+  if (hand.length <= 3) return { type: 'drawTwo' };
   return { type: 'discardAndSwapMissions' };
 }
