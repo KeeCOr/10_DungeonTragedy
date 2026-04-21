@@ -20,7 +20,8 @@ export function createInputController({ getState, setState, render, onAction }) 
     const p = getHuman();
     if (!p || !ui.selectedCardId) { ui.validTargets = []; return; }
     const card = p.hand.find((c) => c.id === ui.selectedCardId);
-    if (!card) { ui.validTargets = []; return; }
+    if (!card) { ui.validTargets = []; ui.canAttackDragon = false; return; }
+    ui.canAttackDragon = false;
     const targets = [];
     if (card.type === 'move') {
       for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
@@ -44,8 +45,6 @@ export function createInputController({ getState, setState, render, onAction }) 
       ui.validTargetClass = 'attack-target';
       ui.canAttackDragon = true;
       return;
-    }
-    ui.canAttackDragon = false;
     } else if (card.type === 'heal') {
       targets.push({ r: p.position.r, c: p.position.c });
       for (const other of s.players) {
