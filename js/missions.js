@@ -59,3 +59,61 @@ export function assignMissions(playerRace, racesPresent, rng) {
   if (!optional) throw new Error(`no optional mission available for ${playerRace}`);
   return { required, optional };
 }
+
+export function evaluateMission(mission, player, state, matchEndReason) {
+  const mp = player.missionProgress ?? {};
+  switch (mission.id) {
+    case 'common-attack-5':        return (mp.attackCount ?? 0) >= 5;
+    case 'common-move-10':         return (mp.moveCellsCumulative ?? 0) >= 10;
+    case 'common-phase1-damage':   return (mp.phase1DragonDamage ?? 0) >= 1;
+    case 'common-draw-3':          return (mp.drawActionCount ?? 0) >= 3;
+    case 'common-mission-swap':    return (mp.missionSwapCount ?? 0) >= 1;
+    case 'common-treasure-1':      return (mp.treasuresAcquired ?? 0) >= 1;
+    case 'common-treasure-used-2': return (mp.treasuresUsed ?? 0) >= 2;
+
+    case 'human-kill-dragon':      return mp.killedDragon === true;
+    case 'human-all-survive':      return matchEndReason === 'dragon-dead' && state.players.every((p) => !p.isEliminated);
+    case 'human-heal-3':           return (mp.healCount ?? 0) >= 3;
+    case 'human-full-hp-end':      return !player.isEliminated && player.hp === player.maxHp;
+
+    case 'elf-2-treasures':        return (mp.treasuresAcquiredTypes?.length ?? 0) >= 2;
+    case 'elf-scout-3':            return (mp.scoutCount ?? 0) >= 3;
+    case 'elf-ranged-5':           return (mp.rangedAttackCount ?? 0) >= 5;
+    case 'elf-no-damage':          return (mp.damageTaken ?? 0) === 0;
+
+    case 'dwarf-hide-ally-2':      return (mp.hideInPlaceCount ?? 0) >= 2;
+    case 'dwarf-taunt-2':          return (mp.tauntCount ?? 0) >= 2;
+    case 'dwarf-1hp-end':          return !player.isEliminated && player.hp === 1;
+    case 'dwarf-phase3':           return state.dragon?.reachedPhase3 === true;
+    case 'dwarf-keep-treasure':    return (player.hand ?? []).some((c) => c.type === 'treasure');
+
+    case 'orc-dragon-wins':        return matchEndReason === 'party-wipe';
+    case 'orc-kill-player':        return (mp.eliminatedAllyCount ?? 0) >= 1;
+    case 'orc-reduce-and-wipe':    return state.dragon.hp <= 3 && matchEndReason === 'party-wipe';
+    case 'orc-attack-6':           return (mp.attackCount ?? 0) >= 6;
+    case 'orc-treasure-3':         return (mp.treasuresAcquired ?? 0) >= 3;
+    case 'orc-kill-all-elves':     return state.players.filter((p) => p.race === 'elf').every((p) => p.isEliminated);
+    case 'orc-kill-all-humans':    return state.players.filter((p) => p.race === 'human').every((p) => p.isEliminated);
+    case 'orc-kill-all-dwarves':   return state.players.filter((p) => p.race === 'dwarf').every((p) => p.isEliminated);
+
+    default: return false;
+  }
+}
+
+export function scoreMatch(state, matchEndReason, finisherId) {
+  return state.players.map((p) => {
+    let total = 0;
+    const breakdown = [];
+    if (p.missions?.required && evaluateMission(p.missions.required, p, state, matchEndReason)) {
+      total += p.missions.required.points;
+      breakdown.push({ id: p.missions.required.id, points: p.missions.required.points });
+    }
+    if (p.missions?.optional && evaluateMission(p.missions.optional, p, state, matchEndReason)) {
+      total += p.missions.optional.points;
+      breakdown.push({ id: p.missions.optional.id, points: p.missions.optional.points });
+    }
+    if (p.id === finisherId) { total += 3; breakdown.push({ id: 'finisher', points: 3 }); }
+    if (!p.isEliminated) { total += 1; breakdown.push({ id: 'survive', points: 1 }); }
+    return { playerId: p.id, total, breakdown };
+  });
+}

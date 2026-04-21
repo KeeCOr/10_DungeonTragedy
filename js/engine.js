@@ -203,10 +203,17 @@ function applyDrawTwo(state, player) {
     if (step.drawn) drawn.push(step.drawn);
     deck = step.deck; discard = step.discard;
   }
-  const newPlayers = state.players.map((p) => p.id === player.id
-    ? { ...p, hand: [...p.hand, ...drawn],
-        missionProgress: { ...p.missionProgress,
-          drawActionCount: (p.missionProgress.drawActionCount ?? 0) + 1 } } : p);
+  const newPlayers = state.players.map((p) => {
+    if (p.id !== player.id) return p;
+    const newTreasures = drawn.filter((c) => c.type === 'treasure');
+    const existingTypes = new Set(p.missionProgress.treasuresAcquiredTypes ?? []);
+    for (const t of newTreasures) existingTypes.add(t.treasure);
+    return { ...p, hand: [...p.hand, ...drawn],
+      missionProgress: { ...p.missionProgress,
+        drawActionCount: (p.missionProgress.drawActionCount ?? 0) + 1,
+        treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
+        treasuresAcquiredTypes: [...existingTypes] } };
+  });
   return {
     ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
     log: logEntry(state, `${player.id} draws 2`, player.id),

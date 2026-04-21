@@ -77,6 +77,15 @@ export function startMatch(state) {
     }
   }
 
+  for (const p of players) {
+    const treasureCards = p.hand.filter((c) => c.type === 'treasure');
+    p.missionProgress = {
+      ...p.missionProgress,
+      treasuresAcquired: treasureCards.length,
+      treasuresAcquiredTypes: [...new Set(treasureCards.map((c) => c.treasure))],
+    };
+  }
+
   const dragonDeck = rng.shuffle(buildDragonCards(1));
   const [firstReveal, ...restDeck] = dragonDeck;
   const dragon = {
