@@ -4,3 +4,31 @@ body { font-family: system-ui, sans-serif; margin: 0; background: #121212; color
 #board { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 1fr); gap: 4px; aspect-ratio: 5/3; }
 .cell { background: #222; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 #log-panel { max-height: 180px; overflow-y: auto; padding: 8px 16px; background: #1a1a1a; font-family: monospace; font-size: 0.85rem; }
+
+.cell { position: relative; }
+.cell.move-target { outline: 2px solid #3af; }
+.cell.attack-target { outline: 2px solid #f33; }
+.cell.mark { background: #3a0a0a; }
+.token { font-size: 1.8rem; }
+.dragon-token { color: #f55; }
+.player-token { color: #5af; }
+
+#dragon-panel { background: #1a1a1a; padding: 12px; border-radius: 8px; }
+#dragon-panel h2 { margin: 0 0 8px 0; }
+.hp-bar { background: #333; height: 14px; border-radius: 7px; overflow: hidden; }
+.hp-bar .fill { background: #c33; height: 100%; transition: width 0.3s; }
+.revealed-cards { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.revealed-card { background: #330; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+
+#player-panel { padding: 12px; background: #181818; }
+.hand { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.card { background: #223; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+.card.selected { border-color: #3af; }
+.card.treasure { background: #442; }
+.mission-icons { display: flex; gap: 6px; opacity: 0.6; }
+.mission-icon { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+button { background: #334; color: #eee; border: 1px solid #556; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+.turn-order { display: flex; gap: 6px; margin-top: 8px; }
+.turn-slot { padding: 2px 6px; background: #222; border-radius: 4px; font-size: 0.8rem; }
+.turn-slot.current { background: #3af; color: #000; }
