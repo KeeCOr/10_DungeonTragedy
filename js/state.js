@@ -38,6 +38,7 @@ export function createInitialState({ seed, players }) {
     currentTurnIndex: 0,
     commonDeck: [],
     commonDiscard: [],
+    lastDragonHitterId: null,
     log: [],
   };
 }

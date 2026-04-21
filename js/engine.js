@@ -117,6 +117,7 @@ function applyAttackCard(state, player, card, target) {
     dragon: newDragon,
     board: newBoard,
     commonDiscard: [...state.commonDiscard, consumed],
+    lastDragonHitterId: target.type === 'dragon' ? player.id : state.lastDragonHitterId,
     log: logEntry(state, `${player.id} attacks ${target.type === 'dragon' ? 'dragon' : target.id} for ${damage}`, player.id),
   };
   return target.type === 'dragon' ? maybeTransitionPhase(result) : result;
@@ -264,6 +265,7 @@ function applyTreasureSword(state, player, card) {
             : p.missionProgress.phase1DragonDamage } } : p);
   const result = { ...state, players: newPlayers, dragon: newDragon,
     commonDiscard: [...state.commonDiscard, consumed],
+    lastDragonHitterId: player.id,
     log: logEntry(state, `${player.id} strikes with the Hero's Sword`, player.id) };
   return maybeTransitionPhase(result);
 }

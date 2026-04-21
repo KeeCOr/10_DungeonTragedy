@@ -76,7 +76,7 @@ function stepLoop() {
 }
 
 function onMatchEnd(reason) {
-  const finisher = state.players.slice().sort((a,b) => b.dragonDamageDealt - a.dragonDamageDealt)[0]?.id;
+  const finisher = state.lastDragonHitterId;
   const scores = scoreMatch(state, reason, finisher);
   const newScores = [...state.matchScores];
   newScores[state.matchIndex] = scores;

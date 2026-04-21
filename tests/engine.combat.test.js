@@ -86,3 +86,9 @@ test('combat: ranged attack (range≥2) counts toward rangedAttackCount progress
   const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 'a2', target: { type: 'dragon' } });
   assert.equal(next.players[0].missionProgress.rangedAttackCount, 1);
 });
+
+test('combat: lastDragonHitterId set to attacker when dragon takes damage', () => {
+  const s = baseState();
+  const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 'a1', target: { type: 'dragon' } });
+  assert.equal(next.lastDragonHitterId, 'P0');
+});
