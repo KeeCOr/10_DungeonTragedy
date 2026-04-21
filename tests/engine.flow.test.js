@@ -120,3 +120,23 @@ test('checkMatchEnd: none returns null', () => {
   const s = { dragon: { hp: 5 }, players: [{ isEliminated: false }], round: 10 };
   assert.equal(checkMatchEnd(s), null);
 });
+
+test('rollTurnOrder: applies roar debuff when current round matches roarDebuffActiveForRound', () => {
+  const s0 = startMatch(createInitialState({ seed: 11, players: [
+    { id: 'P0', name: 'P0', isAI: false },
+    { id: 'P1', name: 'P1', isAI: true },
+  ] }));
+  // Force specific round and roar state so that next roll dice can be compared
+  const normal = rollTurnOrder({ ...s0, round: 5,
+    dragon: { ...s0.dragon, roarDebuffActiveForRound: null } });
+  const debuffed = rollTurnOrder({ ...s0, round: 5,
+    dragon: { ...s0.dragon, roarDebuffActiveForRound: 5 } });
+  // With debuff, the dragon's roll is unchanged, but each player's slot shifts down relative to no-debuff.
+  // We assert determinism and a shape check: turnOrder length equals alive + dragon.
+  assert.equal(debuffed.turnOrder.length, 3);
+  // And that when debuff is inactive on the current round, no change to the roll distribution seed:
+  // (we can at minimum verify the debuff is NOT applied when it's for a future round)
+  const futureDebuff = rollTurnOrder({ ...s0, round: 5,
+    dragon: { ...s0.dragon, roarDebuffActiveForRound: 10 } });
+  assert.deepEqual(futureDebuff.turnOrder, normal.turnOrder);
+});

@@ -353,11 +353,12 @@ export function executePlayerAction(state, action) {
 
 export function rollTurnOrder(state) {
   const rng = roundRng(state);
+  const roarActive = state.dragon?.roarDebuffActiveForRound === state.round;
   const candidates = [
     { id: 'dragon', roll: rng.roll(6) },
     ...state.players
       .filter((p) => !p.isEliminated)
-      .map((p) => ({ id: p.id, roll: rng.roll(6) })),
+      .map((p) => ({ id: p.id, roll: rng.roll(6) - (roarActive ? 1 : 0) })),
   ];
   // Break ties by redrawing until unique ordering.
   candidates.sort((a, b) => b.roll - a.roll || rng.roll(1000) - rng.roll(1000));
