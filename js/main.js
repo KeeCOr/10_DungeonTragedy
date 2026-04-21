@@ -1,7 +1,7 @@
 import { createInitialState, startMatch } from './state.js';
 import {
   rollTurnOrder, executePlayerAction, executeDragonTurn,
-  endRound, checkMatchEnd, maybeTransitionPhase,
+  endRound, checkMatchEnd, maybeTransitionPhase, applyTurnStartPassives,
 } from './engine.js';
 import { decideDragonAction } from './dragon-ai.js';
 import { decideAllyAction } from './ally-ai.js';
@@ -58,6 +58,7 @@ function stepLoop() {
     setTimeout(stepLoop, 50);
     return;
   }
+  state = applyTurnStartPassives(state, actorId);
   if (actor.isAI) {
     try {
       const action = decideAllyAction(state, actorId);

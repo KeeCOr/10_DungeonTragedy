@@ -465,6 +465,24 @@ export function checkMatchEnd(state) {
   return null;
 }
 
+export function applyTurnStartPassives(state, playerId) {
+  const player = findPlayer(state, playerId);
+  if (!player || player.isEliminated) return state;
+  const chance = extraDrawChance(player.race);
+  if (chance <= 0) return state;
+  const rng = createRng(state.seed + state.round * 1031 + state.currentTurnIndex * 11);
+  if (rng.next() >= chance) return state;
+  const step = drawFromDeck(state.commonDeck, state.commonDiscard, rng);
+  if (!step.drawn) return state;
+  const newPlayers = state.players.map((p) => p.id === playerId
+    ? { ...p, hand: [...p.hand, step.drawn] } : p);
+  return {
+    ...state, players: newPlayers,
+    commonDeck: step.deck, commonDiscard: step.discard,
+    log: logEntry(state, `${playerId} draws an extra card (human luck)`, playerId),
+  };
+}
+
 export function executeDragonTurn(state, aiDecisionFn) {
   const actions = state.dragon.phase;
   let s = state;

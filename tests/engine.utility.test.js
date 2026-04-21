@@ -112,3 +112,9 @@ test('utility: discardAndSwapMissions discards entire hand and reassigns mission
   assert.ok(next.players[0].missions.optional);
   assert.equal(next.players[0].missionProgress.missionSwapCount, 1);
 });
+
+test('utility: human extraDrawChance import exists and returns 0.05', async () => {
+  const m = await import('../js/races.js');
+  assert.equal(m.extraDrawChance('human'), 0.05);
+  assert.equal(m.extraDrawChance('elf'), 0);
+});
