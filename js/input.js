@@ -21,11 +21,9 @@ export function createInputController({ getState, setState, render, onAction }) 
     if (!p || !ui.selectedCardId) { ui.validTargets = []; return; }
     const card = p.hand.find((c) => c.id === ui.selectedCardId);
     if (!card) { ui.validTargets = []; return; }
-    const dp = s.dragon.position;
     const targets = [];
     if (card.type === 'move') {
       for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
-        if (r === dp.r && c === dp.c) continue;
         if (r !== p.position.r && c !== p.position.c) continue; // orthogonal only
         const d = Math.abs(p.position.r - r) + Math.abs(p.position.c - c);
         if (d >= 1 && d <= card.range) targets.push({ r, c });
@@ -33,8 +31,9 @@ export function createInputController({ getState, setState, render, onAction }) 
       ui.validTargetClass = 'move-target';
     } else if (card.type === 'attack') {
       const range = card.range + (p.race === 'elf' ? 1 : 0);
+      // Dragon is off-grid: user must click the dragon portrait to target it.
+      // That click path is handled separately (see handleClick).
       const cells = [];
-      if (Math.abs(p.position.r - dp.r) + Math.abs(p.position.c - dp.c) <= range) cells.push({ r: dp.r, c: dp.c });
       for (const other of s.players) {
         if (other.id === p.id || other.isEliminated) continue;
         if (Math.abs(p.position.r - other.position.r) + Math.abs(p.position.c - other.position.c) <= range) {
@@ -43,7 +42,10 @@ export function createInputController({ getState, setState, render, onAction }) 
       }
       ui.validTargets = cells;
       ui.validTargetClass = 'attack-target';
+      ui.canAttackDragon = true;
       return;
+    }
+    ui.canAttackDragon = false;
     } else if (card.type === 'heal') {
       targets.push({ r: p.position.r, c: p.position.c });
       for (const other of s.players) {
@@ -54,7 +56,6 @@ export function createInputController({ getState, setState, render, onAction }) 
       ui.validTargetClass = 'move-target';
     } else if (card.type === 'treasure' && card.treasure === 'cloak') {
       for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
-        if (r === dp.r && c === dp.c) continue;
         const d = Math.abs(p.position.r - r) + Math.abs(p.position.c - c);
         if (d >= 1 && d <= 2) targets.push({ r, c });
       }
@@ -84,6 +85,19 @@ export function createInputController({ getState, setState, render, onAction }) 
       updateValidTargets();
       render(getState(), ui);
       return;
+    }
+
+    // Click on dragon portrait to attack when an attack card is selected.
+    const dragonHit = ev.target.closest('#dragon-panel');
+    if (dragonHit && ui.selectedCardId && ui.canAttackDragon) {
+      const human = getHuman();
+      const card = human.hand.find((x) => x.id === ui.selectedCardId);
+      if (card?.type === 'attack') {
+        const action = { type: 'playCard', playerId: human.id, cardId: card.id, target: { type: 'dragon' } };
+        clearSelection();
+        onAction(action);
+        return;
+      }
     }
 
     const cell = ev.target.closest('.cell');
@@ -118,6 +132,9 @@ export function createInputController({ getState, setState, render, onAction }) 
     if (ev.target.id === 'btn-draw-two') {
       if (ui.selectedCardId) { clearSelection(); render(getState(), ui); return; }
       onAction({ type: 'drawTwo', playerId: getHuman().id });
+    } else if (ev.target.id === 'btn-redraw') {
+      if (ui.selectedCardId) { clearSelection(); render(getState(), ui); return; }
+      onAction({ type: 'discardAndRedraw', playerId: getHuman().id });
     } else if (ev.target.id === 'btn-swap-missions') {
       if (ui.selectedCardId) { clearSelection(); render(getState(), ui); return; }
       onAction({ type: 'discardAndSwapMissions', playerId: getHuman().id });

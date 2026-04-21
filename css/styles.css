@@ -194,9 +194,25 @@ html, body {
 #right-column {
   grid-area: right;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 0.5rem;
   min-height: 0;
+}
+#mission-panel {
+  background: linear-gradient(to bottom, #1a1408, #0a0503);
+  border: 1px solid #4a3a18;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.mission-panel-title {
+  font-size: 0.82em;
+  color: #d4b878;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
 }
 #dragon-panel {
   background: linear-gradient(to bottom, #2a0f08 0%, #1a0605 100%);
@@ -208,6 +224,25 @@ html, body {
   flex-direction: column;
   gap: 0.45rem;
   align-items: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#dragon-panel.attackable {
+  cursor: crosshair;
+  border-color: #ff6040;
+  box-shadow: 0 0 22px rgba(255, 80, 50, 0.7), inset 0 0 12px rgba(255, 80, 50, 0.4);
+}
+#dragon-panel.attackable::after {
+  content: '⚔️ 클릭해서 공격';
+  position: absolute;
+  background: #d04040;
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.78em;
+  font-weight: 700;
+  margin-top: -0.5rem;
+  animation: your-turn-pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
 }
 .dragon-portrait {
   width: 100%;
@@ -566,3 +601,108 @@ button:disabled {
 ::-webkit-scrollbar-track { background: #100805; }
 ::-webkit-scrollbar-thumb { background: #3a2818; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #5a3e28; }
+
+/* ---------- Damage / heal animations ---------- */
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, 3px); }
+  80% { transform: translate(3px, -1px); }
+}
+.cell.shake, .dragon-portrait.shake { animation: shake 0.45s ease; }
+.cell.shake { background: linear-gradient(135deg, #5a1010 0%, #2a0404 100%) !important; }
+
+.dmg-float {
+  position: absolute;
+  top: 8%; left: 50%;
+  font-size: 1.6em;
+  font-weight: 800;
+  pointer-events: none;
+  animation: dmg-rise 1s ease-out forwards;
+  text-shadow: 0 0 6px #000, 0 1px 2px #000;
+  z-index: 5;
+  white-space: nowrap;
+}
+.dmg-float.dmg { color: #ff5040; }
+.dmg-float.heal { color: #60ff80; }
+@keyframes dmg-rise {
+  0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+  20%  { transform: translate(-50%, -8px) scale(1.3); opacity: 1; }
+  60%  { transform: translate(-50%, -22px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -44px) scale(0.9); opacity: 0; }
+}
+
+/* ---------- Card play overlay ---------- */
+.card-play-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 100;
+  animation: overlay-fade 0.9s ease forwards;
+}
+@keyframes overlay-fade {
+  0%   { background: rgba(0,0,0,0); }
+  15%  { background: rgba(0,0,0,0.4); }
+  80%  { background: rgba(0,0,0,0.4); }
+  100% { background: rgba(0,0,0,0); }
+}
+.card-play-big {
+  width: 15rem;
+  padding: 1.3rem 1rem;
+  background: linear-gradient(160deg, #3a2a1a 0%, #201408 100%);
+  border: 3px solid #c09858;
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(200, 160, 80, 0.75), inset 0 2px 0 rgba(255, 220, 160, 0.2);
+  text-align: center;
+  color: #e8d8b8;
+  animation: card-pop 0.9s ease forwards;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.card-play-big.treasure {
+  background: linear-gradient(160deg, #4a3010 0%, #281808 100%);
+  border-color: #e8b040;
+  box-shadow: 0 0 52px rgba(240, 200, 120, 0.9);
+  color: #ffe0a0;
+}
+@keyframes card-pop {
+  0%   { transform: scale(0.3) rotate(-12deg); opacity: 0; }
+  20%  { transform: scale(1.25) rotate(0); opacity: 1; }
+  40%  { transform: scale(1) rotate(0); }
+  75%  { transform: scale(1) rotate(0); opacity: 1; }
+  100% { transform: scale(1.2) translateY(-18px); opacity: 0; }
+}
+.cpb-glyph {
+  font-size: 4.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 14px rgba(255,200,80,0.7));
+}
+.cpb-name { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.05em; }
+.cpb-meta { font-size: 1rem; color: #c0a878; }
+
+/* ---------- Threat preview on cells ---------- */
+.cell.threat {
+  background: linear-gradient(135deg, #3a1010 0%, #1a0404 100%);
+  border-color: #d04040;
+  box-shadow: inset 0 0 14px rgba(220, 60, 40, 0.6);
+  animation: threat-pulse 1.1s ease-in-out infinite;
+}
+@keyframes threat-pulse {
+  0%, 100% { box-shadow: inset 0 0 14px rgba(220, 60, 40, 0.5); }
+  50% { box-shadow: inset 0 0 22px rgba(255, 90, 50, 0.85); }
+}
+.cell .threat-marker {
+  position: absolute;
+  bottom: 3px;
+  font-size: 0.35em;
+  color: #ff9060;
+  font-weight: 700;
+  background: rgba(0,0,0,0.7);
+  padding: 1px 4px;
+  border-radius: 2px;
+  text-shadow: 0 0 3px #000;
+}

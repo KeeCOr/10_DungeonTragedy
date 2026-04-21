@@ -31,9 +31,8 @@ test('state: startMatch assigns races, missions, initial hands, positions, drago
     assert.equal(p.hp, p.maxHp);
   }
   assert.equal(s.dragon.hp, 15);
-  assert.equal(s.dragon.position.r, 1);
-  assert.equal(s.dragon.position.c, 2);
-  assert.ok(s.dragon.deck.length >= 15);
+  assert.equal(s.dragon.position, null); // dragon is off-grid
+  assert.ok(s.dragon.deck.length >= 10);
   assert.equal(s.dragon.phase, 1);
   assert.equal(s.dragon.revealed.length, 1);
 });

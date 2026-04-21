@@ -6,11 +6,11 @@ test('races: four defined', () => {
   assert.deepEqual(Object.keys(RACES).sort(), ['dwarf', 'elf', 'human', 'orc']);
 });
 
-test('races: dwarf max HP is 4, others 3', () => {
-  assert.equal(baseMaxHp('dwarf'), 4);
-  assert.equal(baseMaxHp('human'), 3);
-  assert.equal(baseMaxHp('elf'), 3);
-  assert.equal(baseMaxHp('orc'), 3);
+test('races: dwarf max HP is 6, others 5', () => {
+  assert.equal(baseMaxHp('dwarf'), 6);
+  assert.equal(baseMaxHp('human'), 5);
+  assert.equal(baseMaxHp('elf'), 5);
+  assert.equal(baseMaxHp('orc'), 5);
 });
 
 test('races: orc adds +1 attack damage', () => {

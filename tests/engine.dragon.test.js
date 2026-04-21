@@ -1,144 +1,132 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveDragonCard } from '../js/dragon.js';
+import { resolveDragonCard, getDragonCardPreview } from '../js/dragon.js';
 
 function bs(overrides = {}) {
   return {
     seed: 9, matchIndex: 0, matchScores: [[],[],[]], round: 1, phase: 'acting',
     board: [
       [null, 'P0', null, 'P1', null],
-      [null, null, 'dragon', null, null],
+      [null, null, null, null, null],
       [null, null, 'P2', null, null],
     ],
     dragon: { hp: 10, maxHp: 15, phase: 2, deck: [], discard: [], revealed: [],
-      position: { r: 1, c: 2 }, markedCells: [] },
+      position: null, markedCells: [] },
     players: [
-      { id: 'P0', race: 'human', hp: 3, maxHp: 3, hand: [{ id: 'c0a', type: 'move', range: 1 }],
-        position: { r: 0, c: 1 }, missions: {}, missionProgress: {}, statusEffects: {},
-        isEliminated: false, dragonDamageDealt: 0, isAI: true },
-      { id: 'P1', race: 'elf', hp: 3, maxHp: 3, hand: [{ id: 'c1a', type: 'move', range: 1 }, { id: 'c1b', type: 'attack', range: 1 }],
-        position: { r: 0, c: 3 }, missions: {}, missionProgress: {}, statusEffects: {},
-        isEliminated: false, dragonDamageDealt: 0, isAI: true },
-      { id: 'P2', race: 'dwarf', hp: 4, maxHp: 4, hand: [],
-        position: { r: 2, c: 2 }, missions: {}, missionProgress: {}, statusEffects: {},
-        isEliminated: false, dragonDamageDealt: 0, isAI: true },
+      { id: 'P0', race: 'human', hp: 5, maxHp: 5, hand: [], position: { r: 0, c: 1 },
+        missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
+        dragonDamageDealt: 0, isAI: true },
+      { id: 'P1', race: 'elf', hp: 5, maxHp: 5, hand: [], position: { r: 0, c: 3 },
+        missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
+        dragonDamageDealt: 0, isAI: true },
+      { id: 'P2', race: 'dwarf', hp: 6, maxHp: 6, hand: [], position: { r: 2, c: 2 },
+        missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
+        dragonDamageDealt: 0, isAI: true },
     ],
     turnOrder: ['P0','P1','P2','dragon'], currentTurnIndex: 3,
     commonDeck: [], commonDiscard: [], log: [], ...overrides,
   };
 }
 
-test('dragon.bite: deals 1 to specified adjacent target', () => {
+test('dragon.row-top: damages all players on row 0 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'bite', id: 'd1' }, { targetId: 'P2' });
-  assert.equal(next.players[2].hp, 3);
+  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 3);
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 3);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 6);
 });
 
-test('dragon.breath: line damage with no blocker → target takes 2', () => {
+test('dragon.row-bot: damages only row 2 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'breath', id: 'd2' }, { targetId: 'P2' });
-  assert.equal(next.players[2].hp, 2);
+  const next = resolveDragonCard(s, { type: 'row-bot' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 4);
 });
 
-test('dragon.breath: ally blocker - roll redirects ally on 4+ (deterministic seed)', () => {
-  const s = bs({
-    board: [
-      [null, null, null, null, null],
-      ['P2', 'P0', 'dragon', null, null],
-      [null, null, null, null, null],
-    ],
-    players: [ ...bs().players ].map((p) =>
-      p.id === 'P0' ? { ...p, position: { r: 1, c: 1 } } :
-      p.id === 'P2' ? { ...p, position: { r: 1, c: 0 } } : p),
-  });
-  const next = resolveDragonCard(s, { type: 'breath', id: 'd2' }, { targetId: 'P2' });
-  const total = (3 - next.players.find(p=>p.id==='P2').hp) + (3 - next.players.find(p=>p.id==='P0').hp);
-  assert.equal(total, 2);
-});
-
-test('dragon.piercing: entire row hits all players in row for 1', () => {
-  const s = bs({
-    board: [
-      [null, null, null, null, null],
-      ['P0', 'P2', 'dragon', 'P1', null],
-      [null, null, null, null, null],
-    ],
-    players: [ ...bs().players ].map((p) =>
-      p.id === 'P0' ? { ...p, position: { r: 1, c: 0 } } :
-      p.id === 'P2' ? { ...p, position: { r: 1, c: 1 } } :
-      p.id === 'P1' ? { ...p, position: { r: 1, c: 3 } } : p),
-  });
-  const next = resolveDragonCard(s, { type: 'piercing', id: 'd3' }, { axis: 'row' });
-  assert.equal(next.players[0].hp, 2);
-  assert.equal(next.players[1].hp, 2);
-  assert.equal(next.players[2].hp, 3);
-});
-
-test('dragon.tail: all 8-adjacent players take 1', () => {
+test('dragon.row-odd: damages rows 0 and 2 for 1 each', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'tail', id: 'd4' }, {});
-  assert.equal(next.players[0].hp, 2);
-  assert.equal(next.players[1].hp, 2);
-  assert.equal(next.players[2].hp, 3);
+  const next = resolveDragonCard(s, { type: 'row-odd' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 4);
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 4);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 5);
 });
 
-test('dragon.wings: pushes all players 1 cell away from dragon', () => {
+test('dragon.row-even: damages only row 1 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'wings', id: 'd5' }, {});
-  assert.notEqual(JSON.stringify(next.players[0].position), JSON.stringify(s.players[0].position));
+  const next = resolveDragonCard(s, { type: 'row-even' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 5);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 6);
 });
 
-test('dragon.roar: sets state.dragon.roarDebuffActiveForRound = state.round + 1', () => {
+test('dragon.col-mid: damages column 2 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'roar', id: 'd6' }, {});
-  assert.equal(next.dragon.roarDebuffActiveForRound, s.round + 1);
+  const next = resolveDragonCard(s, { type: 'col-mid' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 4);
 });
 
-test('dragon.charge: moves dragon 2 cells in direction, deals 2 to path+destination players', () => {
-  const s = bs({
-    board: [
-      [null, null, null, null, null],
-      [null, null, 'dragon', 'P1', 'P2'],
-      [null, null, null, null, null],
-    ],
-    players: [ ...bs().players ].map((p) =>
-      p.id === 'P1' ? { ...p, position: { r: 1, c: 3 } } :
-      p.id === 'P2' ? { ...p, position: { r: 1, c: 4 } } : p),
-  });
-  const next = resolveDragonCard(s, { type: 'charge', id: 'd7' }, { direction: 'E' });
-  assert.equal(next.players.find(p=>p.id==='P1').hp, 1);
-  assert.equal(next.players.find(p=>p.id==='P2').hp, 2);
-  assert.equal(next.players.find(p=>p.id==='P1').isEliminated, true);
-  assert.equal(next.dragon.position.r, 1);
-  assert.equal(next.dragon.position.c, 4);
-});
-
-test('dragon.mark: placement adds marked cell with resolvesOnRound = round+1', () => {
+test('dragon.all: damages every cell by 1', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'mark', id: 'd8' }, { markCell: { r: 0, c: 3 } });
-  assert.equal(next.dragon.markedCells.length, 1);
-  assert.equal(next.dragon.markedCells[0].resolvesOnRound, s.round + 1);
-});
-
-test('dragon.frenzy: every surviving player takes 1', () => {
-  const s = bs();
-  const next = resolveDragonCard(s, { type: 'frenzy', id: 'd9' }, {});
+  const next = resolveDragonCard(s, { type: 'all' }, {});
   for (const p of next.players) assert.equal(p.hp, p.maxHp - 1);
 });
 
-test('dragon.reposition: teleports dragon to center (1,2)', () => {
+test('dragon.corners: damages 4 corners for 2', () => {
   const s = bs({
-    dragon: { ...bs().dragon, position: { r: 0, c: 0 } },
     board: [
-      ['dragon', null, null, null, null],
+      ['P0', null, null, null, 'P1'],
       [null, null, null, null, null],
-      [null, null, null, null, null],
+      [null, null, null, null, 'P2'],
     ],
-    players: bs().players.map(p => ({ ...p, position: { r: 2, c: 0 } })),
+    players: bs().players.map(p =>
+      p.id === 'P0' ? { ...p, position: { r: 0, c: 0 } } :
+      p.id === 'P1' ? { ...p, position: { r: 0, c: 4 } } :
+      p.id === 'P2' ? { ...p, position: { r: 2, c: 4 } } : p),
   });
-  const next = resolveDragonCard(s, { type: 'reposition', id: 'dA' }, {});
-  assert.equal(next.dragon.position.r, 1);
-  assert.equal(next.dragon.position.c, 2);
-  assert.equal(next.board[1][2], 'dragon');
-  assert.equal(next.board[0][0], null);
+  const next = resolveDragonCard(s, { type: 'corners' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 3);
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 3);
+  assert.equal(next.players.find(p => p.id === 'P2').hp, 4);
+});
+
+test('dragon.rest: deals no damage', () => {
+  const s = bs();
+  const next = resolveDragonCard(s, { type: 'rest' }, {});
+  for (const p of next.players) assert.equal(p.hp, p.maxHp);
+});
+
+test('dragon.roar: sets roarDebuffActiveForRound = round + 1', () => {
+  const s = bs();
+  const next = resolveDragonCard(s, { type: 'roar' }, {});
+  assert.equal(next.dragon.roarDebuffActiveForRound, s.round + 1);
+});
+
+test('dragon.hide absorbs 1 damage on hidden player', () => {
+  const s = bs();
+  s.players[0].statusEffects.hiddenThisRound = true;
+  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  // P0 had hidden: 2 damage reduced to 1
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 4);
+  // P1 without hide takes full 2
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 3);
+});
+
+test('dragon.shield absorbs full damage and is consumed', () => {
+  const s = bs();
+  s.players[0].statusEffects.shieldActive = true;
+  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
+  assert.equal(next.players.find(p => p.id === 'P0').statusEffects.shieldActive, false);
+});
+
+test('preview: getDragonCardPreview for row-top returns 5 cells', () => {
+  const pv = getDragonCardPreview({ type: 'row-top' });
+  assert.equal(pv.cells.length, 5);
+  assert.equal(pv.damage, 2);
+});
+
+test('preview: getDragonCardPreview for rest returns no cells', () => {
+  const pv = getDragonCardPreview({ type: 'rest' });
+  assert.equal(pv.cells.length, 0);
 });

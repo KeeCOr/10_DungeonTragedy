@@ -6,7 +6,7 @@ import {
 import { decideDragonAction } from './dragon-ai.js';
 import { decideAllyAction } from './ally-ai.js';
 import { scoreMatch } from './missions.js';
-import { render } from './render.js';
+import { render, showCardPlayOverlay } from './render.js';
 import { createInputController } from './input.js';
 
 const SEED = Math.floor(Math.random() * 1e9);
@@ -51,9 +51,14 @@ const input = createInputController({
   onAction: (action) => {
     if (!isHumanTurn()) { console.warn('Ignored input: not your turn.'); return; }
     try {
+      if (action.type === 'playCard') {
+        const human = state.players.find((p) => !p.isAI);
+        const card = human?.hand.find((c) => c.id === action.cardId);
+        if (card) showCardPlayOverlay(card);
+      }
       state = executePlayerAction(state, action);
       smoothRender();
-      scheduleStep(350);
+      scheduleStep(600);
     } catch (e) { console.warn(e.message); }
   },
 });

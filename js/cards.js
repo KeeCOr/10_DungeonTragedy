@@ -6,9 +6,9 @@ const mk = (type, extras = {}) => ({ id: `${type}-${extras.range ?? extras.treas
 export function buildPlayerDeck() {
   _id = 0;
   const deck = [];
-  for (let i = 0; i < 6; i++) deck.push(mk('move', { range: 1 }));
-  for (let i = 0; i < 4; i++) deck.push(mk('move', { range: 2 }));
-  for (let i = 0; i < 2; i++) deck.push(mk('move', { range: 3 }));
+  for (let i = 0; i < 8; i++) deck.push(mk('move', { range: 1 }));
+  for (let i = 0; i < 6; i++) deck.push(mk('move', { range: 2 }));
+  for (let i = 0; i < 4; i++) deck.push(mk('move', { range: 3 }));
   for (let i = 0; i < 6; i++) deck.push(mk('attack', { range: 1 }));
   for (let i = 0; i < 4; i++) deck.push(mk('attack', { range: 2 }));
   for (let i = 0; i < 2; i++) deck.push(mk('attack', { range: 3 }));

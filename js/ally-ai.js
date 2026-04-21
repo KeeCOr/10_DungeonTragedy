@@ -5,9 +5,7 @@ const manhattan = (a,b) => Math.abs(a.r-b.r)+Math.abs(a.c-b.c);
 
 function legalMoveTargets(state, player, card) {
   const out = [];
-  const dp = state.dragon.position;
   for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
-    if (r === dp.r && c === dp.c) continue;
     if (r !== player.position.r && c !== player.position.c) continue; // orthogonal only
     const d = manhattan(player.position, { r, c });
     if (d === 0 || d > card.range) continue;
@@ -16,9 +14,9 @@ function legalMoveTargets(state, player, card) {
   return out;
 }
 
-function canAttackDragon(state, player, card) {
-  const range = card.range + attackRangeBonus(player.race);
-  return manhattan(player.position, state.dragon.position) <= range;
+function canAttackDragon(_state, _player, _card) {
+  // Dragon is off-grid: any attack card targeting dragon always hits.
+  return true;
 }
 
 function adjacentAllies(state, player) {
@@ -73,11 +71,13 @@ export function decideAllyAction(state, playerId) {
   // Priority 6: hand management
   if (hand.length <= 2) return { type: 'drawTwo' };
 
-  // fallback: move toward dragon
+  // fallback: move toward a safe cell that is also productive
+  // (approach center to cover more ground; dragon is off-grid).
   const moveCard = hand.find((c) => c.type === 'move');
   if (moveCard) {
+    const center = { r: 1, c: 2 };
     const targets = legalMoveTargets(state, player, moveCard)
-      .sort((a, b) => manhattan(a, state.dragon.position) - manhattan(b, state.dragon.position));
+      .sort((a, b) => manhattan(a, center) - manhattan(b, center));
     if (targets.length > 0) return { type: 'playCard', cardId: moveCard.id, target: targets[0] };
   }
 

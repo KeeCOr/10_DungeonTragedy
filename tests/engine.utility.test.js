@@ -102,6 +102,31 @@ test('utility: drawTwo rejected if hand > 3 (max hand 5)', () => {
   assert.throws(() => executePlayerAction(s, { type: 'drawTwo', playerId: 'P0' }), /hand too large/i);
 });
 
+test('utility: discardAndRedraw discards entire hand and draws same count', () => {
+  const s = baseState();
+  s.commonDeck = [
+    { id: 'd1', type: 'move', range: 1 },
+    { id: 'd2', type: 'attack', range: 1 },
+    { id: 'd3', type: 'scout' },
+    { id: 'd4', type: 'heal' },
+    { id: 'd5', type: 'hide' },
+    { id: 'd6', type: 'move', range: 2 },
+  ];
+  const originalHandCount = s.players[0].hand.length;
+  const next = executePlayerAction(s, { type: 'discardAndRedraw', playerId: 'P0' });
+  assert.equal(next.players[0].hand.length, originalHandCount);
+  assert.equal(next.players[0].missionProgress.handRedrawCount, 1);
+  // All 4 original hand cards should end up in commonDiscard
+  assert.equal(next.commonDiscard.length, originalHandCount);
+});
+
+test('utility: discardAndRedraw throws when hand is empty', () => {
+  const s = baseState();
+  s.players[0].hand = [];
+  assert.throws(() => executePlayerAction(s, { type: 'discardAndRedraw', playerId: 'P0' }),
+    /hand is empty/i);
+});
+
 test('utility: discardAndSwapMissions discards entire hand and reassigns missions', () => {
   const s = baseState();
   const next = executePlayerAction(s, { type: 'discardAndSwapMissions', playerId: 'P0' });

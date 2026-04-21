@@ -37,6 +37,8 @@ function applyMoveCard(state, player, card, target) {
   if (manhattan(player.position, target) > card.range) throw new Error('invalid move: beyond range');
   if (manhattan(player.position, target) === 0) throw new Error('invalid move: same cell');
   const occupant = state.board[target.r][target.c];
+  // Dragon is off-grid, so any cell occupied by 'dragon' should not happen;
+  // treat it defensively as an invalid target.
   if (occupant === 'dragon') throw new Error('invalid move: dragon cell');
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
 
@@ -70,14 +72,14 @@ function applyMoveCard(state, player, card, target) {
 function applyAttackCard(state, player, card, target) {
   const range = card.range + attackRangeBonus(player.race);
   const damage = 1 + attackDamageBonus(player.race);
-  let targetPos;
-  if (target.type === 'dragon') targetPos = state.dragon.position;
-  else if (target.type === 'player') {
+  // Dragon is off-grid: attacks against it always land regardless of range.
+  if (target.type === 'player') {
     const t = findPlayer(state, target.id);
     if (!t || t.isEliminated) throw new Error('invalid target');
-    targetPos = t.position;
-  } else throw new Error('unsupported target');
-  if (manhattan(player.position, targetPos) > range) throw new Error('attack out of range');
+    if (manhattan(player.position, t.position) > range) throw new Error('attack out of range');
+  } else if (target.type !== 'dragon') {
+    throw new Error('unsupported target');
+  }
 
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
   let newPlayers = state.players.map((p) => p.id === player.id ? { ...p, hand } : { ...p });
@@ -194,12 +196,44 @@ function applyTauntCard(state, player, card) {
   };
 }
 
+/**
+ * Special rule: when the player closest to the dragon performs a draw action
+ * AND the Hero's Sword is currently in the deck or discard, they draw it
+ * guaranteed as one of their cards.
+ */
+function isClosestAlivePlayerToDragon(state, player) {
+  const dp = state.dragon.position;
+  const alive = state.players.filter((p) => !p.isEliminated);
+  const self = Math.abs(player.position.r - dp.r) + Math.abs(player.position.c - dp.c);
+  return alive.every((p) =>
+    (Math.abs(p.position.r - dp.r) + Math.abs(p.position.c - dp.c)) >= self);
+}
+
+function pullSwordIfEligible(deck, discard, player, state) {
+  // "After use": sword has been played and is in the discard pile.
+  // Closest-to-dragon player's next draw guarantees it.
+  if (!isClosestAlivePlayerToDragon(state, player)) return { sword: null, deck, discard };
+  const idx = discard.findIndex((c) => c.type === 'treasure' && c.treasure === 'sword');
+  if (idx < 0) return { sword: null, deck, discard };
+  const sword = discard[idx];
+  const newDiscard = [...discard.slice(0, idx), ...discard.slice(idx + 1)];
+  return { sword, deck, discard: newDiscard };
+}
+
 function applyDrawTwo(state, player) {
   if (player.hand.length > 3) throw new Error('hand too large for draw action');
   const rng = createRng(state.seed + state.round * 7919 + state.currentTurnIndex * 7);
   let deck = state.commonDeck, discard = state.commonDiscard;
   const drawn = [];
-  for (let i = 0; i < 2; i++) {
+
+  // Guaranteed Hero's Sword pull for the player closest to the dragon.
+  const pulled = pullSwordIfEligible(deck, discard, player, state);
+  if (pulled.sword) {
+    drawn.push(pulled.sword);
+    deck = pulled.deck; discard = pulled.discard;
+  }
+
+  for (let i = drawn.length; i < 2; i++) {
     const step = drawFromDeck(deck, discard, rng);
     if (step.drawn) drawn.push(step.drawn);
     deck = step.deck; discard = step.discard;
@@ -218,6 +252,41 @@ function applyDrawTwo(state, player) {
   return {
     ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
     log: logEntry(state, `${player.id} draws 2`, player.id),
+  };
+}
+
+function applyDiscardAndRedraw(state, player) {
+  if (player.hand.length === 0) throw new Error('hand is empty');
+  const count = player.hand.length;
+  const rng = createRng(state.seed + state.round * 53 + state.currentTurnIndex * 17 + 9);
+  const discarded = player.hand;
+  let deck = state.commonDeck;
+  let discard = [...state.commonDiscard, ...discarded];
+  const drawn = [];
+  const pulled = pullSwordIfEligible(deck, discard, player, state);
+  if (pulled.sword) {
+    drawn.push(pulled.sword);
+    deck = pulled.deck; discard = pulled.discard;
+  }
+  for (let i = drawn.length; i < count; i++) {
+    const step = drawFromDeck(deck, discard, rng);
+    if (step.drawn) drawn.push(step.drawn);
+    deck = step.deck; discard = step.discard;
+  }
+  const newPlayers = state.players.map((p) => {
+    if (p.id !== player.id) return p;
+    const newTreasures = drawn.filter((c) => c.type === 'treasure');
+    const existingTypes = new Set(p.missionProgress.treasuresAcquiredTypes ?? []);
+    for (const t of newTreasures) existingTypes.add(t.treasure);
+    return { ...p, hand: drawn,
+      missionProgress: { ...p.missionProgress,
+        handRedrawCount: (p.missionProgress.handRedrawCount ?? 0) + 1,
+        treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
+        treasuresAcquiredTypes: [...existingTypes] } };
+  });
+  return {
+    ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
+    log: logEntry(state, `${player.id} 손패 전부 버리고 ${count}장 새로 뽑음`, player.id),
   };
 }
 
@@ -334,6 +403,7 @@ export function executePlayerAction(state, action) {
   if (!player) throw new Error(`no player ${action.playerId}`);
   if (action.type === 'drawTwo') return advanceTurn(applyDrawTwo(state, player));
   if (action.type === 'discardAndSwapMissions') return advanceTurn(applyDiscardAndSwapMissions(state, player));
+  if (action.type === 'discardAndRedraw') return advanceTurn(applyDiscardAndRedraw(state, player));
   if (action.type === 'playCard') {
     const card = player.hand.find((c) => c.id === action.cardId);
     if (!card) throw new Error(`card ${action.cardId} not in hand`);

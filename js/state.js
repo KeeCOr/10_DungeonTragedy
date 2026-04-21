@@ -55,8 +55,10 @@ export function startMatch(state) {
   const rng = createRng(state.seed + state.matchIndex * 1000);
   const races = allRaceIds();
 
-  const players = state.players.map((p) => {
-    const race = races[rng.nextInt(0, races.length - 1)];
+  // Fixed race assignment: deterministic round-robin so the player
+  // sees the same party composition every match.
+  const players = state.players.map((p, idx) => {
+    const race = races[idx % races.length];
     return { ...p, race, maxHp: baseMaxHp(race), hp: baseMaxHp(race),
       hand: [], missions: null, missionProgress: {}, statusEffects: {},
       isEliminated: false, dragonDamageDealt: 0, position: null };
@@ -73,7 +75,8 @@ export function startMatch(state) {
 
   const board = Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(null));
   for (const p of players) board[p.position.r][p.position.c] = p.id;
-  board[DRAGON_START.r][DRAGON_START.c] = 'dragon';
+  // Dragon does NOT occupy any board cell. It is fixed off-grid (shown in
+  // the dragon panel only) and attacks via telegraphed row/column patterns.
 
   let commonDeck = rng.shuffle(buildPlayerDeck());
   let commonDiscard = [];
@@ -100,7 +103,7 @@ export function startMatch(state) {
   const dragon = {
     hp: 15, maxHp: 15, phase: 1,
     deck: restDeck, discard: [], revealed: [firstReveal],
-    position: { ...DRAGON_START },
+    position: null, // off-grid
     markedCells: [],
   };
 
