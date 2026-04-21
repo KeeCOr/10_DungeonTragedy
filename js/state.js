@@ -19,6 +19,14 @@ const EDGE_CELLS = (() => {
   return cells;
 })();
 
+// Fixed starting positions by player count. Deterministic and symmetric
+// so the board layout is predictable across matches.
+const FIXED_POSITIONS = {
+  3: [{ r: 1, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }],
+  4: [{ r: 1, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }, { r: 1, c: 4 }],
+  5: [{ r: 1, c: 0 }, { r: 0, c: 0 }, { r: 2, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }],
+};
+
 export function createInitialState({ seed, players }) {
   return {
     seed,
@@ -60,8 +68,8 @@ export function startMatch(state) {
     p.missions = assignMissions(p.race, racesPresent, rng);
   }
 
-  const shuffledEdges = rng.shuffle(EDGE_CELLS);
-  players.forEach((p, i) => { p.position = { ...shuffledEdges[i] }; });
+  const layout = FIXED_POSITIONS[players.length] ?? EDGE_CELLS.slice(0, players.length);
+  players.forEach((p, i) => { p.position = { ...layout[i] }; });
 
   const board = Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(null));
   for (const p of players) board[p.position.r][p.position.c] = p.id;

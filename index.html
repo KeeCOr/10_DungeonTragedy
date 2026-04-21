@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dragon Tactics</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/animations.css" />
@@ -11,10 +12,12 @@
     <header id="hud"></header>
     <main id="board-wrap">
       <section id="board"></section>
-      <aside id="dragon-panel"></aside>
     </main>
+    <aside id="right-column">
+      <section id="dragon-panel"></section>
+      <section id="log-panel"></section>
+    </aside>
     <section id="player-panel"></section>
-    <section id="log-panel"></section>
   </div>
   <script type="module" src="js/main.js"></script>
 </body>

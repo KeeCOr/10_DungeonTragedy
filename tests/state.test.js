@@ -49,6 +49,18 @@ test('state: startMatch - positions are unique and on edge cells', () => {
   }
 });
 
+test('state: startMatch - player positions are deterministic (fixed layout)', () => {
+  const run = () => startMatch(createInitialState({ seed: 100, players: playerCfg(3) }))
+    .players.map(p => ({ ...p.position }));
+  const a = run();
+  const b = run();
+  assert.deepEqual(a, b);
+  // 3-player layout per spec: P0 at (1,0), P1 at (0,4), P2 at (2,4)
+  assert.deepEqual(a[0], { r: 1, c: 0 });
+  assert.deepEqual(a[1], { r: 0, c: 4 });
+  assert.deepEqual(a[2], { r: 2, c: 4 });
+});
+
 test('state: dragon deck starts with phase-1 eligible cards only', () => {
   const s0 = createInitialState({ seed: 42, players: playerCfg(3) });
   const s = startMatch(s0);
