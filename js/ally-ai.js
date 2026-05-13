@@ -1,5 +1,6 @@
 import { createRng } from './rng.js';
 import { attackRangeBonus } from './races.js';
+import { getDragonCardPreview } from './dragon.js';
 
 const manhattan = (a,b) => Math.abs(a.r-b.r)+Math.abs(a.c-b.c);
 
@@ -14,14 +15,42 @@ function legalMoveTargets(state, player, card) {
   return out;
 }
 
-function canAttackDragon(_state, _player, _card) {
-  // Dragon is off-grid: any attack card targeting dragon always hits.
-  return true;
+function canAttackDragon(_state, player, _card) {
+  // Only cells in row 0 (the attack zone) can reach the off-grid dragon.
+  return player.position?.r === 0;
 }
 
 function adjacentAllies(state, player) {
   return state.players.filter((p) => p.id !== player.id && !p.isEliminated
     && manhattan(p.position, player.position) === 1);
+}
+
+/**
+ * Picks the best move target favoring (in order): rows closer to the attack
+ * zone (row 0), grabbing pending drops, avoiding the next dragon card's hit
+ * cells, and not landing on top of another player.
+ */
+function bestAdvanceTarget(state, player, moveCard) {
+  const targets = legalMoveTargets(state, player, moveCard);
+  if (targets.length === 0) return null;
+
+  const nextCard = state.dragon.revealed?.[0];
+  const threatSet = new Set();
+  if (nextCard) {
+    const pv = getDragonCardPreview(nextCard);
+    for (const cell of pv?.cells ?? []) threatSet.add(`${cell.r},${cell.c}`);
+  }
+  const dropSet = new Set((state.dragon.drops ?? []).map((d) => `${d.r},${d.c}`));
+
+  function score(t) {
+    let s = t.r * 10;                                    // lower row = closer to dragon
+    if (threatSet.has(`${t.r},${t.c}`)) s += 25;         // avoid imminent threat
+    if (dropSet.has(`${t.r},${t.c}`)) s -= 8;            // grab nearby drops
+    const occ = state.board[t.r][t.c];
+    if (occ && occ !== player.id) s += 4;                // prefer empty cells
+    return s;
+  }
+  return targets.sort((a, b) => score(a) - score(b))[0];
 }
 
 export function decideAllyAction(state, playerId) {
@@ -63,25 +92,32 @@ export function decideAllyAction(state, playerId) {
     }
   }
 
+  // Priority 4.5: holding an attack card but not in row 0 — advance toward it.
+  const moveCardForAdvance = hand.find((c) => c.type === 'move');
+  if (attackCards.length > 0 && player.position.r > 0 && moveCardForAdvance) {
+    const target = bestAdvanceTarget(state, player, moveCardForAdvance);
+    if (target) return { type: 'playCard', cardId: moveCardForAdvance.id, target };
+  }
+
   // Priority 5: cooperation — heal injured adjacent ally
   const heal = hand.find((c) => c.type === 'heal');
   const injured = adjacentAllies(state, player).find((a) => a.hp < a.maxHp);
   if (heal && injured) return { type: 'playCard', cardId: heal.id, target: { type: 'player', id: injured.id } };
 
-  // Priority 6: hand management
+  // Priority 6: hand management — tome draws 2 without advancing turn-start passive RNG.
+  const tome = hand.find((c) => c.type === 'treasure' && c.treasure === 'tome');
+  if (tome && hand.length <= 4) return { type: 'playCard', cardId: tome.id };
   if (hand.length <= 2) return { type: 'drawTwo' };
 
-  // fallback: move toward a safe cell that is also productive
-  // (approach center to cover more ground; dragon is off-grid).
-  const moveCard = hand.find((c) => c.type === 'move');
-  if (moveCard) {
-    const center = { r: 1, c: 2 };
-    const targets = legalMoveTargets(state, player, moveCard)
-      .sort((a, b) => manhattan(a, center) - manhattan(b, center));
-    if (targets.length > 0) return { type: 'playCard', cardId: moveCard.id, target: targets[0] };
+  // Fallback movement: still pull toward row 0 / drops rather than the geometric center,
+  // because the off-grid dragon makes proximity to row 0 always strategic.
+  if (moveCardForAdvance) {
+    const target = bestAdvanceTarget(state, player, moveCardForAdvance);
+    if (target) return { type: 'playCard', cardId: moveCardForAdvance.id, target };
   }
 
   // last resort
   if (hand.length <= 3) return { type: 'drawTwo' };
-  return { type: 'discardAndSwapMissions' };
+  if (hand.length >= 4) return { type: 'discardAndSwapMissions' };
+  return { type: 'discardAndRedraw' };
 }

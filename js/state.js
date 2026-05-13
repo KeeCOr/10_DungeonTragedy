@@ -2,7 +2,7 @@ import { createRng } from './rng.js';
 import { buildPlayerDeck, drawFromDeck } from './cards.js';
 import { allRaceIds, baseMaxHp } from './races.js';
 import { assignMissions } from './missions.js';
-import { buildDragonCards } from './dragon.js';
+import { buildDragonCards, resolveRandomizedReveal } from './dragon.js';
 
 const BOARD_ROWS = 3;
 const BOARD_COLS = 5;
@@ -19,12 +19,13 @@ const EDGE_CELLS = (() => {
   return cells;
 })();
 
-// Fixed starting positions by player count. Deterministic and symmetric
-// so the board layout is predictable across matches.
+// Dragon sits off-grid above row 0, so all players start on the bottom row
+// at equal distance (2 moves) from the attack zone. This keeps the race
+// to row 0 symmetric instead of favoring whoever spawns nearest the top.
 const FIXED_POSITIONS = {
-  3: [{ r: 1, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }],
-  4: [{ r: 1, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }, { r: 1, c: 4 }],
-  5: [{ r: 1, c: 0 }, { r: 0, c: 0 }, { r: 2, c: 0 }, { r: 0, c: 4 }, { r: 2, c: 4 }],
+  3: [{ r: 2, c: 0 }, { r: 2, c: 2 }, { r: 2, c: 4 }],
+  4: [{ r: 2, c: 0 }, { r: 2, c: 1 }, { r: 2, c: 3 }, { r: 2, c: 4 }],
+  5: [{ r: 2, c: 0 }, { r: 2, c: 1 }, { r: 2, c: 2 }, { r: 2, c: 3 }, { r: 2, c: 4 }],
 };
 
 export function createInitialState({ seed, players }) {
@@ -101,10 +102,11 @@ export function startMatch(state) {
   const dragonDeck = rng.shuffle(buildDragonCards(1));
   const [firstReveal, ...restDeck] = dragonDeck;
   const dragon = {
-    hp: 15, maxHp: 15, phase: 1,
-    deck: restDeck, discard: [], revealed: [firstReveal],
+    hp: 12, maxHp: 12, phase: 1,
+    deck: restDeck, discard: [], revealed: [resolveRandomizedReveal(firstReveal, rng)],
     position: null, // off-grid
     markedCells: [],
+    drops: [],
   };
 
   return {

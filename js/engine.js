@@ -2,7 +2,7 @@ import { createRng } from './rng.js';
 import { attackRangeBonus, attackDamageBonus, extraDrawChance } from './races.js';
 import { drawFromDeck } from './cards.js';
 import { assignMissions } from './missions.js';
-import { resolveDragonCard } from './dragon.js';
+import { resolveDragonCard, resolveRandomizedReveal } from './dragon.js';
 
 function roundRng(state) {
   // Distinct RNG per (seed, match, round) — keeps inter-round rolls independent.
@@ -12,6 +12,80 @@ function roundRng(state) {
 const inBounds = (r, c) => r >= 0 && r < 3 && c >= 0 && c < 5;
 const manhattan = (a, b) => Math.abs(a.r - b.r) + Math.abs(a.c - b.c);
 const isOrthogonal = (from, to) => from.r === to.r || from.c === to.c;
+
+/** Attack zone: only cells in row 0 can reach the off-grid dragon. */
+export const ATTACK_ROW = 0;
+export function canAttackDragonFrom(position) {
+  return position && position.r === ATTACK_ROW;
+}
+
+/**
+ * Drops: each time dragon HP crosses a 2-HP threshold (10, 8, 6, 4, 2),
+ * a random treasure is dropped onto a dice-rolled board cell. Any player
+ * standing on or moving onto that cell picks it up; drops persist across
+ * rounds until picked up.
+ */
+const DROP_THRESHOLDS = [10, 8, 6, 4, 2];
+const DROP_TREASURES = ['sword', 'potion', 'cloak', 'shield', 'rune', 'tome'];
+let _dropId = 0;
+
+function rollDropsForHpChange(prevHp, newHp, state) {
+  const drops = [];
+  for (const t of DROP_THRESHOLDS) {
+    if (prevHp > t && newHp <= t) {
+      const rng = createRng(state.seed + state.matchIndex * 11113 + t * 997);
+      const r = rng.nextInt(0, 2);
+      const c = rng.nextInt(0, 4);
+      const treasure = rng.pick(DROP_TREASURES);
+      const card = { id: `drop-${_dropId++}-${treasure}`, type: 'treasure', treasure };
+      drops.push({ r, c, card, hpThreshold: t });
+    }
+  }
+  return drops;
+}
+
+function applyDropsToState(state, drops) {
+  if (drops.length === 0) return state;
+  const currentDrops = state.dragon.drops ?? [];
+  let newState = { ...state, dragon: { ...state.dragon, drops: [...currentDrops, ...drops] } };
+  for (const d of drops) {
+    newState = { ...newState,
+      log: logEntry(newState, `🎁 용이 (${d.r},${d.c})에 ${d.card.treasure} 카드를 떨어뜨렸다!`, 'drop') };
+  }
+  // Auto-pickup: any player standing on the drop cell picks it up immediately.
+  newState = autoPickupDrops(newState);
+  return newState;
+}
+
+function autoPickupDrops(state) {
+  if (!state.dragon.drops?.length) return state;
+  let s = state;
+  const remaining = [];
+  for (const drop of s.dragon.drops) {
+    const occ = s.board[drop.r][drop.c];
+    if (occ && occ !== 'dragon') {
+      s = pickupDrop(s, occ, drop);
+    } else {
+      remaining.push(drop);
+    }
+  }
+  return { ...s, dragon: { ...s.dragon, drops: remaining } };
+}
+
+function pickupDrop(state, playerId, drop) {
+  const newPlayers = state.players.map((p) => {
+    if (p.id !== playerId) return p;
+    const existingTypes = new Set(p.missionProgress.treasuresAcquiredTypes ?? []);
+    if (drop.card.type === 'treasure') existingTypes.add(drop.card.treasure);
+    return { ...p, hand: [...p.hand, drop.card],
+      missionProgress: { ...p.missionProgress,
+        treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + 1,
+        treasuresAcquiredTypes: [...existingTypes],
+        dropsPickedUp: (p.missionProgress.dropsPickedUp ?? 0) + 1 } };
+  });
+  return { ...state, players: newPlayers,
+    log: logEntry(state, `✨ ${playerId}이(가) 떨어진 ${drop.card.treasure} 카드를 획득!`, playerId) };
+}
 
 function findPlayer(state, id) { return state.players.find((p) => p.id === id); }
 
@@ -62,22 +136,28 @@ function applyMoveCard(state, player, card, target) {
     moveCellsCumulative: (self.missionProgress.moveCellsCumulative ?? 0) + manhattan(from, target),
   };
 
-  return {
+  const moved = {
     ...state, board: newBoard, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry({ ...state }, `${player.id} moves to (${target.r},${target.c})`, player.id),
   };
+  return autoPickupDrops(moved);
 }
 
 function applyAttackCard(state, player, card, target) {
   const range = card.range + attackRangeBonus(player.race);
   const damage = 1 + attackDamageBonus(player.race);
-  // Dragon is off-grid: attacks against it always land regardless of range.
-  if (target.type === 'player') {
+  // Dragon is off-grid: attackers must stand in the attack zone (row 0)
+  // to reach it. Range does not matter against the dragon itself.
+  if (target.type === 'dragon') {
+    if (!canAttackDragonFrom(player.position)) {
+      throw new Error('공격 위치가 아닙니다: 상단 행(행 0)에서만 용을 공격할 수 있습니다');
+    }
+  } else if (target.type === 'player') {
     const t = findPlayer(state, target.id);
     if (!t || t.isEliminated) throw new Error('invalid target');
     if (manhattan(player.position, t.position) > range) throw new Error('attack out of range');
-  } else if (target.type !== 'dragon') {
+  } else {
     throw new Error('unsupported target');
   }
 
@@ -93,8 +173,11 @@ function applyAttackCard(state, player, card, target) {
     rangedAttackCount: (attacker.missionProgress.rangedAttackCount ?? 0) + (card.range >= 2 ? 1 : 0),
   };
 
+  let newDrops = [];
   if (target.type === 'dragon') {
+    const prevHp = newDragon.hp;
     newDragon = { ...newDragon, hp: Math.max(0, newDragon.hp - damage) };
+    newDrops = rollDropsForHpChange(prevHp, newDragon.hp, state);
     attacker.dragonDamageDealt += damage;
     if (state.dragon.phase === 1) {
       attacker.missionProgress.phase1DragonDamage = (attacker.missionProgress.phase1DragonDamage ?? 0) + damage;
@@ -122,7 +205,9 @@ function applyAttackCard(state, player, card, target) {
     lastDragonHitterId: target.type === 'dragon' ? player.id : state.lastDragonHitterId,
     log: logEntry(state, `${player.id} attacks ${target.type === 'dragon' ? 'dragon' : target.id} for ${damage}`, player.id),
   };
-  return target.type === 'dragon' ? maybeTransitionPhase(result) : result;
+  if (target.type !== 'dragon') return result;
+  const withPhase = maybeTransitionPhase(result);
+  return applyDropsToState(withPhase, newDrops);
 }
 
 function applyHideCard(state, player, card) {
@@ -202,11 +287,9 @@ function applyTauntCard(state, player, card) {
  * guaranteed as one of their cards.
  */
 function isClosestAlivePlayerToDragon(state, player) {
-  const dp = state.dragon.position;
+  // Dragon is off-grid above row 0, so proximity == row number (lower = closer).
   const alive = state.players.filter((p) => !p.isEliminated);
-  const self = Math.abs(player.position.r - dp.r) + Math.abs(player.position.c - dp.c);
-  return alive.every((p) =>
-    (Math.abs(p.position.r - dp.r) + Math.abs(p.position.c - dp.c)) >= self);
+  return alive.every((p) => p.position.r >= player.position.r);
 }
 
 function pullSwordIfEligible(deck, discard, player, state) {
@@ -290,19 +373,24 @@ function applyDiscardAndRedraw(state, player) {
   };
 }
 
+const MISSION_SWAP_COST = 4;
 function applyDiscardAndSwapMissions(state, player) {
+  if (player.hand.length < MISSION_SWAP_COST) {
+    throw new Error(`미션 교체에는 손패 ${MISSION_SWAP_COST}장이 필요합니다`);
+  }
   const racesPresent = new Set(state.players.filter((p) => !p.isEliminated).map((p) => p.race));
   const rng = createRng(state.seed + state.round * 100003 + state.currentTurnIndex * 31);
   const missions = assignMissions(player.race, racesPresent, rng);
-  const discardedHand = player.hand;
+  const discarded = player.hand.slice(0, MISSION_SWAP_COST);
+  const kept = player.hand.slice(MISSION_SWAP_COST);
   const newPlayers = state.players.map((p) => p.id === player.id
-    ? { ...p, hand: [], missions,
+    ? { ...p, hand: kept, missions,
         missionProgress: { ...p.missionProgress,
           missionSwapCount: (p.missionProgress.missionSwapCount ?? 0) + 1 } } : p);
   return {
     ...state, players: newPlayers,
-    commonDiscard: [...state.commonDiscard, ...discardedHand],
-    log: logEntry(state, `${player.id} discards hand and swaps missions`, player.id),
+    commonDiscard: [...state.commonDiscard, ...discarded],
+    log: logEntry(state, `${player.id} 손패 ${MISSION_SWAP_COST}장을 버리고 미션 재배정`, player.id),
   };
 }
 
@@ -313,6 +401,7 @@ function applyTreasureCard(state, player, card, target) {
     case 'cloak':  return applyTreasureCloak(state, player, card, target);
     case 'shield': return applyTreasureShield(state, player, card);
     case 'rune':   return applyTreasureRune(state, player, card);
+    case 'tome':   return applyTreasureTome(state, player, card);
     default: throw new Error(`unknown treasure ${card.treasure}`);
   }
 }
@@ -324,7 +413,9 @@ function incTreasuresUsed(player) {
 
 function applyTreasureSword(state, player, card) {
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const prevHp = state.dragon.hp;
   const newDragon = { ...state.dragon, hp: Math.max(0, state.dragon.hp - 3) };
+  const drops = rollDropsForHpChange(prevHp, newDragon.hp, state);
   const newPlayers = state.players.map((p) => p.id === player.id
     ? { ...p, hand, dragonDamageDealt: p.dragonDamageDealt + 3,
         missionProgress: { ...incTreasuresUsed(p),
@@ -336,7 +427,8 @@ function applyTreasureSword(state, player, card) {
     commonDiscard: [...state.commonDiscard, consumed],
     lastDragonHitterId: player.id,
     log: logEntry(state, `${player.id} strikes with the Hero's Sword`, player.id) };
-  return maybeTransitionPhase(result);
+  const withPhase = maybeTransitionPhase(result);
+  return applyDropsToState(withPhase, drops);
 }
 
 function applyTreasurePotion(state, player, card) {
@@ -374,9 +466,10 @@ function applyTreasureCloak(state, player, card, target) {
   }
   newBoard[target.r][target.c] = player.id;
 
-  return { ...state, players: newPlayers, board: newBoard,
+  const after = { ...state, players: newPlayers, board: newBoard,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} uses cloak`, player.id) };
+  return autoPickupDrops(after);
 }
 
 function applyTreasureShield(state, player, card) {
@@ -386,6 +479,35 @@ function applyTreasureShield(state, player, card) {
   return { ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} readies the Dragon-Scale Shield`, player.id) };
+}
+
+function applyTreasureTome(state, player, card) {
+  if (player.hand.length > 4) {
+    throw new Error('손패가 너무 많아 고대의 서적을 쓸 수 없습니다 (≤ 4 필요)');
+  }
+  const { card: consumed, hand } = removeCardFromHand(player, card.id);
+  const rng = createRng(state.seed + state.round * 7 + state.currentTurnIndex * 13 + 42);
+  let deck = state.commonDeck, discard = state.commonDiscard;
+  const drawn = [];
+  for (let i = 0; i < 2; i++) {
+    const step = drawFromDeck(deck, discard, rng);
+    if (step.drawn) drawn.push(step.drawn);
+    deck = step.deck; discard = step.discard;
+  }
+  const newPlayers = state.players.map((p) => {
+    if (p.id !== player.id) return p;
+    const newTreasures = drawn.filter((c) => c.type === 'treasure');
+    const existingTypes = new Set(p.missionProgress.treasuresAcquiredTypes ?? []);
+    for (const t of newTreasures) existingTypes.add(t.treasure);
+    return { ...p, hand: [...hand, ...drawn],
+      missionProgress: { ...incTreasuresUsed(p),
+        treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
+        treasuresAcquiredTypes: [...existingTypes] } };
+  });
+  return { ...state, players: newPlayers,
+    commonDeck: deck,
+    commonDiscard: [...discard, consumed],
+    log: logEntry(state, `${player.id} 고대의 서적으로 카드 2장 드로우`, player.id) };
 }
 
 function applyTreasureRune(state, player, card) {
@@ -445,8 +567,9 @@ export function rollTurnOrder(state) {
 export function maybeTransitionPhase(state) {
   const hp = state.dragon.hp;
   let phase = state.dragon.phase;
-  if (hp <= 5) phase = 3;
-  else if (hp <= 10) phase = Math.max(phase, 2);
+  // Thresholds scaled to dragon HP = 12: phase 2 at ≤8, phase 3 at ≤4.
+  if (hp <= 4) phase = 3;
+  else if (hp <= 8) phase = Math.max(phase, 2);
   if (phase !== state.dragon.phase) {
     const patch = { ...state.dragon, phase };
     if (phase >= 3) patch.reachedPhase3 = true;
@@ -507,14 +630,16 @@ function damagePlayerFromMark(state, playerId, amount) {
 export function refillRevealed(state) {
   const target = state.dragon.phase;
   const newDragon = { ...state.dragon, revealed: [...state.dragon.revealed], deck: [...state.dragon.deck], discard: [...state.dragon.discard] };
+  const rng = createRng(state.seed + state.round * 101 + state.matchIndex * 7 + newDragon.revealed.length);
   while (newDragon.revealed.length < target && (newDragon.deck.length > 0 || newDragon.discard.length > 0)) {
     if (newDragon.deck.length === 0) {
-      const rng = createRng(state.seed + state.round * 101 + state.matchIndex * 7);
       newDragon.deck = rng.shuffle(newDragon.discard);
       newDragon.discard = [];
     }
     const [next, ...rest] = newDragon.deck;
-    newDragon.revealed.push(next);
+    // Roll dice for row/col randomized cards so their target is locked in
+    // the preview before the player's turn.
+    newDragon.revealed.push(resolveRandomizedReveal(next, rng));
     newDragon.deck = rest;
   }
   return { ...state, dragon: newDragon };

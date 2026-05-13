@@ -1,4 +1,4 @@
-export const TREASURES = ['sword', 'potion', 'cloak', 'shield', 'rune'];
+export const TREASURES = ['sword', 'potion', 'cloak', 'shield', 'rune', 'tome'];
 
 let _id = 0;
 const mk = (type, extras = {}) => ({ id: `${type}-${extras.range ?? extras.treasure ?? ''}${_id++}`, type, ...extras });
@@ -6,11 +6,12 @@ const mk = (type, extras = {}) => ({ id: `${type}-${extras.range ?? extras.treas
 export function buildPlayerDeck() {
   _id = 0;
   const deck = [];
-  for (let i = 0; i < 8; i++) deck.push(mk('move', { range: 1 }));
-  for (let i = 0; i < 6; i++) deck.push(mk('move', { range: 2 }));
-  for (let i = 0; i < 4; i++) deck.push(mk('move', { range: 3 }));
-  for (let i = 0; i < 6; i++) deck.push(mk('attack', { range: 1 }));
-  for (let i = 0; i < 4; i++) deck.push(mk('attack', { range: 2 }));
+  // Move cards: more copies + one-step range buff across the board.
+  for (let i = 0; i < 8; i++) deck.push(mk('move', { range: 2 }));
+  for (let i = 0; i < 7; i++) deck.push(mk('move', { range: 3 }));
+  for (let i = 0; i < 5; i++) deck.push(mk('move', { range: 4 }));
+  for (let i = 0; i < 8; i++) deck.push(mk('attack', { range: 1 }));
+  for (let i = 0; i < 5; i++) deck.push(mk('attack', { range: 2 }));
   for (let i = 0; i < 2; i++) deck.push(mk('attack', { range: 3 }));
   for (let i = 0; i < 4; i++) deck.push(mk('hide'));
   for (let i = 0; i < 3; i++) deck.push(mk('heal'));

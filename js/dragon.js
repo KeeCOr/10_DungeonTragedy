@@ -36,17 +36,12 @@ function damagePlayer(state, playerId, amount) {
 
 function affectedCells(card) {
   // Returns an array of {r,c} cells damaged by this card's pattern.
+  // row-attack / col-attack cards get a dice-rolled index set when revealed.
   switch (card.type) {
-    case 'row-top': return cellsInRow(0);
-    case 'row-mid': return cellsInRow(1);
-    case 'row-bot': return cellsInRow(2);
+    case 'row-attack': return card.rowIndex != null ? cellsInRow(card.rowIndex) : [];
+    case 'col-attack': return card.colIndex != null ? cellsInCol(card.colIndex) : [];
     case 'row-odd': return [...cellsInRow(0), ...cellsInRow(2)];
     case 'row-even': return cellsInRow(1);
-    case 'col-left': return cellsInCol(0);
-    case 'col-midleft': return cellsInCol(1);
-    case 'col-mid': return cellsInCol(2);
-    case 'col-midright': return cellsInCol(3);
-    case 'col-right': return cellsInCol(4);
     case 'all':
     case 'frenzy': {
       const out = [];
@@ -69,16 +64,31 @@ function cardDamage(card) {
     case 'all':
     case 'frenzy':   return 1;
     case 'corners':  return 2;
+    case 'row-attack': return 2;
+    case 'col-attack': return 2;
     default:         return 2;
   }
 }
 
+/**
+ * Some dragon cards are "thrown" — their specific row/column is decided
+ * by a dice roll at reveal time so the player sees the resolved target
+ * in the preview and can plan around it.
+ */
+export function resolveRandomizedReveal(card, rng) {
+  if (card.type === 'row-attack' && card.rowIndex == null) {
+    return { ...card, rowIndex: rng.nextInt(0, 2) };
+  }
+  if (card.type === 'col-attack' && card.colIndex == null) {
+    return { ...card, colIndex: rng.nextInt(0, 4) };
+  }
+  return card;
+}
+
 export function resolveDragonCard(state, card, _decisions) {
   switch (card.type) {
-    case 'row-top': case 'row-mid': case 'row-bot':
+    case 'row-attack': case 'col-attack':
     case 'row-odd': case 'row-even':
-    case 'col-left': case 'col-midleft': case 'col-mid':
-    case 'col-midright': case 'col-right':
     case 'all': case 'frenzy': case 'corners':
       return applyPatternCard(state, card);
     case 'rest':  return state; // dragon catches its breath
@@ -96,7 +106,35 @@ function applyPatternCard(state, card) {
     const occ = s.board[cell.r][cell.c];
     if (occ && occ !== 'dragon') s = damagePlayer(s, occ, dmg);
   }
+  s = burnDropsInCells(s, cells);
   return s;
+}
+
+/**
+ * Drops sitting in the path of the dragon's attack pattern get destroyed.
+ * Stops the late game from drowning in unclaimed treasures and rewards
+ * picking up drops promptly.
+ */
+function burnDropsInCells(state, cells) {
+  const drops = state.dragon.drops ?? [];
+  if (drops.length === 0) return state;
+  const targetSet = new Set(cells.map((c) => `${c.r},${c.c}`));
+  const remaining = [];
+  const burned = [];
+  for (const d of drops) {
+    if (targetSet.has(`${d.r},${d.c}`)) burned.push(d);
+    else remaining.push(d);
+  }
+  if (burned.length === 0) return state;
+  const burnLogs = burned.map((d) => ({
+    round: state.round, turn: state.currentTurnIndex, actor: 'dragon',
+    message: `🔥 용이 (${d.r},${d.c})의 ${d.card.treasure} 카드를 태웠다!`,
+  }));
+  return {
+    ...state,
+    dragon: { ...state.dragon, drops: remaining },
+    log: [...state.log, ...burnLogs],
+  };
 }
 
 export function getDragonCardPreview(card) {
@@ -112,16 +150,10 @@ export function getDragonCardPreview(card) {
 }
 
 export const DRAGON_LABEL = {
-  'row-top':      '상단 행 공격',
-  'row-mid':      '중앙 행 공격',
-  'row-bot':      '하단 행 공격',
+  'row-attack':   '행 공격 (주사위)',
+  'col-attack':   '열 공격 (주사위)',
   'row-odd':      '홀수 행 공격',
   'row-even':     '짝수 행 집중 공격',
-  'col-left':     '1열 공격',
-  'col-midleft':  '2열 공격',
-  'col-mid':      '3열 공격',
-  'col-midright': '4열 공격',
-  'col-right':    '5열 공격',
   'all':          '전체 공격',
   'frenzy':       '광폭 (전체)',
   'corners':      '네 모서리 공격',
@@ -130,24 +162,18 @@ export const DRAGON_LABEL = {
 };
 
 export const DRAGON_CARD_DEFS = [
-  // Phase 1: basic patterns
-  { type: 'rest',         count: 3, phaseGate: 1 },
-  { type: 'row-top',      count: 2, phaseGate: 1 },
-  { type: 'row-mid',      count: 2, phaseGate: 1 },
-  { type: 'row-bot',      count: 2, phaseGate: 1 },
-  { type: 'col-left',     count: 1, phaseGate: 1 },
-  { type: 'col-midleft',  count: 1, phaseGate: 1 },
-  { type: 'col-mid',      count: 2, phaseGate: 1 },
-  { type: 'col-midright', count: 1, phaseGate: 1 },
-  { type: 'col-right',    count: 1, phaseGate: 1 },
-  { type: 'roar',         count: 2, phaseGate: 1 },
-  { type: 'corners',      count: 1, phaseGate: 1 },
+  // Phase 1: basic thrown attacks + breathers
+  { type: 'rest',       count: 3, phaseGate: 1 },
+  { type: 'row-attack', count: 5, phaseGate: 1 },
+  { type: 'col-attack', count: 4, phaseGate: 1 },
+  { type: 'roar',       count: 2, phaseGate: 1 },
+  { type: 'corners',    count: 1, phaseGate: 1 },
   // Phase 2+: broader patterns
-  { type: 'row-odd',      count: 2, phaseGate: 2 },
-  { type: 'all',          count: 1, phaseGate: 2 },
-  // Phase 3: strongest single-row strike
-  { type: 'row-even',     count: 1, phaseGate: 3 },
-  { type: 'frenzy',       count: 1, phaseGate: 3 },
+  { type: 'row-odd',    count: 2, phaseGate: 2 },
+  { type: 'all',        count: 1, phaseGate: 2 },
+  // Phase 3: devastating strikes
+  { type: 'row-even',   count: 1, phaseGate: 3 },
+  { type: 'frenzy',     count: 1, phaseGate: 3 },
 ];
 
 let _did = 0;

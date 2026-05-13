@@ -32,8 +32,6 @@ export function createInputController({ getState, setState, render, onAction }) 
       ui.validTargetClass = 'move-target';
     } else if (card.type === 'attack') {
       const range = card.range + (p.race === 'elf' ? 1 : 0);
-      // Dragon is off-grid: user must click the dragon portrait to target it.
-      // That click path is handled separately (see handleClick).
       const cells = [];
       for (const other of s.players) {
         if (other.id === p.id || other.isEliminated) continue;
@@ -43,7 +41,9 @@ export function createInputController({ getState, setState, render, onAction }) 
       }
       ui.validTargets = cells;
       ui.validTargetClass = 'attack-target';
-      ui.canAttackDragon = true;
+      // Dragon is off-grid: player must be in the attack zone (row 0)
+      // to strike. Click the dragon portrait to target it.
+      ui.canAttackDragon = p.position.r === 0;
       return;
     } else if (card.type === 'heal') {
       targets.push({ r: p.position.r, c: p.position.c });
@@ -73,7 +73,7 @@ export function createInputController({ getState, setState, render, onAction }) 
       const human = getHuman();
       const card = human.hand.find((c) => c.id === id);
       if (card && (card.type === 'hide' || card.type === 'scout' || card.type === 'taunt'
-        || (card.type === 'treasure' && ['sword','potion','shield','rune'].includes(card.treasure)))) {
+        || (card.type === 'treasure' && ['sword','potion','shield','rune','tome'].includes(card.treasure)))) {
         const action = card.type === 'treasure' && card.treasure === 'sword'
           ? { type: 'playCard', playerId: human.id, cardId: id, target: { type: 'dragon' } }
           : { type: 'playCard', playerId: human.id, cardId: id };
@@ -86,8 +86,8 @@ export function createInputController({ getState, setState, render, onAction }) 
       return;
     }
 
-    // Click on dragon portrait to attack when an attack card is selected.
-    const dragonHit = ev.target.closest('#dragon-panel');
+    // Click on dragon strip (top) to attack when an attack card is selected.
+    const dragonHit = ev.target.closest('#dragon-strip');
     if (dragonHit && ui.selectedCardId && ui.canAttackDragon) {
       const human = getHuman();
       const card = human.hand.find((x) => x.id === ui.selectedCardId);

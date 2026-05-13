@@ -11,6 +11,7 @@ export const MISSIONS = [
   { id: 'common-mission-swap',    description: '한 매치 내 미션 교체 1회 사용',        points: 1, ownership: 'common' },
   { id: 'common-treasure-1',      description: '보물 카드 1장 이상 획득',              points: 2, ownership: 'common' },
   { id: 'common-treasure-used-2', description: '보물 2개 사용 (방패 자동 발동 포함)',   points: 4, ownership: 'common' },
+  { id: 'common-pickup-drop-1',   description: '용이 떨어뜨린 보물 1개 이상 획득',      points: 2, ownership: 'common' },
 
   // Human (4)
   { id: 'human-kill-dragon',      description: '용에게 최종 타격',                    points: 5, ownership: 'human' },
@@ -23,6 +24,7 @@ export const MISSIONS = [
   { id: 'elf-scout-3',            description: '정찰 카드 3회 사용',                  points: 3, ownership: 'elf' },
   { id: 'elf-ranged-5',           description: '원거리(사거리 2+) 공격 5회 성공',       points: 3, ownership: 'elf' },
   { id: 'elf-no-damage',          description: '매치 내내 피해 받지 않음',             points: 4, ownership: 'elf' },
+  { id: 'elf-pickup-drop-2',      description: '용이 떨어뜨린 보물 2개 이상 획득',      points: 3, ownership: 'elf' },
 
   // Dwarf (5)
   { id: 'dwarf-hide-ally-2',      description: '아군 대신 숨기-판정으로 2회 피격',      points: 4, ownership: 'dwarf' },
@@ -37,6 +39,7 @@ export const MISSIONS = [
   { id: 'orc-reduce-and-wipe',    description: '용 HP 3 이하 + 매치 전멸',              points: 4, ownership: 'orc', requiredOnly: true },
   { id: 'orc-attack-6',           description: '공격 카드 6회 사용',                    points: 2, ownership: 'orc' },
   { id: 'orc-treasure-3',         description: '보물 3장 획득',                          points: 4, ownership: 'orc' },
+  { id: 'orc-pickup-drop-3',      description: '용이 떨어뜨린 보물 3개 이상 약탈',        points: 4, ownership: 'orc' },
   { id: 'orc-kill-all-elves',     description: '매치 종료 시 모든 엘프 탈락',            points: 4, ownership: 'orc', targetRace: 'elf' },
   { id: 'orc-kill-all-humans',    description: '매치 종료 시 모든 인간 탈락',            points: 3, ownership: 'orc', targetRace: 'human' },
   { id: 'orc-kill-all-dwarves',   description: '매치 종료 시 모든 드워프 탈락',          points: 3, ownership: 'orc', targetRace: 'dwarf' },
@@ -70,6 +73,7 @@ export function evaluateMission(mission, player, state, matchEndReason) {
     case 'common-mission-swap':    return (mp.missionSwapCount ?? 0) >= 1;
     case 'common-treasure-1':      return (mp.treasuresAcquired ?? 0) >= 1;
     case 'common-treasure-used-2': return (mp.treasuresUsed ?? 0) >= 2;
+    case 'common-pickup-drop-1':   return (mp.dropsPickedUp ?? 0) >= 1;
 
     case 'human-kill-dragon':      return mp.killedDragon === true;
     case 'human-all-survive':      return matchEndReason === 'dragon-dead' && state.players.every((p) => !p.isEliminated);
@@ -80,6 +84,7 @@ export function evaluateMission(mission, player, state, matchEndReason) {
     case 'elf-scout-3':            return (mp.scoutCount ?? 0) >= 3;
     case 'elf-ranged-5':           return (mp.rangedAttackCount ?? 0) >= 5;
     case 'elf-no-damage':          return (mp.damageTaken ?? 0) === 0;
+    case 'elf-pickup-drop-2':      return (mp.dropsPickedUp ?? 0) >= 2;
 
     case 'dwarf-hide-ally-2':      return (mp.hideInPlaceCount ?? 0) >= 2;
     case 'dwarf-taunt-2':          return (mp.tauntCount ?? 0) >= 2;
@@ -92,6 +97,7 @@ export function evaluateMission(mission, player, state, matchEndReason) {
     case 'orc-reduce-and-wipe':    return state.dragon.hp <= 3 && matchEndReason === 'party-wipe';
     case 'orc-attack-6':           return (mp.attackCount ?? 0) >= 6;
     case 'orc-treasure-3':         return (mp.treasuresAcquired ?? 0) >= 3;
+    case 'orc-pickup-drop-3':      return (mp.dropsPickedUp ?? 0) >= 3;
     case 'orc-kill-all-elves':     return state.players.filter((p) => p.race === 'elf').every((p) => p.isEliminated);
     case 'orc-kill-all-humans':    return state.players.filter((p) => p.race === 'human').every((p) => p.isEliminated);
     case 'orc-kill-all-dwarves':   return state.players.filter((p) => p.race === 'dwarf').every((p) => p.isEliminated);
