@@ -333,6 +333,7 @@ function renderPlayerPanel(state, ui) {
   if (!human) { el.innerHTML = ''; return; }
 
   const isYour = state.turnOrder?.[state.currentTurnIndex] === human.id;
+  el.className = isYour ? 'your-turn' : 'awaiting-turn';
   const raceInfo = RACE_INFO[human.race] ?? { name: human.race, glyph: '❓' };
   const hpPips = Array.from({ length: human.maxHp }, (_, i) =>
     `<div class="hp-pip ${i < human.hp ? '' : 'lost'}"></div>`).join('');

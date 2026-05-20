@@ -22,3 +22,38 @@ test('layout: gameplay grid keeps the player controls inside the 16:9 stage', ()
   assert.match(board, /height:\s*100%\s*;/);
   assert.match(playerPanel, /min-height:\s*0\s*;/);
 });
+
+test('layout: board uses the play area without decorative dead space', () => {
+  const app = ruleFor('#app');
+  const boardWrap = ruleFor('#board-wrap');
+  const playerPanel = ruleFor('#player-panel');
+
+  assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+20rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*2\.35rem\s+4\.55rem\s+minmax\(0,\s*1fr\)\s+7\.6rem\s*;/);
+  assert.match(boardWrap, /align-items:\s*stretch\s*;/);
+  assert.match(boardWrap, /padding:\s*0\s*;/);
+  assert.match(boardWrap, /justify-self:\s*center\s*;/);
+  assert.match(boardWrap, /width:\s*fit-content\s*;/);
+  assert.match(playerPanel, /grid-template-columns:\s*9\.2rem\s+minmax\(0,\s*1fr\)\s+minmax\(14rem,\s*20rem\)\s*;/);
+  assert.match(playerPanel, /justify-self:\s*stretch\s*;/);
+});
+
+test('layout: enabled turn actions are visually promoted over disabled actions', () => {
+  const enabledButton = ruleFor('button:not(:disabled)');
+  const disabledButton = ruleFor('button:disabled');
+
+  assert.match(enabledButton, /box-shadow:\s*[^;]*rgba\(232,\s*176,\s*64,\s*0\.28\)[^;]*;/);
+  assert.match(enabledButton, /border-color:\s*#9c7438\s*;/);
+  assert.match(disabledButton, /opacity:\s*0\.24\s*;/);
+});
+
+test('layout: player turn state makes cards and action buttons scannable', () => {
+  const playerTurnCard = ruleFor('#player-panel.your-turn .card');
+  const waitingTurnCard = ruleFor('#player-panel.awaiting-turn .card');
+  const actionButton = ruleFor('.action-buttons button');
+
+  assert.match(playerTurnCard, /border-color:\s*#9c7438\s*;/);
+  assert.match(waitingTurnCard, /opacity:\s*0\.42\s*;/);
+  assert.match(waitingTurnCard, /cursor:\s*not-allowed\s*;/);
+  assert.match(actionButton, /width:\s*100%\s*;/);
+});
