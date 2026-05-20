@@ -57,3 +57,15 @@ test('layout: player turn state makes cards and action buttons scannable', () =>
   assert.match(waitingTurnCard, /cursor:\s*not-allowed\s*;/);
   assert.match(actionButton, /width:\s*100%\s*;/);
 });
+
+test('layout: other-player action feedback has toast, cell pulses, and latest log emphasis', () => {
+  const toast = ruleFor('.action-toast');
+  const pulseFrom = ruleFor('.cell.action-from');
+  const pulseTo = ruleFor('.cell.action-to');
+  const latestLog = ruleFor('#log-panel .log-entry.latest');
+
+  assert.match(toast, /animation:\s*action-toast-pop\s+1\.35s\s+ease\s+forwards\s*;/);
+  assert.match(pulseFrom, /animation:\s*action-source-pulse\s+1\.1s\s+ease\s*;/);
+  assert.match(pulseTo, /animation:\s*action-target-pulse\s+1\.1s\s+ease\s*;/);
+  assert.match(latestLog, /color:\s*#ffe0a0\s*;/);
+});

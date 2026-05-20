@@ -45,6 +45,7 @@ function dragonCardLabel(card) {
 
 // Track previous state for HP-change detection.
 let prevState = null;
+let lastRenderedActionEventId = null;
 
 export function render(state, ui) {
   const dmgEvents = prevState ? computeDamageEvents(state, prevState) : [];
@@ -65,9 +66,58 @@ export function render(state, ui) {
   requestAnimationFrame(() => {
     for (const ev of dmgEvents) applyDamageEffect(ev);
     if (phaseChanged != null) triggerPhaseTransition(phaseChanged);
+    renderActionEvent(state);
   });
 
   prevState = state;
+}
+
+function renderActionEvent(state) {
+  const ev = state.lastActionEvent;
+  if (!ev || ev.id === lastRenderedActionEventId) return;
+  const actor = state.players.find((p) => p.id === ev.actorId);
+  if (actor && !actor.isAI) {
+    lastRenderedActionEventId = ev.id;
+    return;
+  }
+  lastRenderedActionEventId = ev.id;
+  showActionToast(ev);
+  pulseActionCells(ev);
+}
+
+function showActionToast(ev) {
+  const app = document.getElementById('app');
+  if (!app) return;
+  app.querySelectorAll('.action-toast').forEach((el) => el.remove());
+  const toast = document.createElement('div');
+  toast.className = `action-toast ${ev.kind}`;
+  toast.innerHTML = `
+    <span class="action-toast-actor">${ev.actorName ?? ev.actorId}</span>
+    <span class="action-toast-summary">${ev.summary}</span>
+  `;
+  app.appendChild(toast);
+  setTimeout(() => toast.remove(), 1400);
+}
+
+function pulseActionCells(ev) {
+  const addPulse = (cell, className) => {
+    if (!cell) return;
+    cell.classList.remove(className);
+    void cell.offsetWidth;
+    cell.classList.add(className);
+    setTimeout(() => cell.classList.remove(className), 1150);
+  };
+  if (ev.from) addPulse(cellAt(ev.from), 'action-from');
+  if (ev.to) addPulse(cellAt(ev.to), 'action-to');
+  if (ev.target?.r != null && ev.target?.c != null) addPulse(cellAt(ev.target), 'action-to');
+  if (ev.target?.type === 'dragon') {
+    const strip = document.getElementById('dragon-strip');
+    if (strip) addPulse(strip, 'action-to');
+  }
+}
+
+function cellAt(pos) {
+  return document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`);
 }
 
 function triggerPhaseTransition(phase) {

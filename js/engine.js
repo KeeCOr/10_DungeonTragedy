@@ -97,6 +97,24 @@ function logEntry(state, message, actor = null) {
   return [...state.log, { round: state.round, turn: state.currentTurnIndex, actor, message }];
 }
 
+function playerName(state, id) {
+  const p = findPlayer(state, id);
+  return p?.name ?? id;
+}
+
+function actionEvent(state, data) {
+  return {
+    id: `${state.matchIndex}-${state.round}-${state.currentTurnIndex}-${data.actorId}-${data.kind}-${state.log.length}`,
+    actorId: data.actorId,
+    actorName: playerName(state, data.actorId),
+    ...data,
+  };
+}
+
+function withActionEvent(state, data) {
+  return { ...state, lastActionEvent: actionEvent(state, data) };
+}
+
 function removeCardFromHand(player, cardId) {
   const idx = player.hand.findIndex((c) => c.id === cardId);
   if (idx < 0) throw new Error(`card ${cardId} not in hand`);
@@ -141,7 +159,13 @@ function applyMoveCard(state, player, card, target) {
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry({ ...state }, `${player.id} moves to (${target.r},${target.c})`, player.id),
   };
-  return autoPickupDrops(moved);
+  return withActionEvent(autoPickupDrops(moved), {
+    actorId: player.id,
+    kind: 'move',
+    from,
+    to: { ...target },
+    summary: `${playerName(state, player.id)} moved to (${target.r},${target.c})`,
+  });
 }
 
 function applyAttackCard(state, player, card, target) {
@@ -174,6 +198,7 @@ function applyAttackCard(state, player, card, target) {
   };
 
   let newDrops = [];
+  let eventTarget;
   if (target.type === 'dragon') {
     const prevHp = newDragon.hp;
     newDragon = { ...newDragon, hp: Math.max(0, newDragon.hp - damage) };
@@ -183,9 +208,11 @@ function applyAttackCard(state, player, card, target) {
       attacker.missionProgress.phase1DragonDamage = (attacker.missionProgress.phase1DragonDamage ?? 0) + damage;
     }
     if (newDragon.hp === 0) attacker.missionProgress.killedDragon = true;
+    eventTarget = { type: 'dragon' };
   } else {
     const idx = newPlayers.findIndex((p) => p.id === target.id);
     const victim = { ...newPlayers[idx] };
+    eventTarget = { type: 'player', id: target.id, r: victim.position.r, c: victim.position.c };
     victim.hp = Math.max(0, victim.hp - damage);
     if (victim.hp === 0) {
       victim.isEliminated = true;
@@ -205,8 +232,16 @@ function applyAttackCard(state, player, card, target) {
     lastDragonHitterId: target.type === 'dragon' ? player.id : state.lastDragonHitterId,
     log: logEntry(state, `${player.id} attacks ${target.type === 'dragon' ? 'dragon' : target.id} for ${damage}`, player.id),
   };
-  if (target.type !== 'dragon') return result;
-  const withPhase = maybeTransitionPhase(result);
+  const withEvent = withActionEvent(result, {
+    actorId: player.id,
+    kind: 'attack',
+    from: { ...player.position },
+    target: eventTarget,
+    damage,
+    summary: `${playerName(state, player.id)} attacked ${target.type === 'dragon' ? 'the dragon' : playerName(state, target.id)} for ${damage}`,
+  });
+  if (target.type !== 'dragon') return withEvent;
+  const withPhase = maybeTransitionPhase(withEvent);
   return applyDropsToState(withPhase, newDrops);
 }
 
@@ -219,6 +254,12 @@ function applyHideCard(state, player, card) {
     ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} hides`, player.id),
+    lastActionEvent: actionEvent(state, {
+      actorId: player.id,
+      kind: 'hide',
+      from: { ...player.position },
+      summary: `${playerName(state, player.id)} hid`,
+    }),
   };
 }
 
@@ -244,11 +285,17 @@ function applyHealCard(state, player, card, target) {
         healCount: (p.missionProgress.healCount ?? 0) + 1 } }
     : p);
 
-  return {
+  return withActionEvent({
     ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} heals ${recipientId}`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'heal',
+    from: { ...player.position },
+    target: { type: recipientId === player.id ? 'self' : 'player', id: recipientId },
+    summary: `${playerName(state, player.id)} healed ${recipientId === player.id ? 'self' : playerName(state, recipientId)}`,
+  });
 }
 
 function applyScoutCard(state, player, card) {
@@ -261,11 +308,16 @@ function applyScoutCard(state, player, card) {
     const [next, ...rest] = state.dragon.deck;
     newDragon = { ...state.dragon, deck: rest, revealed: [...state.dragon.revealed, next] };
   }
-  return {
+  return withActionEvent({
     ...state, players: newPlayers, dragon: newDragon,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} scouts`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'scout',
+    from: { ...player.position },
+    summary: `${playerName(state, player.id)} scouted the next dragon card`,
+  });
 }
 
 function applyTauntCard(state, player, card) {
@@ -274,11 +326,16 @@ function applyTauntCard(state, player, card) {
     ? { ...p, hand, statusEffects: { ...p.statusEffects, tauntThisRound: true },
         missionProgress: { ...p.missionProgress,
           tauntCount: (p.missionProgress.tauntCount ?? 0) + 1 } } : p);
-  return {
+  return withActionEvent({
     ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} taunts`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'taunt',
+    from: { ...player.position },
+    summary: `${playerName(state, player.id)} taunted the dragon`,
+  });
 }
 
 /**
@@ -332,10 +389,15 @@ function applyDrawTwo(state, player) {
         treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
         treasuresAcquiredTypes: [...existingTypes] } };
   });
-  return {
+  return withActionEvent({
     ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
     log: logEntry(state, `${player.id} draws 2`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'draw',
+    count: drawn.length,
+    summary: `${playerName(state, player.id)} drew ${drawn.length} cards`,
+  });
 }
 
 function applyDiscardAndRedraw(state, player) {
@@ -367,10 +429,15 @@ function applyDiscardAndRedraw(state, player) {
         treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
         treasuresAcquiredTypes: [...existingTypes] } };
   });
-  return {
+  return withActionEvent({
     ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
     log: logEntry(state, `${player.id} 손패 전부 버리고 ${count}장 새로 뽑음`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'redraw',
+    count,
+    summary: `${playerName(state, player.id)} redrew ${count} cards`,
+  });
 }
 
 const MISSION_SWAP_COST = 4;
@@ -387,11 +454,16 @@ function applyDiscardAndSwapMissions(state, player) {
     ? { ...p, hand: kept, missions,
         missionProgress: { ...p.missionProgress,
           missionSwapCount: (p.missionProgress.missionSwapCount ?? 0) + 1 } } : p);
-  return {
+  return withActionEvent({
     ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, ...discarded],
     log: logEntry(state, `${player.id} 손패 ${MISSION_SWAP_COST}장을 버리고 미션 재배정`, player.id),
-  };
+  }, {
+    actorId: player.id,
+    kind: 'mission',
+    count: MISSION_SWAP_COST,
+    summary: `${playerName(state, player.id)} swapped missions`,
+  });
 }
 
 function applyTreasureCard(state, player, card, target) {
@@ -426,7 +498,15 @@ function applyTreasureSword(state, player, card) {
   const result = { ...state, players: newPlayers, dragon: newDragon,
     commonDiscard: [...state.commonDiscard, consumed],
     lastDragonHitterId: player.id,
-    log: logEntry(state, `${player.id} strikes with the Hero's Sword`, player.id) };
+    log: logEntry(state, `${player.id} strikes with the Hero's Sword`, player.id),
+    lastActionEvent: actionEvent(state, {
+      actorId: player.id,
+      kind: 'treasure',
+      from: { ...player.position },
+      target: { type: 'dragon' },
+      damage: 3,
+      summary: `${playerName(state, player.id)} used Hero's Sword for 3`,
+    }) };
   const withPhase = maybeTransitionPhase(result);
   return applyDropsToState(withPhase, drops);
 }
@@ -435,9 +515,14 @@ function applyTreasurePotion(state, player, card) {
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
   const newPlayers = state.players.map((p) => p.id === player.id
     ? { ...p, hand, hp: p.maxHp, missionProgress: incTreasuresUsed(p) } : p);
-  return { ...state, players: newPlayers,
+  return withActionEvent({ ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
-    log: logEntry(state, `${player.id} drinks potion`, player.id) };
+    log: logEntry(state, `${player.id} drinks potion`, player.id) }, {
+    actorId: player.id,
+    kind: 'treasure',
+    from: { ...player.position },
+    summary: `${playerName(state, player.id)} drank a potion`,
+  });
 }
 
 function applyTreasureCloak(state, player, card, target) {
@@ -469,16 +554,27 @@ function applyTreasureCloak(state, player, card, target) {
   const after = { ...state, players: newPlayers, board: newBoard,
     commonDiscard: [...state.commonDiscard, consumed],
     log: logEntry(state, `${player.id} uses cloak`, player.id) };
-  return autoPickupDrops(after);
+  return withActionEvent(autoPickupDrops(after), {
+    actorId: player.id,
+    kind: 'treasure',
+    from: { ...from },
+    to: { ...target },
+    summary: `${playerName(state, player.id)} used cloak to move`,
+  });
 }
 
 function applyTreasureShield(state, player, card) {
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
   const newPlayers = state.players.map((p) => p.id === player.id
     ? { ...p, hand, statusEffects: { ...p.statusEffects, shieldActive: true } } : p);
-  return { ...state, players: newPlayers,
+  return withActionEvent({ ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
-    log: logEntry(state, `${player.id} readies the Dragon-Scale Shield`, player.id) };
+    log: logEntry(state, `${player.id} readies the Dragon-Scale Shield`, player.id) }, {
+    actorId: player.id,
+    kind: 'treasure',
+    from: { ...player.position },
+    summary: `${playerName(state, player.id)} readied a shield`,
+  });
 }
 
 function applyTreasureTome(state, player, card) {
@@ -504,10 +600,15 @@ function applyTreasureTome(state, player, card) {
         treasuresAcquired: (p.missionProgress.treasuresAcquired ?? 0) + newTreasures.length,
         treasuresAcquiredTypes: [...existingTypes] } };
   });
-  return { ...state, players: newPlayers,
+  return withActionEvent({ ...state, players: newPlayers,
     commonDeck: deck,
     commonDiscard: [...discard, consumed],
-    log: logEntry(state, `${player.id} 고대의 서적으로 카드 2장 드로우`, player.id) };
+    log: logEntry(state, `${player.id} 고대의 서적으로 카드 2장 드로우`, player.id) }, {
+    actorId: player.id,
+    kind: 'treasure',
+    count: drawn.length,
+    summary: `${playerName(state, player.id)} used tome to draw ${drawn.length}`,
+  });
 }
 
 function applyTreasureRune(state, player, card) {
@@ -515,9 +616,14 @@ function applyTreasureRune(state, player, card) {
   const newPlayers = state.players.map((p) => p.id === player.id
     ? { ...p, hand, statusEffects: { ...p.statusEffects, runeBonusNext: 2 },
         missionProgress: incTreasuresUsed(p) } : p);
-  return { ...state, players: newPlayers,
+  return withActionEvent({ ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, consumed],
-    log: logEntry(state, `${player.id} invokes the Ancient Rune`, player.id) };
+    log: logEntry(state, `${player.id} invokes the Ancient Rune`, player.id) }, {
+    actorId: player.id,
+    kind: 'treasure',
+    from: { ...player.position },
+    summary: `${playerName(state, player.id)} invoked a rune`,
+  });
 }
 
 export function executePlayerAction(state, action) {
