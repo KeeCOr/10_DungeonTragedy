@@ -10,8 +10,8 @@ function bs(overrides = {}) {
       [null, null, null, null, null],
       [null, null, 'P2', null, null],
     ],
-    dragon: { hp: 10, maxHp: 15, phase: 2, deck: [], discard: [], revealed: [],
-      position: null, markedCells: [] },
+    dragon: { hp: 10, maxHp: 12, phase: 2, deck: [], discard: [], revealed: [],
+      position: null, markedCells: [], drops: [] },
     players: [
       { id: 'P0', race: 'human', hp: 5, maxHp: 5, hand: [], position: { r: 0, c: 1 },
         missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
@@ -28,17 +28,17 @@ function bs(overrides = {}) {
   };
 }
 
-test('dragon.row-top: damages all players on row 0 for 2', () => {
+test('dragon.row-attack(0): damages all players on row 0 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
   assert.equal(next.players.find(p => p.id === 'P0').hp, 3);
   assert.equal(next.players.find(p => p.id === 'P1').hp, 3);
   assert.equal(next.players.find(p => p.id === 'P2').hp, 6);
 });
 
-test('dragon.row-bot: damages only row 2 for 2', () => {
+test('dragon.row-attack(2): damages only row 2 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'row-bot' }, {});
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 2 }, {});
   assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
   assert.equal(next.players.find(p => p.id === 'P2').hp, 4);
 });
@@ -59,9 +59,9 @@ test('dragon.row-even: damages only row 1 for 2', () => {
   assert.equal(next.players.find(p => p.id === 'P2').hp, 6);
 });
 
-test('dragon.col-mid: damages column 2 for 2', () => {
+test('dragon.col-attack(2): damages column 2 for 2', () => {
   const s = bs();
-  const next = resolveDragonCard(s, { type: 'col-mid' }, {});
+  const next = resolveDragonCard(s, { type: 'col-attack', colIndex: 2 }, {});
   assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
   assert.equal(next.players.find(p => p.id === 'P2').hp, 4);
 });
@@ -105,7 +105,7 @@ test('dragon.roar: sets roarDebuffActiveForRound = round + 1', () => {
 test('dragon.hide absorbs 1 damage on hidden player', () => {
   const s = bs();
   s.players[0].statusEffects.hiddenThisRound = true;
-  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
   // P0 had hidden: 2 damage reduced to 1
   assert.equal(next.players.find(p => p.id === 'P0').hp, 4);
   // P1 without hide takes full 2
@@ -115,13 +115,13 @@ test('dragon.hide absorbs 1 damage on hidden player', () => {
 test('dragon.shield absorbs full damage and is consumed', () => {
   const s = bs();
   s.players[0].statusEffects.shieldActive = true;
-  const next = resolveDragonCard(s, { type: 'row-top' }, {});
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
   assert.equal(next.players.find(p => p.id === 'P0').hp, 5);
   assert.equal(next.players.find(p => p.id === 'P0').statusEffects.shieldActive, false);
 });
 
-test('preview: getDragonCardPreview for row-top returns 5 cells', () => {
-  const pv = getDragonCardPreview({ type: 'row-top' });
+test('preview: getDragonCardPreview for row-attack returns 5 cells', () => {
+  const pv = getDragonCardPreview({ type: 'row-attack', rowIndex: 0 });
   assert.equal(pv.cells.length, 5);
   assert.equal(pv.damage, 2);
 });

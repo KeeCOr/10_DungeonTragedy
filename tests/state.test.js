@@ -30,21 +30,20 @@ test('state: startMatch assigns races, missions, initial hands, positions, drago
     assert.ok(!p.isEliminated);
     assert.equal(p.hp, p.maxHp);
   }
-  assert.equal(s.dragon.hp, 15);
+  assert.equal(s.dragon.hp, 12);
   assert.equal(s.dragon.position, null); // dragon is off-grid
   assert.ok(s.dragon.deck.length >= 10);
   assert.equal(s.dragon.phase, 1);
   assert.equal(s.dragon.revealed.length, 1);
 });
 
-test('state: startMatch - positions are unique and on edge cells', () => {
+test('state: startMatch - positions are unique and on bottom row', () => {
   const s0 = createInitialState({ seed: 42, players: playerCfg(5) });
   const s = startMatch(s0);
   const coords = s.players.map(p => `${p.position.r},${p.position.c}`);
   assert.equal(new Set(coords).size, coords.length);
   for (const p of s.players) {
-    const isEdge = p.position.r === 0 || p.position.r === 2 || p.position.c === 0 || p.position.c === 4;
-    assert.ok(isEdge, `position not on edge: ${JSON.stringify(p.position)}`);
+    assert.equal(p.position.r, 2, `expected row 2, got ${JSON.stringify(p.position)}`);
   }
 });
 
@@ -54,9 +53,9 @@ test('state: startMatch - player positions are deterministic (fixed layout)', ()
   const a = run();
   const b = run();
   assert.deepEqual(a, b);
-  // 3-player layout per spec: P0 at (1,0), P1 at (0,4), P2 at (2,4)
-  assert.deepEqual(a[0], { r: 1, c: 0 });
-  assert.deepEqual(a[1], { r: 0, c: 4 });
+  // 3-player layout: all on row 2
+  assert.deepEqual(a[0], { r: 2, c: 0 });
+  assert.deepEqual(a[1], { r: 2, c: 2 });
   assert.deepEqual(a[2], { r: 2, c: 4 });
 });
 

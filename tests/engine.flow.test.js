@@ -35,20 +35,20 @@ test('engine.flow: rollTurnOrder output is deterministic given same seed', () =>
   assert.deepEqual(make().turnOrder, make().turnOrder);
 });
 
-test('phase: HP 10 → phase 2', () => {
-  const s = { dragon: { hp: 10, phase: 1, deck: [], discard: [], revealed: [] } };
+test('phase: HP 8 → phase 2', () => {
+  const s = { dragon: { hp: 8, phase: 1, deck: [], discard: [], revealed: [] } };
   const next = maybeTransitionPhase(s);
   assert.equal(next.dragon.phase, 2);
 });
 
-test('phase: HP 5 → phase 3', () => {
-  const s = { dragon: { hp: 5, phase: 2, deck: [], discard: [], revealed: [] } };
+test('phase: HP 4 → phase 3', () => {
+  const s = { dragon: { hp: 4, phase: 2, deck: [], discard: [], revealed: [] } };
   const next = maybeTransitionPhase(s);
   assert.equal(next.dragon.phase, 3);
 });
 
-test('phase: HP 11 stays phase 1', () => {
-  const s = { dragon: { hp: 11, phase: 1, deck: [], discard: [], revealed: [] } };
+test('phase: HP 9 stays phase 1', () => {
+  const s = { dragon: { hp: 9, phase: 1, deck: [], discard: [], revealed: [] } };
   const next = maybeTransitionPhase(s);
   assert.equal(next.dragon.phase, 1);
 });

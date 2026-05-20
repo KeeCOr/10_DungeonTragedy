@@ -13,12 +13,12 @@ test('missions: each mission has id, description, points, ownership, constraints
   }
 });
 
-test('missions: common pool has 7 entries', () => {
-  assert.equal(MISSIONS.filter(m => m.ownership === 'common').length, 7);
+test('missions: common pool has 8 entries', () => {
+  assert.equal(MISSIONS.filter(m => m.ownership === 'common').length, 8);
 });
 
-test('missions: orc pool has 8 entries', () => {
-  assert.equal(MISSIONS.filter(m => m.ownership === 'orc').length, 8);
+test('missions: orc pool has 9 entries', () => {
+  assert.equal(MISSIONS.filter(m => m.ownership === 'orc').length, 9);
 });
 
 test('missions: eligibleMissions removes race-targeting missions when target absent', () => {

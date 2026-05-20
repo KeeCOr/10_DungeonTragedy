@@ -7,13 +7,13 @@ function baseState(treasure) {
     seed: 1, matchIndex: 0, matchScores: [[], [], []], round: 1, phase: 'acting',
     board: [
       [null, null, null, null, null],
-      [null, 'P0', 'dragon', null, null],
+      [null, 'P0', null, null, null],
       [null, null, null, null, null],
     ],
-    dragon: { hp: 10, maxHp: 15, phase: 2, deck: [], discard: [], revealed: [],
-      position: { r: 1, c: 2 }, markedCells: [] },
+    dragon: { hp: 10, maxHp: 12, phase: 2, deck: [], discard: [], revealed: [],
+      position: null, markedCells: [], drops: [] },
     players: [
-      { id: 'P0', race: 'human', hp: 1, maxHp: 3, hand: [
+      { id: 'P0', race: 'human', hp: 1, maxHp: 5, hand: [
         { id: 't1', type: 'treasure', treasure },
       ], position: { r: 1, c: 1 }, missions: {}, missionProgress: {}, statusEffects: {},
         isEliminated: false, dragonDamageDealt: 0, isAI: false },
@@ -34,7 +34,7 @@ test('treasure sword: deals 3 damage to dragon', () => {
 test('treasure potion: restores self HP to max', () => {
   const s = baseState('potion');
   const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 't1' });
-  assert.equal(next.players[0].hp, 3);
+  assert.equal(next.players[0].hp, 5); // maxHp
   assert.equal(next.players[0].missionProgress.treasuresUsed, 1);
 });
 

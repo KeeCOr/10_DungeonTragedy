@@ -7,15 +7,15 @@ function baseState(overrides = {}) {
     seed: 1, matchIndex: 0, matchScores: [[], [], []], round: 1, phase: 'acting',
     board: [
       [null, null, null, null, null],
-      [null, 'P0', 'dragon', 'P1', null],
+      [null, 'P0', null, 'P1', null],
       [null, null, null, null, null],
     ],
-    dragon: { hp: 15, maxHp: 15, phase: 1,
-      deck: [{ id: 'd2', type: 'bite', phaseGate: 1 }, { id: 'd3', type: 'breath', phaseGate: 1 }],
-      discard: [], revealed: [{ id: 'd1', type: 'bite', phaseGate: 1 }],
-      position: { r: 1, c: 2 }, markedCells: [] },
+    dragon: { hp: 12, maxHp: 12, phase: 1,
+      deck: [{ id: 'd2', type: 'row-attack', phaseGate: 1 }, { id: 'd3', type: 'col-attack', phaseGate: 1 }],
+      discard: [], revealed: [{ id: 'd1', type: 'row-attack', phaseGate: 1 }],
+      position: null, markedCells: [], drops: [] },
     players: [
-      { id: 'P0', race: 'human', hp: 2, maxHp: 3, hand: [
+      { id: 'P0', race: 'human', hp: 2, maxHp: 5, hand: [
         { id: 'h1', type: 'hide' },
         { id: 'heal1', type: 'heal' },
         { id: 'sc1', type: 'scout' },
@@ -24,7 +24,7 @@ function baseState(overrides = {}) {
         required: { id: 'human-heal-3' }, optional: { id: 'dwarf-taunt-2' },
       }, missionProgress: {}, statusEffects: {},
         isEliminated: false, dragonDamageDealt: 0, isAI: false },
-      { id: 'P1', race: 'dwarf', hp: 1, maxHp: 4, hand: [], position: { r: 1, c: 3 },
+      { id: 'P1', race: 'dwarf', hp: 1, maxHp: 6, hand: [], position: { r: 1, c: 3 },
         missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
         dragonDamageDealt: 0, isAI: true },
     ],
@@ -42,7 +42,7 @@ test('utility: hide sets statusEffects.hiddenThisRound true', () => {
 test('utility: heal on self raises HP by 1 capped at max', () => {
   const s = baseState();
   const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 'heal1', target: { type: 'self' } });
-  assert.equal(next.players[0].hp, 3);
+  assert.equal(next.players[0].hp, 3); // 2 + 1 = 3
   assert.equal(next.players[0].missionProgress.healCount, 1);
 });
 

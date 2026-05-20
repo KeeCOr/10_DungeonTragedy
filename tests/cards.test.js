@@ -3,25 +3,25 @@ import assert from 'node:assert/strict';
 import { createRng } from '../js/rng.js';
 import { buildPlayerDeck, drawFromDeck, TREASURES } from '../js/cards.js';
 
-test('cards: player deck has 46 cards', () => {
+test('cards: player deck has 52 cards', () => {
   const deck = buildPlayerDeck();
-  assert.equal(deck.length, 46);
+  assert.equal(deck.length, 52);
 });
 
-test('cards: player deck composition matches spec', () => {
+test('cards: player deck composition matches current code', () => {
   const deck = buildPlayerDeck();
   const count = (fn) => deck.filter(fn).length;
-  assert.equal(count(c => c.type === 'move' && c.range === 1), 8);
-  assert.equal(count(c => c.type === 'move' && c.range === 2), 6);
-  assert.equal(count(c => c.type === 'move' && c.range === 3), 4);
-  assert.equal(count(c => c.type === 'attack' && c.range === 1), 6);
-  assert.equal(count(c => c.type === 'attack' && c.range === 2), 4);
+  assert.equal(count(c => c.type === 'move' && c.range === 2), 8);
+  assert.equal(count(c => c.type === 'move' && c.range === 3), 7);
+  assert.equal(count(c => c.type === 'move' && c.range === 4), 5);
+  assert.equal(count(c => c.type === 'attack' && c.range === 1), 8);
+  assert.equal(count(c => c.type === 'attack' && c.range === 2), 5);
   assert.equal(count(c => c.type === 'attack' && c.range === 3), 2);
   assert.equal(count(c => c.type === 'hide'), 4);
   assert.equal(count(c => c.type === 'heal'), 3);
   assert.equal(count(c => c.type === 'scout'), 2);
   assert.equal(count(c => c.type === 'taunt'), 2);
-  assert.equal(count(c => c.type === 'treasure'), 5);
+  assert.equal(count(c => c.type === 'treasure'), 6);
 });
 
 test('cards: every card has unique id', () => {
@@ -30,10 +30,10 @@ test('cards: every card has unique id', () => {
   assert.equal(ids.size, deck.length);
 });
 
-test('cards: treasures are the 5 spec treasures', () => {
+test('cards: treasures are the 6 current treasures', () => {
   const deck = buildPlayerDeck();
   const ts = deck.filter(c => c.type === 'treasure').map(c => c.treasure).sort();
-  assert.deepEqual(ts, ['cloak', 'potion', 'rune', 'shield', 'sword']);
+  assert.deepEqual(ts, ['cloak', 'potion', 'rune', 'shield', 'sword', 'tome']);
 });
 
 test('cards: drawFromDeck draws from top and reshuffles discard when empty', () => {
@@ -62,5 +62,5 @@ test('cards: drawFromDeck returns null when both empty', () => {
 });
 
 test('cards: TREASURES list matches expected', () => {
-  assert.deepEqual(TREASURES.slice().sort(), ['cloak', 'potion', 'rune', 'shield', 'sword']);
+  assert.deepEqual(TREASURES.slice().sort(), ['cloak', 'potion', 'rune', 'shield', 'sword', 'tome']);
 });

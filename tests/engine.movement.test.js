@@ -7,18 +7,18 @@ function baseState() {
     seed: 1, matchIndex: 0, matchScores: [[], [], []], round: 1, phase: 'acting',
     board: [
       [null, null, null, null, null],
-      [null, 'P0', 'dragon', 'P1', null],
+      [null, 'P0', null, 'P1', null],
       [null, null, null, null, null],
     ],
-    dragon: { hp: 15, maxHp: 15, phase: 1, deck: [], discard: [], revealed: [],
-      position: { r: 1, c: 2 }, markedCells: [] },
+    dragon: { hp: 12, maxHp: 12, phase: 1, deck: [], discard: [], revealed: [],
+      position: null, markedCells: [], drops: [] },
     players: [
-      { id: 'P0', race: 'human', hp: 3, maxHp: 3, hand: [
+      { id: 'P0', race: 'human', hp: 5, maxHp: 5, hand: [
         { id: 'm1', type: 'move', range: 1 },
         { id: 'm2', type: 'move', range: 2 },
       ], position: { r: 1, c: 1 }, missions: {}, missionProgress: {}, statusEffects: {},
         isEliminated: false, dragonDamageDealt: 0, isAI: false },
-      { id: 'P1', race: 'elf', hp: 3, maxHp: 3, hand: [], position: { r: 1, c: 3 },
+      { id: 'P1', race: 'elf', hp: 5, maxHp: 5, hand: [], position: { r: 1, c: 3 },
         missions: {}, missionProgress: {}, statusEffects: {}, isEliminated: false,
         dragonDamageDealt: 0, isAI: true },
     ],
@@ -58,11 +58,10 @@ test('movement: target outside range rejected', () => {
     /invalid move/i);
 });
 
-test('movement: cannot enter dragon cell', () => {
+test('movement: moving to empty cell works', () => {
   const s = baseState();
-  assert.throws(() => executePlayerAction(s, {
-    type: 'playCard', playerId: 'P0', cardId: 'm1', target: { r: 1, c: 2 } }),
-    /invalid move/i);
+  const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 'm1', target: { r: 1, c: 2 } });
+  assert.deepEqual(next.players[0].position, { r: 1, c: 2 });
 });
 
 test('movement: entering ally cell auto-swaps', () => {
