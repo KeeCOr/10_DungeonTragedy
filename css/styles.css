@@ -17,11 +17,15 @@ html, body {
   transform: translate(-50%, -50%);
   width: min(100vw, calc(100vh * 16 / 9));
   height: min(100vh, calc(100vw * 9 / 16));
-  background: radial-gradient(ellipse at top, #2a1812 0%, #0d0705 60%, #000 100%);
+  background:
+    radial-gradient(circle at 18% 72%, rgba(230, 76, 28, 0.28), transparent 22%),
+    radial-gradient(circle at 76% 18%, rgba(120, 38, 20, 0.42), transparent 28%),
+    linear-gradient(135deg, rgba(255, 95, 32, 0.08) 0 1px, transparent 1px 28px),
+    radial-gradient(ellipse at top, #2a1812 0%, #0d0705 58%, #000 100%);
   color: #e6e3d8;
   display: grid;
   grid-template-columns: 1fr 22rem;
-  grid-template-rows: 2.75rem 5.5rem 1fr 10rem;
+  grid-template-rows: 2.5rem 5.15rem minmax(0, 1fr) 8.7rem;
   grid-template-areas:
     "hud     hud"
     "dragon  right"
@@ -30,6 +34,20 @@ html, body {
   gap: 0.4rem 0.5rem;
   padding: 0.6rem;
   font-size: clamp(0.7rem, 1.2vh, 1rem);
+  overflow: hidden;
+}
+#app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(255, 180, 80, 0.08), transparent 28%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 80, 20, 0.16), transparent 46%);
+  pointer-events: none;
+}
+#app > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ---------- HUD ---------- */
@@ -194,7 +212,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
+  min-height: 0;
+  padding: 0.35rem 0.5rem 0.25rem;
 }
 #board {
   display: grid;
@@ -202,17 +221,26 @@ html, body {
   grid-template-rows: repeat(3, 1fr);
   gap: 0.3rem;
   aspect-ratio: 5 / 3;
-  width: 100%;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
   max-height: 100%;
   padding: 0.75rem;
-  background: linear-gradient(135deg, #2a1810 0%, #1a0e08 100%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 105, 38, 0.16), transparent 34%),
+    linear-gradient(135deg, #2a1810 0%, #15100c 48%, #0d0805 100%);
   border: 2px solid #4a2e1a;
   border-radius: 8px;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(80, 40, 20, 0.4);
+  box-shadow:
+    inset 0 0 34px rgba(0, 0, 0, 0.82),
+    inset 0 1px 0 rgba(255, 180, 90, 0.16),
+    0 0 22px rgba(120, 48, 24, 0.48);
 }
 .cell {
   position: relative;
-  background: linear-gradient(135deg, #1f150c 0%, #110a05 100%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 130, 48, 0.08), transparent 44%),
+    linear-gradient(135deg, #21170e 0%, #110a05 100%);
   border: 1px solid #3a2418;
   border-radius: 4px;
   display: flex;
@@ -363,6 +391,7 @@ html, body {
   gap: 0.5rem;
   min-height: 0;
   overflow-y: auto;
+  padding-bottom: 0.1rem;
 }
 #mission-panel {
   background: linear-gradient(to bottom, #1a1408, #0a0503);
@@ -519,15 +548,19 @@ html, body {
 /* ---------- Player panel ---------- */
 #player-panel {
   grid-area: player;
-  background: linear-gradient(to bottom, #140a05, #0a0503);
-  border: 1px solid #3a241a;
+  background:
+    linear-gradient(to bottom, rgba(45, 24, 12, 0.96), rgba(10, 5, 3, 0.98)),
+    radial-gradient(circle at 55% 0%, rgba(255, 120, 48, 0.14), transparent 42%);
+  border: 1px solid #5a3420;
   border-radius: 6px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.65rem;
   display: grid;
-  grid-template-columns: 11rem 15rem 1fr auto;
+  grid-template-columns: 10rem 13.5rem minmax(0, 1fr) auto;
   grid-template-rows: 1fr;
-  gap: 0.6rem;
+  gap: 0.5rem;
   align-items: stretch;
+  min-height: 0;
+  box-shadow: 0 -8px 22px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 200, 120, 0.08);
 }
 .player-identity {
   display: flex;
@@ -600,7 +633,7 @@ button:disabled .btn-cost { color: #6a5a40; }
   overflow-y: auto;
 }
 .mission-card {
-  padding: 0.35rem 0.5rem;
+  padding: 0.3rem 0.45rem;
   border: 1px solid #4a3a18;
   background: linear-gradient(135deg, #2a2010, #1a1408);
   border-radius: 4px;
@@ -633,10 +666,10 @@ button:disabled .btn-cost { color: #6a5a40; }
 .hand-count { color: #e8c890; font-weight: 700; }
 .hand {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
   align-items: stretch;
   overflow-x: auto;
-  padding: 0.15rem 0.25rem;
+  padding: 0.12rem 0.25rem 0.25rem;
   flex: 1;
   min-height: 0;
 }
@@ -644,13 +677,15 @@ button:disabled .btn-cost { color: #6a5a40; }
 /* Playing-card style hand cards */
 .card {
   position: relative;
-  background: linear-gradient(160deg, #3a2a1a 0%, #201408 100%);
+  background:
+    linear-gradient(160deg, rgba(255, 210, 130, 0.1), transparent 34%),
+    linear-gradient(160deg, #3a2a1a 0%, #201408 100%);
   border: 2px solid #6a4828;
   border-radius: 7px;
   cursor: pointer;
-  width: 4.2rem;
-  min-width: 4.2rem;
-  padding: 0.35rem 0.3rem;
+  width: 4rem;
+  min-width: 4rem;
+  padding: 0.28rem 0.25rem;
   text-align: center;
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
   color: #e8d8b8;
@@ -670,14 +705,14 @@ button:disabled .btn-cost { color: #6a5a40; }
   pointer-events: none;
 }
 .card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   border-color: #c09858;
   box-shadow: 0 8px 14px rgba(0,0,0,0.7),
               0 0 14px rgba(200, 160, 80, 0.4),
               inset 0 1px 0 rgba(255, 220, 160, 0.2);
 }
 .card.selected {
-  transform: translateY(-10px);
+  transform: translateY(-7px);
   border-color: #60c8ff;
   box-shadow: 0 10px 16px rgba(0,0,0,0.7),
               0 0 18px rgba(96, 200, 255, 0.7),
@@ -691,7 +726,7 @@ button:disabled .btn-cost { color: #6a5a40; }
 .card.treasure::before { border-color: rgba(240, 200, 120, 0.55); }
 .card.treasure:hover { border-color: #e8b040; }
 .card-glyph {
-  font-size: 1.6em;
+  font-size: 1.45em;
   line-height: 1;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
   margin-top: 0.15rem;
@@ -713,14 +748,14 @@ button:disabled .btn-cost { color: #6a5a40; }
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.28rem;
   justify-content: center;
 }
 button {
   background: linear-gradient(to bottom, #3a2a18, #1a1208);
   color: #e8c890;
   border: 1px solid #6a4828;
-  padding: 0.45rem 0.8rem;
+  padding: 0.4rem 0.7rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.82em;
