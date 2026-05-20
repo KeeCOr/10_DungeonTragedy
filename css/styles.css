@@ -359,9 +359,10 @@ html, body {
 #right-column {
   grid-area: right;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   gap: 0.5rem;
   min-height: 0;
+  overflow-y: auto;
 }
 #mission-panel {
   background: linear-gradient(to bottom, #1a1408, #0a0503);
@@ -913,3 +914,310 @@ button:disabled {
 .cell.threat-order-1 .threat-order { background: #e04040; }
 .cell.threat-order-2 .threat-order { background: #c0601c; }
 .cell.threat-order-3 .threat-order { background: #908020; }
+
+/* ---------- Mute button ---------- */
+.mute-btn {
+  position: absolute;
+  top: 0.4rem; right: 0.4rem;
+  z-index: 50;
+  background: rgba(20, 10, 5, 0.8);
+  border: 1px solid #4a2a1a;
+  color: #e6e3d8;
+  font-size: 1.2em;
+  width: 2.2rem; height: 2.2rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.mute-btn:hover { background: rgba(40, 20, 10, 0.9); border-color: #907040; }
+
+/* ---------- Start screen ---------- */
+.start-screen {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, #1a0d08 0%, #000 70%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  animation: start-fade-in 0.6s ease;
+  transition: opacity 0.5s;
+}
+.start-screen.fade-out { opacity: 0; }
+@keyframes start-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.start-content {
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 1.2rem;
+  max-width: 480px;
+  padding: 2rem;
+}
+.start-dragon {
+  font-size: 6rem;
+  filter: drop-shadow(0 0 30px rgba(255, 100, 50, 0.9));
+  animation: dragon-idle 3s ease-in-out infinite;
+}
+.start-title {
+  font-size: 3rem;
+  color: #e86050;
+  text-shadow: 0 0 30px rgba(232, 96, 80, 0.7), 0 4px 8px rgba(0,0,0,0.8);
+  letter-spacing: 0.08em;
+  font-weight: 900;
+  margin: 0;
+}
+.start-sub {
+  color: #c0a870;
+  font-size: 1.1rem;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+.start-rules {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  text-align: left;
+  background: rgba(30, 15, 8, 0.7);
+  border: 1px solid #3a2418;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  width: 100%;
+}
+.rule-item {
+  color: #d4c8a8;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.start-player-select {
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.start-label { color: #a89878; font-size: 0.9rem; }
+.start-buttons { display: flex; gap: 0.6rem; }
+.start-btn {
+  background: linear-gradient(to bottom, #3a2a18, #1a1208);
+  color: #e8c890;
+  border: 2px solid #5a3a20;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.start-btn:hover { border-color: #a07840; color: #ffdc90; }
+.start-btn.selected {
+  border-color: #e8b040;
+  background: linear-gradient(to bottom, #5a4020, #2a1a08);
+  color: #ffe0a0;
+  box-shadow: 0 0 12px rgba(232, 176, 64, 0.5);
+}
+.start-play-btn {
+  background: linear-gradient(135deg, #3a6a2a, #1a4a14);
+  border: 2px solid #7adc50;
+  color: #eaffd0;
+  padding: 0.8rem 2.5rem;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 20px rgba(120, 220, 80, 0.4);
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+.start-play-btn:hover {
+  box-shadow: 0 0 30px rgba(140, 240, 100, 0.7);
+  transform: scale(1.05);
+}
+
+/* ---------- Match result overlay ---------- */
+.match-result-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.match-result-overlay.show { opacity: 1; }
+.match-result-overlay.fade-out { opacity: 0; }
+.match-result-content {
+  background: linear-gradient(135deg, #2a1810, #0d0705);
+  border: 2px solid #6a3e1e;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  min-width: 420px;
+  box-shadow: 0 0 40px rgba(150, 80, 40, 0.4);
+  animation: match-pop 0.5s ease;
+}
+@keyframes match-pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.mr-title {
+  color: #e8c080;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+.mr-reason {
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+}
+.mr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.mr-table th {
+  color: #a89878;
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #3a2418;
+  text-align: left;
+}
+.mr-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #2a1810;
+  color: #d4c8a8;
+}
+.mr-table tr.is-you td {
+  color: #60c8ff;
+  font-weight: 700;
+}
+.mr-table .score {
+  color: #e8c890;
+  font-weight: 700;
+  font-size: 1.05em;
+}
+.mr-table .breakdown {
+  font-size: 0.75em;
+  color: #8a7858;
+  max-width: 12rem;
+}
+.mr-next-btn {
+  background: linear-gradient(135deg, #3a6a2a, #1a4a14);
+  border: 2px solid #7adc50;
+  color: #eaffd0;
+  padding: 0.6rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(120, 220, 80, 0.4);
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+.mr-next-btn:hover {
+  box-shadow: 0 0 24px rgba(140, 240, 100, 0.7);
+  transform: scale(1.04);
+}
+
+/* ---------- Game end overlay ---------- */
+.game-end-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.game-end-overlay.show { opacity: 1; }
+.game-end-content {
+  background: linear-gradient(135deg, #2a1a10, #0d0705);
+  border: 2px solid #8a5a2e;
+  border-radius: 20px;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  min-width: 460px;
+  box-shadow: 0 0 60px rgba(200, 150, 80, 0.4);
+  animation: match-pop 0.6s ease;
+}
+.ge-icon {
+  font-size: 5rem;
+  filter: drop-shadow(0 0 20px rgba(255, 200, 80, 0.8));
+  animation: dragon-idle 2s ease-in-out infinite;
+}
+.ge-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffd860;
+  text-shadow: 0 0 20px rgba(255, 216, 96, 0.6);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+.ge-sub {
+  color: #c0a870;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.ge-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.ge-table th {
+  color: #a89878;
+  font-weight: 600;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 2px solid #4a3018;
+  text-align: center;
+}
+.ge-table td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid #2a1810;
+  color: #d4c8a8;
+  text-align: center;
+}
+.ge-table tr.is-you td {
+  color: #60c8ff;
+  font-weight: 700;
+}
+.ge-table .rank { font-size: 1.3em; }
+.ge-table .total-score {
+  color: #ffd860;
+  font-weight: 800;
+  font-size: 1.2em;
+}
+.ge-restart-btn {
+  background: linear-gradient(135deg, #4a3018, #2a1808);
+  border: 2px solid #c09858;
+  color: #ffe0a0;
+  padding: 0.7rem 2.2rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(200, 150, 80, 0.3);
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+.ge-restart-btn:hover {
+  box-shadow: 0 0 24px rgba(220, 180, 100, 0.6);
+  transform: scale(1.04);
+}
+
+/* ---------- Ally info strip (right column) ---------- */
+.ally-info-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.ally-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background: linear-gradient(135deg, #1a1008, #0a0503);
+  border: 1px solid #3a2418;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+.ally-card.eliminated { opacity: 0.35; }
+.ally-card .ally-glyph { font-size: 1.3em; }
+.ally-card .ally-name { color: #c0a878; font-weight: 600; }
+.ally-card .ally-hp { color: #ff8060; font-weight: 700; margin-left: auto; }
+.ally-card .ally-hand-count { color: #a89878; font-size: 0.9em; }

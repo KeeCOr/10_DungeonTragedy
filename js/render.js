@@ -56,6 +56,7 @@ export function render(state, ui) {
   renderDragonStrip(state, ui);
   renderBoard(state, ui);
   renderDragonPanel(state, ui);
+  renderAllyInfo(state);
   renderMissionPanel(state);
   renderPlayerPanel(state, ui);
   renderLog(state);
@@ -278,6 +279,31 @@ function renderDragonStrip(state, ui) {
       <div>${hintBody}</div>
     </div>
   `;
+}
+
+function renderAllyInfo(state) {
+  const logPanel = document.getElementById('log-panel');
+  if (!logPanel) return;
+  // Insert ally strip before log panel if not already present
+  let strip = document.getElementById('ally-info');
+  if (!strip) {
+    strip = document.createElement('div');
+    strip.id = 'ally-info';
+    strip.className = 'ally-info-strip';
+    logPanel.parentNode.insertBefore(strip, logPanel);
+  }
+  const allies = state.players.filter((p) => p.isAI);
+  if (allies.length === 0) { strip.innerHTML = ''; return; }
+  strip.innerHTML = allies.map((p) => {
+    const glyph = RACE_INFO[p.race]?.glyph ?? '❓';
+    const raceName = RACE_INFO[p.race]?.name ?? p.race;
+    return `<div class="ally-card ${p.isEliminated ? 'eliminated' : ''}">
+      <span class="ally-glyph">${glyph}</span>
+      <span class="ally-name">${p.name}</span>
+      <span class="ally-hand-count">🃏${p.hand.length}</span>
+      <span class="ally-hp">${p.isEliminated ? '💀' : `❤️${p.hp}/${p.maxHp}`}</span>
+    </div>`;
+  }).join('');
 }
 
 function renderDragonPanel(state, ui) {
