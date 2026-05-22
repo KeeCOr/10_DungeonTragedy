@@ -69,3 +69,27 @@ test('layout: other-player action feedback has toast, cell pulses, and latest lo
   assert.match(pulseTo, /animation:\s*action-target-pulse\s+1\.1s\s+ease\s*;/);
   assert.match(latestLog, /color:\s*#ffe0a0\s*;/);
 });
+
+test('visual: combat scene borrows lava arena depth from the reference image', () => {
+  const appAfter = ruleFor('#app::after');
+  const boardBefore = ruleFor('#board::before');
+  const boardAfter = ruleFor('#board::after');
+  const dragonStrip = ruleFor('#dragon-strip');
+  const card = ruleFor('.card');
+
+  assert.match(appAfter, /radial-gradient\(ellipse at 50% 58%, rgba\(255,\s*96,\s*22,\s*0\.2\)/);
+  assert.match(boardBefore, /linear-gradient\(115deg,\s*transparent 0 18%/);
+  assert.match(boardAfter, /radial-gradient\(circle at 50% 48%, rgba\(255,\s*126,\s*32,\s*0\.18\)/);
+  assert.match(dragonStrip, /linear-gradient\(90deg,\s*rgba\(201,\s*152,\s*88,\s*0\.55\)/);
+  assert.match(card, /clip-path:\s*polygon\(/);
+});
+
+test('visual: action buttons read like framed skill slots', () => {
+  const actionButton = ruleFor('.action-buttons button');
+  const actionButtonBefore = ruleFor('.action-buttons button::before');
+
+  assert.match(actionButton, /border:\s*1px solid #9c7438\s*;/);
+  assert.match(actionButton, /background:\s*linear-gradient\(180deg,\s*#4b3318/);
+  assert.match(actionButtonBefore, /inset:\s*3px\s*;/);
+  assert.match(actionButtonBefore, /border:\s*1px solid rgba\(255,\s*220,\s*150,\s*0\.2\)\s*;/);
+});
