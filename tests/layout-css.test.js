@@ -28,14 +28,28 @@ test('layout: board uses the play area without decorative dead space', () => {
   const boardWrap = ruleFor('#board-wrap');
   const playerPanel = ruleFor('#player-panel');
 
-  assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+20rem\s*;/);
-  assert.match(app, /grid-template-rows:\s*2\.35rem\s+4\.55rem\s+minmax\(0,\s*1fr\)\s+7\.6rem\s*;/);
+  assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+17\.5rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*2\.15rem\s+4\.15rem\s+minmax\(0,\s*1fr\)\s+7\.05rem\s*;/);
   assert.match(boardWrap, /align-items:\s*stretch\s*;/);
   assert.match(boardWrap, /padding:\s*0\s*;/);
   assert.match(boardWrap, /justify-self:\s*center\s*;/);
   assert.match(boardWrap, /width:\s*fit-content\s*;/);
-  assert.match(playerPanel, /grid-template-columns:\s*9\.2rem\s+minmax\(0,\s*1fr\)\s+minmax\(14rem,\s*20rem\)\s*;/);
+  assert.match(playerPanel, /grid-template-columns:\s*8\.7rem\s+minmax\(0,\s*1fr\)\s+minmax\(12\.5rem,\s*17rem\)\s*;/);
   assert.match(playerPanel, /justify-self:\s*stretch\s*;/);
+});
+
+test('layout: simplified combat UI keeps secondary panels quiet', () => {
+  const rightColumn = ruleFor('#right-column');
+  const logPanel = ruleFor('#log-panel');
+  const missionPanel = ruleFor('#mission-panel');
+  const cellCoords = ruleFor('.cell-coords');
+  const turnOrder = ruleFor('#hud .turn-order');
+
+  assert.match(rightColumn, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s+auto\s*;/);
+  assert.match(logPanel, /max-height:\s*8\.5rem\s*;/);
+  assert.match(missionPanel, /max-height:\s*8\.5rem\s*;/);
+  assert.match(cellCoords, /opacity:\s*0\s*;/);
+  assert.match(turnOrder, /max-width:\s*42rem\s*;/);
 });
 
 test('layout: enabled turn actions are visually promoted over disabled actions', () => {
