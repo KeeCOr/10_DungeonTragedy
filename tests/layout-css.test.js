@@ -103,7 +103,49 @@ test('visual: action buttons read like framed skill slots', () => {
   const actionButtonBefore = ruleFor('.action-buttons button::before');
 
   assert.match(actionButton, /border:\s*1px solid #9c7438\s*;/);
-  assert.match(actionButton, /background:\s*linear-gradient\(180deg,\s*#4b3318/);
+  assert.match(actionButton, /linear-gradient\(180deg,\s*#4b3318/);
   assert.match(actionButtonBefore, /inset:\s*3px\s*;/);
   assert.match(actionButtonBefore, /border:\s*1px solid rgba\(255,\s*220,\s*150,\s*0\.2\)\s*;/);
+});
+
+test('visual: generated image assets are wired into the main combat UI', () => {
+  const dragonStrip = ruleFor('#dragon-strip');
+  const board = ruleFor('#board');
+  const card = ruleFor('.card');
+  const portrait = ruleFor('.portrait-medallion');
+
+  assert.match(dragonStrip, /url\(['"]?\.\.\/public\/assets\/dragon-boss-banner\.png['"]?\)/);
+  assert.match(board, /url\(['"]?\.\.\/public\/assets\/lava-board-texture\.png['"]?\)/);
+  assert.match(card, /url\(['"]?\.\.\/public\/assets\/fantasy-card-frame\.png['"]?\)/);
+  assert.match(portrait, /url\(['"]?\.\.\/public\/assets\/race-portrait-atlas\.png['"]?\)/);
+});
+
+test('visual: atlas-driven icons and portraits have stable crop slots', () => {
+  const skillIcon = ruleFor('.skill-icon');
+  const attackIcon = ruleFor('.skill-icon.attack');
+  const portraitElf = ruleFor('.portrait-medallion.elf');
+
+  assert.match(skillIcon, /background-image:\s*url\(['"]?\.\.\/public\/assets\/skill-icon-atlas\.png['"]?\)\s*;/);
+  assert.match(skillIcon, /background-size:\s*300%\s+200%\s*;/);
+  assert.match(attackIcon, /background-position:\s*0%\s+0%\s*;/);
+  assert.match(portraitElf, /background-position:\s*33\.333%\s+0\s*;/);
+});
+
+test('visual: generated button and panel frames skin the HUD controls', () => {
+  const button = ruleFor('.action-buttons button');
+  const enabledButton = ruleFor('button:not(:disabled)');
+  const disabledButton = ruleFor('button:disabled');
+  const dragonPanel = ruleFor('#dragon-panel');
+  const missionPanel = ruleFor('#mission-panel');
+  const logPanel = ruleFor('#log-panel');
+  const playerPanel = ruleFor('#player-panel');
+
+  assert.match(button, /url\(['"]?\.\.\/public\/assets\/ui-button-frame-atlas\.png['"]?\)/);
+  assert.match(button, /background-size:\s*100%\s+300%\s*;/);
+  assert.match(enabledButton, /background-position:\s*center 0%\s*;/);
+  assert.match(disabledButton, /background-position:\s*center 100%\s*;/);
+  assert.match(dragonPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+  assert.match(missionPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+  assert.match(logPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+  assert.match(playerPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
 });

@@ -136,6 +136,8 @@ html, body {
   gap: 0.65rem;
   padding: 0.3rem 0.75rem 0.38rem;
   background:
+    linear-gradient(90deg, rgba(8, 4, 3, 0.92), rgba(16, 6, 4, 0.5) 46%, rgba(8, 4, 3, 0.92)),
+    url('../public/assets/dragon-boss-banner.png') center 42% / cover no-repeat,
     linear-gradient(90deg, rgba(201, 152, 88, 0.55), transparent 18% 82%, rgba(201, 152, 88, 0.42)),
     radial-gradient(circle at 12% 50%, rgba(255, 96, 44, 0.28), transparent 16%),
     linear-gradient(to bottom, #2a0f08 0%, #1a0605 70%, #3a1408 100%);
@@ -251,6 +253,8 @@ html, body {
   max-height: 100%;
   padding: 0.75rem;
   background:
+    linear-gradient(rgba(9, 6, 4, 0.28), rgba(9, 6, 4, 0.46)),
+    url('../public/assets/lava-board-texture.png') center / cover no-repeat,
     radial-gradient(circle at 50% 0%, rgba(255, 105, 38, 0.16), transparent 34%),
     linear-gradient(135deg, #2a1810 0%, #15100c 48%, #0d0805 100%);
   border: 2px solid #4a2e1a;
@@ -292,8 +296,8 @@ html, body {
   position: relative;
   background:
     radial-gradient(circle at 50% 0%, rgba(255, 130, 48, 0.08), transparent 44%),
-    linear-gradient(135deg, #21170e 0%, #110a05 100%);
-  border: 1px solid #3a2418;
+    linear-gradient(135deg, rgba(33, 23, 14, 0.66) 0%, rgba(17, 10, 5, 0.74) 100%);
+  border: 1px solid rgba(150, 105, 62, 0.42);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -446,7 +450,10 @@ html, body {
   padding-bottom: 0.1rem;
 }
 #mission-panel {
-  background: linear-gradient(to bottom, #1a1408, #0a0503);
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    linear-gradient(to bottom, #1a1408, #0a0503);
   border: 1px solid #4a3a18;
   border-radius: 6px;
   padding: 0.42rem 0.55rem;
@@ -464,7 +471,10 @@ html, body {
   margin-bottom: 0.15rem;
 }
 #dragon-panel {
-  background: linear-gradient(to bottom, #1a0a05 0%, #0e0403 100%);
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    linear-gradient(to bottom, #1a0a05 0%, #0e0403 100%);
   border: 1px solid #4a2418;
   border-radius: 6px;
   padding: 0.42rem 0.55rem;
@@ -582,7 +592,10 @@ html, body {
 }
 
 #log-panel {
-  background: #0a0504;
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    #0a0504;
   border: 1px solid #3a241a;
   border-radius: 6px;
   padding: 0.42rem 0.55rem;
@@ -610,6 +623,8 @@ html, body {
 #player-panel {
   grid-area: player;
   background:
+    linear-gradient(rgba(16, 9, 5, 0.82), rgba(6, 3, 2, 0.9)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
     linear-gradient(to bottom, rgba(45, 24, 12, 0.96), rgba(10, 5, 3, 0.98)),
     radial-gradient(circle at 55% 0%, rgba(255, 120, 48, 0.14), transparent 42%);
   border: 1px solid #5a3420;
@@ -638,10 +653,35 @@ html, body {
   border-color: #7adc50;
   box-shadow: 0 0 14px rgba(120, 220, 80, 0.45) inset;
 }
+.player-portrait-row {
+  display: grid;
+  grid-template-columns: 2.55rem minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+  min-width: 0;
+}
+.portrait-medallion {
+  display: inline-block;
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 50%;
+  background-image: url('../public/assets/race-portrait-atlas.png');
+  background-size: 400% 100%;
+  background-position: 0 0;
+  box-shadow: 0 0 0 1px #8a6935, 0 0 10px rgba(232, 176, 64, 0.2);
+  flex: 0 0 auto;
+}
+.portrait-medallion.human { background-position: 0 0; }
+.portrait-medallion.elf { background-position: 33.333% 0; }
+.portrait-medallion.dwarf { background-position: 66.666% 0; }
+.portrait-medallion.orc { background-position: 100% 0; }
 .player-identity .name {
   font-size: 0.95em;
   font-weight: 700;
   color: #e8c890;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .player-identity .race {
   font-size: 0.8em;
@@ -741,6 +781,8 @@ button:disabled .btn-cost { color: #6a5a40; }
 .card {
   position: relative;
   background:
+    linear-gradient(rgba(20, 12, 6, 0.16), rgba(8, 4, 2, 0.18)),
+    url('../public/assets/fantasy-card-frame.png') center / 100% 100% no-repeat,
     linear-gradient(160deg, rgba(255, 210, 130, 0.1), transparent 34%),
     linear-gradient(160deg, #3a2a1a 0%, #201408 100%);
   border: 2px solid #6a4828;
@@ -793,7 +835,28 @@ button:disabled .btn-cost { color: #6a5a40; }
   font-size: 1.35em;
   line-height: 1;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
-  margin-top: 0.15rem;
+  margin-top: -0.02rem;
+  display: flex;
+  justify-content: center;
+}
+.skill-icon {
+  display: inline-block;
+  width: 2.05rem;
+  height: 2.05rem;
+  background-image: url('../public/assets/skill-icon-atlas.png');
+  background-size: 300% 200%;
+  background-position: 0% 0%;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(255, 150, 52, 0.24);
+}
+.skill-icon.attack { background-position: 0% 0%; }
+.skill-icon.move { background-position: 50% 0%; }
+.skill-icon.guard { background-position: 100% 0%; }
+.skill-icon.fire { background-position: 0% 100%; }
+.skill-icon.lightning { background-position: 50% 100%; }
+.skill-icon.roar { background-position: 100% 100%; }
+.glyph-fallback {
+  display: none;
 }
 .card-name {
   font-weight: 700;
@@ -829,8 +892,15 @@ button:disabled .btn-cost { color: #6a5a40; }
 .action-buttons button {
   position: relative;
   width: 100%;
+  min-height: 2rem;
+  padding-left: 2.35rem;
   border: 1px solid #9c7438;
-  background: linear-gradient(180deg, #4b3318 0%, #261609 58%, #120905 100%);
+  background:
+    linear-gradient(rgba(22, 12, 6, 0.12), rgba(8, 4, 2, 0.18)),
+    url('../public/assets/ui-button-frame-atlas.png') center 0% / 100% 300% no-repeat,
+    linear-gradient(180deg, #4b3318 0%, #261609 58%, #120905 100%);
+  background-size: 100% 300%;
+  text-align: left;
 }
 .action-buttons button::before {
   content: '';
@@ -840,8 +910,29 @@ button:disabled .btn-cost { color: #6a5a40; }
   border-radius: 2px;
   pointer-events: none;
 }
+.action-buttons button::after {
+  content: '';
+  position: absolute;
+  left: 0.34rem;
+  top: 50%;
+  width: 1.45rem;
+  height: 1.45rem;
+  transform: translateY(-50%);
+  background-image: url('../public/assets/skill-icon-atlas.png');
+  background-size: 300% 200%;
+  background-position: 50% 100%;
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(255, 150, 52, 0.25);
+}
+.action-buttons button:nth-child(1)::after { background-position: 50% 100%; }
+.action-buttons button:nth-child(2)::after { background-position: 0% 100%; }
+.action-buttons button:nth-child(3)::after { background-position: 100% 100%; }
 button {
-  background: linear-gradient(180deg, #4b3318 0%, #261609 58%, #120905 100%);
+  background:
+    linear-gradient(rgba(22, 12, 6, 0.12), rgba(8, 4, 2, 0.18)),
+    url('../public/assets/ui-button-frame-atlas.png') center 0% / 100% 300% no-repeat,
+    linear-gradient(180deg, #4b3318 0%, #261609 58%, #120905 100%);
+  background-size: 100% 300%;
   color: #e8c890;
   border: 1px solid #9c7438;
   padding: 0.4rem 0.7rem;
@@ -854,10 +945,12 @@ button {
 }
 button:not(:disabled) {
   border-color: #9c7438;
+  background-position: center 0%;
   box-shadow: inset 0 1px 0 rgba(255, 220, 150, 0.12), 0 0 10px rgba(232, 176, 64, 0.28);
 }
 button:hover:not(:disabled) {
-  background: linear-gradient(to bottom, #4a3a28, #2a1a0a);
+  background-position: center 50%;
+  background-color: #2a1a0a;
   border-color: #907040;
   color: #ffdc90;
   box-shadow: 0 0 8px rgba(200, 150, 80, 0.3);
@@ -866,6 +959,7 @@ button:disabled {
   opacity: 0.24;
   cursor: not-allowed;
   filter: grayscale(0.6);
+  background-position: center 100%;
 }
 
 .muted { color: #6a5040; font-size: 0.85em; font-style: italic; }
@@ -1391,14 +1485,18 @@ button:disabled {
 .ally-card {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0.5rem;
+  gap: 0.45rem;
+  padding: 0.28rem 0.45rem;
   background: linear-gradient(135deg, #1a1008, #0a0503);
   border: 1px solid #3a2418;
   border-radius: 4px;
   font-size: 0.8em;
 }
 .ally-card.eliminated { opacity: 0.35; }
+.ally-card .portrait-medallion {
+  width: 1.9rem;
+  height: 1.9rem;
+}
 .ally-card .ally-glyph { font-size: 1.3em; }
 .ally-card .ally-name { color: #c0a878; font-weight: 600; }
 .ally-card .ally-hp { color: #ff8060; font-weight: 700; margin-left: auto; }

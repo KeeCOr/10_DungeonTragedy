@@ -11,6 +11,8 @@ This list is based on `docs/DragonTragedy_gameplay_preview.png`: a dark fantasy 
 | Skill icon atlas | `public/assets/skill-icon-atlas.png` | 1536x1024 | Bottom action bar icons. Crop as a 3x2 atlas for attack, move, guard, fire, lightning, and roar-style actions. |
 | Fantasy card frame | `public/assets/fantasy-card-frame.png` | 1024x1536 | Card background/frame for hand cards or enlarged card detail panels. Keep text rendered in HTML over the empty center. |
 | Race portrait atlas | `public/assets/race-portrait-atlas.png` | 2172x724 | Player HUD portrait medallions. Crop as a 4x1 atlas for human, elf, dwarf, and orc. |
+| UI button frame atlas | `public/assets/ui-button-frame-atlas.png` | 1024x1536 | Shared button skin for normal, active/hover, and disabled states. Use HTML text over the empty center. |
+| UI panel frame | `public/assets/ui-panel-frame.png` | 1535x1024 | Shared ornamental frame/background for right-side panels, player HUD, logs, and mission panels. |
 
 ## Recommended Next Assets
 
@@ -43,3 +45,11 @@ Single empty vertical fantasy action card template with ornate dark metal frame 
 ### Race Portrait Atlas
 
 Four circular fantasy character portrait medallions in a 4 by 1 atlas: human knight, elf archer, dwarf guardian, orc warrior. Same ornate round frame style, no text or numbers.
+
+### UI Button Frame Atlas
+
+Three empty horizontal ornate RPG button frames in a vertical atlas: normal, active/hover, and disabled. Dark metal body, aged gold trim, ember accents, no text or icons.
+
+### UI Panel Frame
+
+Large empty ornate rectangular HUD panel frame with blackened metal border, aged gold corners, subtle ember cracks, and dark center for HTML overlay content. No text or icons.

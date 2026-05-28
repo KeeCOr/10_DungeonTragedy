@@ -348,7 +348,7 @@ function renderAllyInfo(state) {
     const glyph = RACE_INFO[p.race]?.glyph ?? '❓';
     const raceName = RACE_INFO[p.race]?.name ?? p.race;
     return `<div class="ally-card ${p.isEliminated ? 'eliminated' : ''}">
-      <span class="ally-glyph">${glyph}</span>
+      <span class="portrait-medallion ${p.race}" title="${raceName}"></span>
       <span class="ally-name">${p.name}</span>
       <span class="ally-hand-count">🃏${p.hand.length}</span>
       <span class="ally-hp">${p.isEliminated ? '💀' : `❤️${p.hp}/${p.maxHp}`}</span>
@@ -401,8 +401,13 @@ function renderPlayerPanel(state, ui) {
 
   el.innerHTML = `
     <div class="player-identity ${isYour ? 'your-turn' : ''}">
-      <div class="name">${raceInfo.glyph} ${human.name}</div>
-      <div class="race">${raceInfo.name}</div>
+      <div class="player-portrait-row">
+        <span class="portrait-medallion ${human.race}" title="${raceInfo.name}"></span>
+        <div>
+          <div class="name">${human.name}</div>
+          <div class="race">${raceInfo.name}</div>
+        </div>
+      </div>
       <div class="hp-pips" title="HP ${human.hp}/${human.maxHp}">${hpPips}</div>
       ${isYour
         ? '<div class="turn-mark">▶ 당신 차례<span class="one-action-hint">(행동 1회 후 턴 종료)</span></div>'
@@ -441,12 +446,29 @@ function renderCard(card, selected) {
     const def = CARD_DEFS[card.type] ?? { name: card.type, meta: () => '', glyph: '❓' };
     name = def.name; meta = def.meta(card); glyph = def.glyph;
   }
-  return `<div class="card ${isTreasure ? 'treasure' : ''} ${selected ? 'selected' : ''}"
+  const cardKindClass = cardAssetClass(card);
+  return `<div class="card card-${cardKindClass} ${isTreasure ? 'treasure' : ''} ${selected ? 'selected' : ''}"
                data-card-id="${card.id}">
-    <div class="card-glyph">${glyph}</div>
+    <div class="card-glyph"><span class="skill-icon ${cardKindClass}"></span><span class="glyph-fallback">${glyph}</span></div>
     <div class="card-name">${name}</div>
     <div class="card-meta">${meta}</div>
   </div>`;
+}
+
+function cardAssetClass(card) {
+  if (card.type === 'treasure') {
+    if (card.treasure === 'shield') return 'guard';
+    if (card.treasure === 'sword') return 'attack';
+    if (card.treasure === 'rune') return 'lightning';
+    return 'fire';
+  }
+  if (card.type === 'move') return 'move';
+  if (card.type === 'attack') return 'attack';
+  if (card.type === 'hide') return 'guard';
+  if (card.type === 'heal') return 'fire';
+  if (card.type === 'scout') return 'lightning';
+  if (card.type === 'taunt') return 'roar';
+  return 'attack';
 }
 
 /** Displays a large version of the played card as a brief overlay. */
