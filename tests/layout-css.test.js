@@ -28,13 +28,13 @@ test('layout: board uses the play area without decorative dead space', () => {
   const boardWrap = ruleFor('#board-wrap');
   const playerPanel = ruleFor('#player-panel');
 
-  assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+17\.5rem\s*;/);
-  assert.match(app, /grid-template-rows:\s*2\.15rem\s+4\.15rem\s+minmax\(0,\s*1fr\)\s+7\.05rem\s*;/);
+  assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+14\.75rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+5\.15rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
   assert.match(boardWrap, /align-items:\s*stretch\s*;/);
   assert.match(boardWrap, /padding:\s*0\s*;/);
   assert.match(boardWrap, /justify-self:\s*center\s*;/);
   assert.match(boardWrap, /width:\s*fit-content\s*;/);
-  assert.match(playerPanel, /grid-template-columns:\s*8\.7rem\s+minmax\(0,\s*1fr\)\s+minmax\(12\.5rem,\s*17rem\)\s*;/);
+  assert.match(playerPanel, /grid-template-columns:\s*7\.4rem\s+minmax\(0,\s*1fr\)\s+13\.25rem\s*;/);
   assert.match(playerPanel, /justify-self:\s*stretch\s*;/);
 });
 
@@ -45,11 +45,27 @@ test('layout: simplified combat UI keeps secondary panels quiet', () => {
   const cellCoords = ruleFor('.cell-coords');
   const turnOrder = ruleFor('#hud .turn-order');
 
-  assert.match(rightColumn, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s+auto\s*;/);
-  assert.match(logPanel, /max-height:\s*8\.5rem\s*;/);
-  assert.match(missionPanel, /max-height:\s*8\.5rem\s*;/);
+  assert.match(rightColumn, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s*;/);
+  assert.match(logPanel, /max-height:\s*7\.1rem\s*;/);
+  assert.match(missionPanel, /max-height:\s*7\.1rem\s*;/);
   assert.match(cellCoords, /opacity:\s*0\s*;/);
   assert.match(turnOrder, /max-width:\s*42rem\s*;/);
+});
+
+test('layout: reference-style HUD keeps the battlefield dominant', () => {
+  const dragonStrip = ruleFor('#dragon-strip');
+  const rightColumn = ruleFor('#right-column');
+  const playerPanel = ruleFor('#player-panel');
+  const card = ruleFor('.card');
+  const actionButtons = ruleFor('.action-buttons');
+
+  assert.match(dragonStrip, /min-height:\s*0\s*;/);
+  assert.match(rightColumn, /overflow:\s*hidden\s*;/);
+  assert.match(playerPanel, /padding:\s*0\.28rem 0\.45rem\s*;/);
+  assert.match(card, /width:\s*3\.25rem\s*;/);
+  assert.match(card, /min-width:\s*3\.25rem\s*;/);
+  assert.match(actionButtons, /display:\s*grid\s*;/);
+  assert.match(actionButtons, /grid-template-rows:\s*repeat\(3,\s*1fr\)\s*;/);
 });
 
 test('layout: enabled turn actions are visually promoted over disabled actions', () => {
@@ -148,4 +164,14 @@ test('visual: generated button and panel frames skin the HUD controls', () => {
   assert.match(missionPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(logPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(playerPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+});
+
+test('visual: start screen hides empty game chrome and reuses generated frames', () => {
+  const startScreen = ruleFor('.start-screen');
+  const startContent = ruleFor('.start-content');
+
+  assert.match(startScreen, /url\(['"]?\.\.\/public\/assets\/dragon-boss-banner\.png['"]?\)/);
+  assert.match(startScreen, /#000\s*;/);
+  assert.match(startContent, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+  assert.match(startContent, /box-shadow:\s*0 18px 56px rgba\(0,\s*0,\s*0,\s*0\.72\)/);
 });

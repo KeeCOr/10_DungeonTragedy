@@ -24,15 +24,15 @@ html, body {
     radial-gradient(ellipse at top, #2a1812 0%, #0d0705 58%, #000 100%);
   color: #e6e3d8;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 17.5rem;
-  grid-template-rows: 2.15rem 4.15rem minmax(0, 1fr) 7.05rem;
+  grid-template-columns: minmax(0, 1fr) 14.75rem;
+  grid-template-rows: 1.95rem 5.15rem minmax(0, 1fr) 6.25rem;
   grid-template-areas:
     "hud     hud"
     "dragon  right"
     "board   right"
     "player  right";
-  gap: 0.32rem 0.42rem;
-  padding: 0.6rem;
+  gap: 0.28rem 0.34rem;
+  padding: 0.48rem;
   font-size: clamp(0.7rem, 1.2vh, 1rem);
   overflow: hidden;
 }
@@ -66,10 +66,10 @@ html, body {
 #hud {
   grid-area: hud;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 1rem;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 0.75rem;
   align-items: center;
-  padding: 0 0.85rem;
+  padding: 0 0.65rem;
   background: linear-gradient(to bottom, #1a0d08, #0a0403);
   border: 1px solid #4a2a1a;
   border-radius: 6px;
@@ -78,10 +78,10 @@ html, body {
 }
 #hud .hud-title {
   color: #d4b87a;
-  font-size: 1.2em;
+  font-size: 1.05em;
   text-shadow: 0 0 8px rgba(212, 184, 122, 0.35);
 }
-#hud .hud-meta { color: #c0b896; font-size: 0.95em; }
+#hud .hud-meta { color: #c0b896; font-size: 0.84em; }
 .turn-banner {
   padding: 0.25rem 0.9rem;
   border-radius: 4px;
@@ -108,6 +108,7 @@ html, body {
   justify-self: end;
   max-width: 42rem;
   overflow: hidden;
+  min-width: 0;
 }
 .turn-slot {
   padding: 0.2rem 0.55rem;
@@ -131,10 +132,11 @@ html, body {
   grid-area: dragon;
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(8rem, auto) 1fr minmax(8rem, auto);
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.3rem 0.75rem 0.38rem;
+  gap: 0.55rem;
+  min-height: 0;
+  padding: 0.34rem 0.72rem 0.42rem;
   background:
     linear-gradient(90deg, rgba(8, 4, 3, 0.92), rgba(16, 6, 4, 0.5) 46%, rgba(8, 4, 3, 0.92)),
     url('../public/assets/dragon-boss-banner.png') center 42% / cover no-repeat,
@@ -145,7 +147,7 @@ html, body {
   border-radius: 8px 8px 14px 14px;
   box-shadow: 0 0 14px rgba(150, 40, 20, 0.4),
               inset 0 -18px 24px -8px rgba(255, 100, 40, 0.35);
-  overflow: visible;
+  overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 #dragon-strip::after {
@@ -181,7 +183,7 @@ html, body {
 }
 .dstrip-left { display: flex; align-items: center; gap: 0.6rem; }
 .dstrip-emoji {
-  font-size: 2rem;
+  font-size: 2.35rem;
   line-height: 1;
   filter: drop-shadow(0 0 12px rgba(255, 100, 50, 0.9));
   animation: dragon-idle 3s ease-in-out infinite;
@@ -207,7 +209,7 @@ html, body {
 .dstrip-center .hp-bar { width: 100%; }
 .dstrip-phase {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.22rem;
   align-items: center;
   font-size: 0.8em;
   color: #c0a070;
@@ -216,7 +218,7 @@ html, body {
   font-size: 0.72em;
   color: #d4a860;
   text-align: right;
-  max-width: 11rem;
+  max-width: 9.4rem;
   line-height: 1.3;
   padding: 0.2rem 0.4rem;
   background: rgba(0,0,0,0.3);
@@ -245,13 +247,13 @@ html, body {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 0.3rem;
+  gap: 0.22rem;
   aspect-ratio: 5 / 3;
   height: 100%;
   width: auto;
   max-width: 100%;
   max-height: 100%;
-  padding: 0.75rem;
+  padding: 0.55rem;
   background:
     linear-gradient(rgba(9, 6, 4, 0.28), rgba(9, 6, 4, 0.46)),
     url('../public/assets/lava-board-texture.png') center / cover no-repeat,
@@ -268,7 +270,7 @@ html, body {
 #board::before {
   content: '';
   position: absolute;
-  inset: 0.75rem;
+  inset: 0.55rem;
   border-radius: 5px;
   pointer-events: none;
   z-index: 0;
@@ -280,7 +282,7 @@ html, body {
 #board::after {
   content: '';
   position: absolute;
-  inset: 0.75rem;
+  inset: 0.55rem;
   border-radius: 5px;
   pointer-events: none;
   z-index: 0;
@@ -443,10 +445,10 @@ html, body {
 #right-column {
   grid-area: right;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  gap: 0.34rem;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 0.28rem;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding-bottom: 0.1rem;
 }
 #mission-panel {
@@ -456,11 +458,11 @@ html, body {
     linear-gradient(to bottom, #1a1408, #0a0503);
   border: 1px solid #4a3a18;
   border-radius: 6px;
-  padding: 0.42rem 0.55rem;
+  padding: 0.38rem 0.48rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  max-height: 8.5rem;
+  gap: 0.28rem;
+  max-height: 7.1rem;
   overflow: hidden;
 }
 .mission-panel-title {
@@ -477,7 +479,7 @@ html, body {
     linear-gradient(to bottom, #1a0a05 0%, #0e0403 100%);
   border: 1px solid #4a2418;
   border-radius: 6px;
-  padding: 0.42rem 0.55rem;
+  padding: 0.38rem 0.48rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -561,7 +563,7 @@ html, body {
   position: relative;
   flex: 1 1 45%;
   background: linear-gradient(135deg, #3a2010, #201005);
-  padding: 0.3rem 0.5rem 0.3rem 1.45rem;
+  padding: 0.26rem 0.38rem 0.26rem 1.28rem;
   border: 1px solid #6a3e1e;
   border-radius: 3px;
   font-size: 0.78em;
@@ -598,12 +600,12 @@ html, body {
     #0a0504;
   border: 1px solid #3a241a;
   border-radius: 6px;
-  padding: 0.42rem 0.55rem;
+  padding: 0.38rem 0.48rem;
   font-family: 'Consolas', 'Malgun Gothic', monospace;
-  font-size: 0.78em;
+  font-size: 0.72em;
   overflow-y: auto;
   min-height: 0;
-  max-height: 8.5rem;
+  max-height: 7.1rem;
   color: #b8a890;
 }
 #log-panel .log-entry {
@@ -629,11 +631,11 @@ html, body {
     radial-gradient(circle at 55% 0%, rgba(255, 120, 48, 0.14), transparent 42%);
   border: 1px solid #5a3420;
   border-radius: 6px;
-  padding: 0.38rem 0.55rem;
+  padding: 0.28rem 0.45rem;
   display: grid;
-  grid-template-columns: 8.7rem minmax(0, 1fr) minmax(12.5rem, 17rem);
+  grid-template-columns: 7.4rem minmax(0, 1fr) 13.25rem;
   grid-template-rows: 1fr;
-  gap: 0.34rem;
+  gap: 0.28rem;
   align-items: stretch;
   min-height: 0;
   justify-self: stretch;
@@ -642,8 +644,8 @@ html, body {
 .player-identity {
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
-  padding: 0.4rem;
+  gap: 0.12rem;
+  padding: 0.32rem;
   border: 1px solid #3a241a;
   border-radius: 5px;
   background: linear-gradient(to bottom, #1a0f08, #0a0503);
@@ -655,15 +657,15 @@ html, body {
 }
 .player-portrait-row {
   display: grid;
-  grid-template-columns: 2.55rem minmax(0, 1fr);
-  gap: 0.45rem;
+  grid-template-columns: 2.12rem minmax(0, 1fr);
+  gap: 0.34rem;
   align-items: center;
   min-width: 0;
 }
 .portrait-medallion {
   display: inline-block;
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 2.05rem;
+  height: 2.05rem;
   border-radius: 50%;
   background-image: url('../public/assets/race-portrait-atlas.png');
   background-size: 400% 100%;
@@ -687,9 +689,9 @@ html, body {
   font-size: 0.8em;
   color: #a89878;
 }
-.hp-pips { display: flex; gap: 0.2rem; margin-top: 0.2rem; }
+.hp-pips { display: flex; gap: 0.16rem; margin-top: 0.12rem; }
 .hp-pip {
-  width: 14px; height: 14px;
+  width: 11px; height: 11px;
   background: linear-gradient(135deg, #d03030, #801010);
   border-radius: 50%;
   border: 1px solid #a02020;
@@ -769,10 +771,12 @@ button:disabled .btn-cost { color: #6a5a40; }
 .hand-count { color: #e8c890; font-weight: 700; }
 .hand {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.28rem;
+  max-height: 8rem;
+  overflow: hidden;
   align-items: stretch;
   overflow-x: auto;
-  padding: 0.12rem 0.25rem 0.25rem;
+  padding: 0.08rem 0.18rem 0.18rem;
   flex: 1;
   min-height: 0;
 }
@@ -788,16 +792,16 @@ button:disabled .btn-cost { color: #6a5a40; }
   border: 2px solid #6a4828;
   border-radius: 7px;
   cursor: pointer;
-  width: 3.72rem;
-  min-width: 3.72rem;
-  padding: 0.24rem 0.22rem;
+  width: 3.25rem;
+  min-width: 3.25rem;
+  padding: 0.2rem 0.18rem;
   text-align: center;
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
   color: #e8d8b8;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55),
               inset 0 1px 0 rgba(255, 220, 160, 0.1);
   clip-path: polygon(7% 0, 93% 0, 100% 9%, 100% 91%, 93% 100%, 7% 100%, 0 91%, 0 9%);
@@ -841,8 +845,8 @@ button:disabled .btn-cost { color: #6a5a40; }
 }
 .skill-icon {
   display: inline-block;
-  width: 2.05rem;
-  height: 2.05rem;
+  width: 1.82rem;
+  height: 1.82rem;
   background-image: url('../public/assets/skill-icon-atlas.png');
   background-size: 300% 200%;
   background-position: 0% 0%;
@@ -860,7 +864,7 @@ button:disabled .btn-cost { color: #6a5a40; }
 }
 .card-name {
   font-weight: 700;
-  font-size: 0.78em;
+  font-size: 0.72em;
   letter-spacing: 0.02em;
 }
 .card-meta {
@@ -884,16 +888,16 @@ button:disabled .btn-cost { color: #6a5a40; }
 }
 
 .action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.28rem;
-  justify-content: center;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.22rem;
+  align-content: stretch;
 }
 .action-buttons button {
   position: relative;
   width: 100%;
-  min-height: 2rem;
-  padding-left: 2.35rem;
+  min-height: 0;
+  padding: 0.26rem 0.42rem 0.26rem 2.18rem;
   border: 1px solid #9c7438;
   background:
     linear-gradient(rgba(22, 12, 6, 0.12), rgba(8, 4, 2, 0.18)),
@@ -913,10 +917,10 @@ button:disabled .btn-cost { color: #6a5a40; }
 .action-buttons button::after {
   content: '';
   position: absolute;
-  left: 0.34rem;
+  left: 0.32rem;
   top: 50%;
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.32rem;
+  height: 1.32rem;
   transform: translateY(-50%);
   background-image: url('../public/assets/skill-icon-atlas.png');
   background-size: 300% 200%;
@@ -1211,7 +1215,10 @@ button:disabled {
 /* ---------- Start screen ---------- */
 .start-screen {
   position: fixed; inset: 0;
-  background: radial-gradient(ellipse at center, #1a0d08 0%, #000 70%);
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.66), rgba(0, 0, 0, 0.82)),
+    url('../public/assets/dragon-boss-banner.png') center / cover no-repeat,
+    #000;
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
   animation: start-fade-in 0.6s ease;
@@ -1224,6 +1231,12 @@ button:disabled {
   display: flex; flex-direction: column; align-items: center; gap: 1.2rem;
   max-width: 480px;
   padding: 2rem;
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.92)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat;
+  border: 1px solid rgba(156, 116, 56, 0.65);
+  border-radius: 8px;
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.72), 0 0 24px rgba(220, 80, 32, 0.26);
 }
 .start-dragon {
   font-size: 6rem;
