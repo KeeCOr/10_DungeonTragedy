@@ -1489,6 +1489,281 @@ button:disabled {
   transform: scale(1.04);
 }
 
+/* ---------- Onboarding overlay ---------- */
+.onboarding-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+.onboarding-overlay.show { opacity: 1; }
+.onboarding-overlay.fade-out { opacity: 0; }
+
+.ob-panel {
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.92), rgba(6, 3, 2, 0.96)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    linear-gradient(135deg, #2a1810, #0d0705);
+  border: 2px solid #6a3e1e;
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(200, 80, 30, 0.35), 0 24px 60px rgba(0,0,0,0.7);
+  width: min(600px, 92vw);
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: ob-panel-pop 0.5s ease;
+}
+@keyframes ob-panel-pop {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+.ob-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 0.75rem;
+  border-bottom: 1px solid #3a2418;
+}
+.ob-header-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #e8b060;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 10px rgba(232, 176, 64, 0.4);
+}
+.ob-dots {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+.ob-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #3a2418;
+  border: 1px solid #5a3824;
+  transition: background 0.25s, box-shadow 0.25s;
+}
+.ob-dot.active {
+  background: linear-gradient(135deg, #e8a040, #c06010);
+  border-color: #e8b040;
+  box-shadow: 0 0 8px rgba(232, 160, 64, 0.8);
+}
+
+.ob-slide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.2rem 1.5rem;
+  min-height: 0;
+}
+
+.ob-slide-icon {
+  font-size: 3.2rem;
+  text-align: center;
+  margin-bottom: 0.4rem;
+  filter: drop-shadow(0 0 14px rgba(255, 130, 50, 0.7));
+  line-height: 1;
+}
+.ob-slide-title {
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #e86050;
+  text-shadow: 0 0 14px rgba(232, 96, 80, 0.5);
+  margin: 0 0 1rem;
+  letter-spacing: 0.05em;
+}
+.ob-slide-body {
+  color: #d4c8a8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.ob-slide-body p {
+  margin: 0 0 0.75rem;
+  color: #c0b090;
+}
+.ob-tip {
+  background: rgba(232, 160, 64, 0.1);
+  border-left: 3px solid #e8a040;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0 4px 4px 0;
+  color: #e8c890 !important;
+  font-size: 0.85rem !important;
+  margin-top: 0.75rem !important;
+}
+
+/* Card list (slide 1) */
+.ob-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.5rem 0;
+}
+.ob-card-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #2a1a0e, #160d06);
+  border: 1px solid #4a2e18;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+}
+.ob-ci-icon {
+  font-size: 1.3em;
+  line-height: 1.2;
+  flex-shrink: 0;
+  width: 1.8rem;
+  text-align: center;
+}
+.ob-card-item strong {
+  color: #e8c890;
+  font-weight: 700;
+}
+
+/* Combat rules grid (slide 2) */
+.ob-rules-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+}
+.ob-rule-box {
+  background: linear-gradient(135deg, #2a1a0e, #160d06);
+  border: 1px solid #4a2e18;
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+}
+.ob-rb-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #e8c080;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.02em;
+}
+.ob-rb-desc {
+  font-size: 0.8rem;
+  color: #b0a080;
+  line-height: 1.4;
+}
+
+/* Race grid (slide 3) */
+.ob-race-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.55rem;
+  margin: 0.5rem 0;
+}
+.ob-race-box {
+  background: linear-gradient(135deg, #2a1a0e, #160d06);
+  border: 1px solid #4a2e18;
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ob-race-box:hover {
+  border-color: #c09040;
+  box-shadow: 0 0 12px rgba(200, 150, 64, 0.3);
+}
+.ob-race-icon {
+  font-size: 2rem;
+  line-height: 1.2;
+  filter: drop-shadow(0 0 8px rgba(255, 150, 60, 0.5));
+}
+.ob-race-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #e8c080;
+  margin: 0.25rem 0 0.15rem;
+}
+.ob-race-hp {
+  font-size: 0.78rem;
+  color: #ff8060;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+.ob-race-trait {
+  font-size: 0.72rem;
+  color: #a09070;
+  line-height: 1.35;
+}
+
+/* Footer nav */
+.ob-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid #3a2418;
+  gap: 0.5rem;
+}
+.ob-btn {
+  padding: 0.55rem 1.4rem;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.ob-btn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+.ob-btn-prev {
+  background: linear-gradient(135deg, #2a1a0e, #160d06);
+  border: 1px solid #5a3a20;
+  color: #c0a878;
+}
+.ob-btn-prev:hover:not(:disabled) {
+  border-color: #907040;
+  color: #e8c890;
+}
+.ob-btn-next {
+  background: linear-gradient(135deg, #3a2818, #201408);
+  border: 2px solid #9c7438;
+  color: #e8c890;
+  box-shadow: 0 0 10px rgba(200, 160, 80, 0.2);
+}
+.ob-btn-next:hover {
+  border-color: #c09858;
+  box-shadow: 0 0 16px rgba(200, 160, 80, 0.45);
+  color: #ffdc90;
+}
+.ob-btn-confirm {
+  background: linear-gradient(135deg, #3a6a2a, #1a4a14);
+  border: 2px solid #7adc50;
+  color: #eaffd0;
+  box-shadow: 0 0 16px rgba(120, 220, 80, 0.4);
+}
+.ob-btn-confirm:hover {
+  box-shadow: 0 0 24px rgba(140, 240, 100, 0.65);
+  transform: scale(1.04);
+}
+
+/* Skip checkbox */
+.ob-skip-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  font-size: 0.78rem;
+  color: #6a5840;
+  cursor: pointer;
+  border-top: 1px solid #2a1a10;
+  transition: color 0.15s;
+}
+.ob-skip-label:hover { color: #a08860; }
+.ob-skip-label input[type="checkbox"] {
+  accent-color: #c09040;
+  width: 14px; height: 14px;
+  cursor: pointer;
+}
+
 /* ---------- Ally info strip (right column) ---------- */
 .ally-info-strip {
   display: flex;

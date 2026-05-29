@@ -66,6 +66,165 @@ function showStartScreen() {
   });
 }
 
+// ── Onboarding Overlay ──
+function showOnboarding() {
+  return new Promise((resolve) => {
+    if (localStorage.getItem('dt-onboarding-done') === '1') { resolve(); return; }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'onboarding-overlay';
+
+    const slides = [
+      {
+        icon: '🃏',
+        title: '카드 드래프트',
+        body: `
+          <p>매 라운드 시작 시 공용 덱에서 카드 3장을 받습니다.</p>
+          <div class="ob-card-list">
+            <div class="ob-card-item"><span class="ob-ci-icon">🚶</span><div><strong>이동 (Move)</strong> — 보드 위에서 칸을 이동합니다. Range 수치만큼 이동 가능합니다.</div></div>
+            <div class="ob-card-item"><span class="ob-ci-icon">⚔️</span><div><strong>공격 (Attack)</strong> — 인접한 적 또는 상단 행에서 드래곤을 공격합니다.</div></div>
+            <div class="ob-card-item"><span class="ob-ci-icon">🛡️</span><div><strong>방어 (Hide)</strong> — 이번 턴 피해를 무효화합니다.</div></div>
+            <div class="ob-card-item"><span class="ob-ci-icon">💚</span><div><strong>회복 (Heal)</strong> — HP를 1 회복합니다.</div></div>
+            <div class="ob-card-item"><span class="ob-ci-icon">📯</span><div><strong>도발 (Taunt)</strong> — 드래곤의 공격 목표를 자신에게 집중시킵니다.</div></div>
+            <div class="ob-card-item"><span class="ob-ci-icon">💎</span><div><strong>보물 (Treasure)</strong> — 미션 보너스 점수 획득에 필요한 아이템입니다.</div></div>
+          </div>
+          <p class="ob-tip">턴에 카드 1장을 사용하거나, 카드 2장을 드로우할 수 있습니다.</p>
+        `,
+      },
+      {
+        icon: '🐉',
+        title: '전투 시스템',
+        body: `
+          <p>3×5 보드에서 드래곤을 상대로 협력 전투를 펼칩니다.</p>
+          <div class="ob-rules-grid">
+            <div class="ob-rule-box">
+              <div class="ob-rb-title">⚔️ 드래곤 공격</div>
+              <div class="ob-rb-desc">상단 행(Row 0)에 위치할 때 Attack 카드로 드래곤을 공격할 수 있습니다. 엘프는 사거리 +1 보너스가 있습니다.</div>
+            </div>
+            <div class="ob-rule-box">
+              <div class="ob-rb-title">🔴 드래곤 반격</div>
+              <div class="ob-rb-desc">드래곤 카드에 표시된 행/열 패턴으로 예고 공격을 합니다. 위협 표시된 칸을 피하거나 Hide 카드로 막으세요.</div>
+            </div>
+            <div class="ob-rule-box">
+              <div class="ob-rb-title">🔥 페이즈 변환</div>
+              <div class="ob-rb-desc">드래곤 HP가 줄어들수록 페이즈 2·3으로 강화됩니다. 공격 패턴이 복잡해지고 피해도 커집니다.</div>
+            </div>
+            <div class="ob-rule-box">
+              <div class="ob-rb-title">🏆 점수 획득</div>
+              <div class="ob-rb-desc">드래곤에 입힌 피해 + 완수한 미션 수로 점수를 계산합니다. 3매치 합산으로 최종 순위를 결정합니다.</div>
+            </div>
+          </div>
+        `,
+      },
+      {
+        icon: '🧬',
+        title: '종족별 특성',
+        body: `
+          <div class="ob-race-grid">
+            <div class="ob-race-box">
+              <div class="ob-race-icon">🧙</div>
+              <div class="ob-race-name">인간</div>
+              <div class="ob-race-hp">HP 5</div>
+              <div class="ob-race-trait">매 턴 5% 확률로 카드 추가 드로우</div>
+            </div>
+            <div class="ob-race-box">
+              <div class="ob-race-icon">🧝</div>
+              <div class="ob-race-name">엘프</div>
+              <div class="ob-race-hp">HP 5</div>
+              <div class="ob-race-trait">공격 사거리 +1 보너스 — 원거리 공격 가능</div>
+            </div>
+            <div class="ob-race-box">
+              <div class="ob-race-icon">🪓</div>
+              <div class="ob-race-name">드워프</div>
+              <div class="ob-race-hp">HP 6</div>
+              <div class="ob-race-trait">최대 HP +1 — 가장 높은 내구력</div>
+            </div>
+            <div class="ob-race-box">
+              <div class="ob-race-icon">👹</div>
+              <div class="ob-race-name">오크</div>
+              <div class="ob-race-hp">HP 5</div>
+              <div class="ob-race-trait">공격 데미지 +1 보너스 — 높은 단일 공격력</div>
+            </div>
+          </div>
+          <p class="ob-tip">종족은 매치마다 고정 순환으로 배정됩니다. 각 종족의 특성을 활용하는 전술을 짜보세요!</p>
+        `,
+      },
+    ];
+
+    let currentSlide = 0;
+
+    function renderSlide() {
+      const s = slides[currentSlide];
+      const isLast = currentSlide === slides.length - 1;
+      slideContainer.innerHTML = `
+        <div class="ob-slide">
+          <div class="ob-slide-icon">${s.icon}</div>
+          <h2 class="ob-slide-title">${s.title}</h2>
+          <div class="ob-slide-body">${s.body}</div>
+        </div>
+      `;
+      dotsEl.querySelectorAll('.ob-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentSlide);
+      });
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.textContent = isLast ? '이해했어요! ▶' : '다음 →';
+      nextBtn.className = isLast ? 'ob-btn ob-btn-confirm' : 'ob-btn ob-btn-next';
+    }
+
+    overlay.innerHTML = `
+      <div class="ob-panel">
+        <div class="ob-header">
+          <div class="ob-header-title">🐉 Dragon Tactics 가이드</div>
+          <div class="ob-dots"></div>
+        </div>
+        <div class="ob-slide-container"></div>
+        <div class="ob-footer">
+          <button class="ob-btn ob-btn-prev" id="ob-prev">← 이전</button>
+          <button class="ob-btn ob-btn-next" id="ob-next">다음 →</button>
+        </div>
+        <label class="ob-skip-label">
+          <input type="checkbox" id="ob-no-show" />
+          다음부터 표시 안 함
+        </label>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('show'));
+
+    const slideContainer = overlay.querySelector('.ob-slide-container');
+    const dotsEl = overlay.querySelector('.ob-dots');
+    const prevBtn = overlay.querySelector('#ob-prev');
+    const nextBtn = overlay.querySelector('#ob-next');
+
+    // Build dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'ob-dot';
+      dotsEl.appendChild(dot);
+    });
+
+    renderSlide();
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 0) { currentSlide--; renderSlide(); }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        renderSlide();
+      } else {
+        if (overlay.querySelector('#ob-no-show').checked) {
+          localStorage.setItem('dt-onboarding-done', '1');
+        }
+        overlay.classList.add('fade-out');
+        setTimeout(() => { overlay.remove(); resolve(); }, 450);
+      }
+    });
+  });
+}
+
 // ── Match Result Overlay ──
 function showMatchResult(state, scores, matchIndex, reason) {
   return new Promise((resolve) => {
@@ -195,6 +354,7 @@ function detectActionSound(prevState, nextState, actionType) {
 // ── Main Game ──
 async function main() {
   initAudio();
+  await showOnboarding();
   const playerCount = await showStartScreen();
 
   const SEED = Math.floor(Math.random() * 1e9);
