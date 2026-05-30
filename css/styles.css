@@ -25,7 +25,7 @@ html, body {
   color: #e6e3d8;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 14.75rem;
-  grid-template-rows: 1.95rem 5.15rem minmax(0, 1fr) 6.25rem;
+  grid-template-rows: 1.95rem 4.35rem minmax(0, 1fr) 6.25rem;
   grid-template-areas:
     "hud     hud"
     "dragon  right"
@@ -83,6 +83,7 @@ html, body {
 }
 #hud .hud-meta { color: #c0b896; font-size: 0.84em; }
 .turn-banner {
+  display: none;
   padding: 0.25rem 0.9rem;
   border-radius: 4px;
   background: #2a1814;
@@ -132,17 +133,15 @@ html, body {
   grid-area: dragon;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(8rem, auto) 1fr minmax(8rem, auto);
+  grid-template-columns: 4.15rem minmax(0, 1fr);
   align-items: center;
   gap: 0.55rem;
   min-height: 0;
   padding: 0.34rem 0.72rem 0.42rem;
   background:
-    linear-gradient(90deg, rgba(8, 4, 3, 0.92), rgba(16, 6, 4, 0.5) 46%, rgba(8, 4, 3, 0.92)),
-    url('../public/assets/dragon-boss-banner.png') center 42% / cover no-repeat,
-    linear-gradient(90deg, rgba(201, 152, 88, 0.55), transparent 18% 82%, rgba(201, 152, 88, 0.42)),
-    radial-gradient(circle at 12% 50%, rgba(255, 96, 44, 0.28), transparent 16%),
-    linear-gradient(to bottom, #2a0f08 0%, #1a0605 70%, #3a1408 100%);
+    linear-gradient(rgba(16, 9, 5, 0.88), rgba(6, 3, 2, 0.92)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    linear-gradient(to bottom, #1a0a05 0%, #0e0403 100%);
   border: 1px solid #6a2e1a;
   border-radius: 8px 8px 14px 14px;
   box-shadow: 0 0 14px rgba(150, 40, 20, 0.4),
@@ -182,6 +181,29 @@ html, body {
   z-index: 2;
 }
 .dstrip-left { display: flex; align-items: center; gap: 0.6rem; }
+.dragon-medallion {
+  width: 3.45rem;
+  height: 3.45rem;
+  border-radius: 50%;
+  background-image: url('../public/assets/dragon-boss-medallion.png');
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 0 1px #9c7438, 0 0 14px rgba(255, 86, 34, 0.45);
+}
+.dragon-mini {
+  display: inline-block;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: url('../public/assets/dragon-boss-medallion.png') center / cover no-repeat;
+  box-shadow: 0 0 0 1px #9c7438;
+}
+.dstrip-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
 .dstrip-emoji {
   font-size: 2.35rem;
   line-height: 1;
@@ -407,11 +429,26 @@ html, body {
   opacity: 0;
 }
 .token {
+  display: inline-block;
+  width: 72%;
+  aspect-ratio: 1;
   font-size: 1em;
   line-height: 1;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   transition: transform 0.2s;
 }
+.token-image {
+  background-image: url('../public/assets/race-token-atlas.png');
+  background-size: 400% 100%;
+  background-position: 0 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(232, 176, 64, 0.6), 0 0 12px rgba(0,0,0,0.55);
+}
+.token-image.human { background-position: 0 0; }
+.token-image.elf { background-position: 33.333% 0; }
+.token-image.dwarf { background-position: 66.666% 0; }
+.token-image.orc { background-position: 100% 0; }
+.token-glyph-fallback { display: none; }
 .token-self { filter: drop-shadow(0 0 8px rgba(90, 190, 240, 0.85)); }
 .lair-marker {
   font-size: 0.7em;
@@ -446,12 +483,88 @@ html, body {
   grid-area: right;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas:
+    "turn"
+    "dragon"
+    "mission";
   gap: 0.28rem;
   min-height: 0;
   overflow: hidden;
   padding-bottom: 0.1rem;
 }
+#turn-panel {
+  grid-area: turn;
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.92)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
+    #0a0504;
+  border: 1px solid #5a3420;
+  border-radius: 6px;
+  padding: 0.38rem 0.48rem;
+  min-height: 0;
+}
+.turn-panel-title {
+  color: #d4b878;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.turn-current {
+  display: grid;
+  grid-template-columns: 2.15rem minmax(0, 1fr);
+  gap: 0.42rem;
+  align-items: center;
+  margin-top: 0.28rem;
+  color: #f5d99d;
+}
+.turn-current-name {
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.turn-current-hp {
+  color: #ffb070;
+  font-size: 0.78em;
+  margin-top: 0.08rem;
+}
+.turn-roster {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.18rem;
+  margin-top: 0.35rem;
+}
+.turn-roster-row {
+  display: grid;
+  grid-template-columns: 1.35rem minmax(0, 1fr) auto;
+  gap: 0.28rem;
+  align-items: center;
+  padding: 0.12rem 0.18rem;
+  border-radius: 3px;
+  color: #c8b890;
+  font-size: 0.74em;
+}
+.turn-roster-row.current {
+  background: rgba(232, 176, 64, 0.13);
+  color: #ffe0a0;
+}
+.turn-roster-row.eliminated { opacity: 0.38; }
+.turn-roster-row .portrait-medallion {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.turn-roster-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.turn-roster-hp {
+  color: #ff9060;
+  font-weight: 800;
+}
 #mission-panel {
+  grid-area: mission;
   background:
     linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
     url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
@@ -473,6 +586,7 @@ html, body {
   margin-bottom: 0.15rem;
 }
 #dragon-panel {
+  grid-area: dragon;
   background:
     linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
     url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
@@ -594,6 +708,7 @@ html, body {
 }
 
 #log-panel {
+  display: none;
   background:
     linear-gradient(rgba(16, 9, 5, 0.84), rgba(6, 3, 2, 0.9)),
     url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat,
@@ -703,6 +818,7 @@ html, body {
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
 }
 .turn-mark {
+  display: none;
   margin-top: auto;
   font-size: 0.82em;
   font-weight: 700;
@@ -1314,6 +1430,83 @@ button:disabled {
   transform: scale(1.05);
 }
 
+/* ---------- Mission reveal overlay ---------- */
+.mission-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.8)),
+    url('../public/assets/dragon-boss-banner.png') center / cover no-repeat,
+    #000;
+  transition: opacity 0.26s;
+}
+.mission-reveal-overlay.fade-out { opacity: 0; }
+.mission-reveal-panel {
+  width: min(34rem, 88vw);
+  background:
+    linear-gradient(rgba(16, 9, 5, 0.86), rgba(6, 3, 2, 0.94)),
+    url('../public/assets/ui-panel-frame.png') center / 100% 100% no-repeat;
+  border: 1px solid rgba(156, 116, 56, 0.72);
+  border-radius: 8px;
+  padding: 1.45rem 1.7rem;
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.72), 0 0 24px rgba(220, 80, 32, 0.28);
+}
+.mission-reveal-kicker {
+  color: #d4b878;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.mission-reveal-panel h2 {
+  margin: 0.25rem 0 0.9rem;
+  color: #ffb070;
+  font-size: 1.45rem;
+}
+.mission-reveal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+.mission-reveal-card {
+  min-height: 5.4rem;
+  padding: 0.75rem;
+  border: 1px solid #5a3420;
+  border-radius: 5px;
+  background: rgba(12, 6, 3, 0.68);
+}
+.mission-reveal-label {
+  color: #ffe0a0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+}
+.mission-reveal-desc {
+  color: #d4c8a8;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+.mission-reveal-win {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.85rem 0 1rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(232, 176, 64, 0.1);
+  border-left: 2px solid #c09858;
+  color: #d8c4a0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+.mission-reveal-win strong { color: #ffe0a0; }
+.mission-reveal-panel button {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
 /* ---------- Match result overlay ---------- */
 .match-result-overlay {
   position: fixed; inset: 0;
@@ -1492,7 +1685,10 @@ button:disabled {
 /* ---------- Onboarding overlay ---------- */
 .onboarding-overlay {
   position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.88);
+  background:
+    linear-gradient(rgba(4, 2, 1, 0.82), rgba(0, 0, 0, 0.92)),
+    url('../public/assets/dragon-boss-banner.png') center / cover no-repeat,
+    #000;
   display: flex; align-items: center; justify-content: center;
   z-index: 2000;
   opacity: 0;

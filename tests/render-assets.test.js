@@ -14,3 +14,9 @@ test('render: player and ally panels expose race portrait medallions', () => {
   assert.match(renderSource, /portrait-medallion \$\{human\.race\}/);
   assert.match(renderSource, /portrait-medallion \$\{p\.race\}/);
 });
+
+test('render: board tokens expose generated race atlas classes', () => {
+  assert.match(renderSource, /token-image \$\{p\.race\}/);
+  assert.match(renderSource, /renderTurnPanel\(state\)/);
+  assert.match(renderSource, /turn-panel/);
+});

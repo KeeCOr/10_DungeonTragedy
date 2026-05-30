@@ -13,6 +13,8 @@ This list is based on `docs/DragonTragedy_gameplay_preview.png`: a dark fantasy 
 | Race portrait atlas | `public/assets/race-portrait-atlas.png` | 2172x724 | Player HUD portrait medallions. Crop as a 4x1 atlas for human, elf, dwarf, and orc. |
 | UI button frame atlas | `public/assets/ui-button-frame-atlas.png` | 1024x1536 | Shared button skin for normal, active/hover, and disabled states. Use HTML text over the empty center. |
 | UI panel frame | `public/assets/ui-panel-frame.png` | 1535x1024 | Shared ornamental frame/background for right-side panels, player HUD, logs, and mission panels. |
+| Race token atlas | `public/assets/race-token-atlas.png` | 2172x724 | Board piece tokens for human, elf, dwarf, and orc. Crop as a 4x1 atlas. |
+| Dragon boss medallion | `public/assets/dragon-boss-medallion.png` | 1254x1254 | Compact boss portrait for the top boss bar and dragon turn indicator. |
 
 ## Recommended Next Assets
 
@@ -53,3 +55,11 @@ Three empty horizontal ornate RPG button frames in a vertical atlas: normal, act
 ### UI Panel Frame
 
 Large empty ornate rectangular HUD panel frame with blackened metal border, aged gold corners, subtle ember cracks, and dark center for HTML overlay content. No text or icons.
+
+### Race Token Atlas
+
+Four circular board-game tokens in a 4 by 1 atlas: human knight, elf archer, dwarf guardian, and orc warrior. Designed for readable board cells rather than large portraits.
+
+### Dragon Boss Medallion
+
+One circular boss portrait medallion with a black-red dragon head, gold-black frame, and ember lighting. Used for compact boss HUD placement.

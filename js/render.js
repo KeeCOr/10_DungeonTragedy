@@ -54,6 +54,7 @@ export function render(state, ui) {
     ? state.dragon.phase : null;
 
   renderHud(state);
+  renderTurnPanel(state);
   renderDragonStrip(state, ui);
   renderBoard(state, ui);
   renderDragonPanel(state, ui);
@@ -215,6 +216,36 @@ function actorLabel(state, id) {
   return `${glyph} ${p.isAI ? p.name : '당신'}`;
 }
 
+function renderTurnPanel(state) {
+  const el = document.getElementById('turn-panel');
+  if (!el) return;
+  const actorId = state.turnOrder?.[state.currentTurnIndex];
+  const actor = actorId === 'dragon'
+    ? { id: 'dragon', name: 'Dragon', race: 'dragon', hp: state.dragon?.hp, maxHp: state.dragon?.maxHp }
+    : state.players.find((p) => p.id === actorId);
+  const actorName = actorId === 'dragon'
+    ? '용 차례'
+    : actor?.isAI ? `${actor.name} 차례` : '당신 차례';
+  el.innerHTML = `
+    <div class="turn-panel-title">현재 턴</div>
+    <div class="turn-current ${actorId === 'dragon' ? 'dragon' : ''}">
+      <span class="${actorId === 'dragon' ? 'dragon-mini' : `portrait-medallion ${actor?.race ?? 'human'}`}"></span>
+      <div>
+        <div class="turn-current-name">${actorName}</div>
+        <div class="turn-current-hp">HP ${actor?.hp ?? '-'} / ${actor?.maxHp ?? '-'}</div>
+      </div>
+    </div>
+    <div class="turn-roster">
+      ${state.players.map((p) => `
+        <div class="turn-roster-row ${p.id === actorId ? 'current' : ''} ${p.isEliminated ? 'eliminated' : ''}">
+          <span class="portrait-medallion ${p.race}" title="${RACE_INFO[p.race]?.name ?? p.race}"></span>
+          <span class="turn-roster-name">${p.isAI ? p.name : '당신'}</span>
+          <span class="turn-roster-hp">${p.isEliminated ? 'OUT' : `${p.hp}/${p.maxHp}`}</span>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
 function renderHud(state) {
   const hud = document.getElementById('hud');
   const actor = state.turnOrder?.[state.currentTurnIndex];
@@ -266,9 +297,9 @@ function renderBoard(state, ui) {
         const glyph = RACE_INFO[p?.race]?.glyph ?? '🧙';
         const isSelf = p && !p.isAI;
         if (isSelf) cell.classList.add('is-self');
-        body = `<span class="token ${isSelf ? 'token-self' : ''}"
+        body = `<span class="token token-image ${p.race} ${isSelf ? 'token-self' : ''}"
                       style="view-transition-name: token-${p.id}"
-                      title="${p.id} (${p.race}) HP ${p.hp}">${glyph}</span>`;
+                      title="${p.id} (${p.race}) HP ${p.hp}"><span class="token-glyph-fallback">${glyph}</span></span>`;
         body += `<span class="cell-hp">${p.hp}</span>`;
         if (isSelf) body += `<span class="self-ring"></span><span class="self-label">나</span>`;
       }
@@ -302,6 +333,29 @@ function renderDragonStrip(state, ui) {
   el.classList.toggle('attackable', !!ui?.canAttackDragon);
   const pips = [1, 2, 3].map((p) =>
     `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
+  const hintBodyClean = ui?.canAttackDragon
+    ? '지금 용을 공격할 수 있습니다.'
+    : '상단 행에 있을 때 용을 공격할 수 있습니다.';
+  el.innerHTML = `
+    <div class="dstrip-left phase-${d.phase}">
+      <div class="dragon-medallion"></div>
+    </div>
+    <div class="dstrip-center">
+      <div class="dstrip-title-row">
+        <div class="dstrip-title">용</div>
+        <div class="dstrip-sub">페이즈 ${d.phase}</div>
+      </div>
+      <div class="hp-bar">
+        <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
+        <div class="label">HP ${d.hp} / ${d.maxHp}</div>
+      </div>
+      <div class="dstrip-phase" title="${hintBodyClean}">
+        ${pips}
+        <span>상단 행에서 공격</span>
+      </div>
+    </div>
+  `;
+  return;
   const phaseClass = `phase-${d.phase}`;
   const hintBody = ui?.canAttackDragon
     ? '지금 용을 클릭해 공격하세요!'

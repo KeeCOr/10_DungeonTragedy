@@ -226,6 +226,42 @@ function showOnboarding() {
 }
 
 // ── Match Result Overlay ──
+function showMissionReveal(state) {
+  return new Promise((resolve) => {
+    const human = state.players.find((p) => !p.isAI);
+    const required = human?.missions?.required;
+    const optional = human?.missions?.optional;
+    const overlay = document.createElement('div');
+    overlay.className = 'mission-reveal-overlay';
+    overlay.innerHTML = `
+      <div class="mission-reveal-panel">
+        <div class="mission-reveal-kicker">미션 추첨 완료</div>
+        <h2>이번 매치 목표</h2>
+        <div class="mission-reveal-grid">
+          <div class="mission-reveal-card required">
+            <div class="mission-reveal-label">필수 미션 · ${required?.points ?? 0}pt</div>
+            <div class="mission-reveal-desc">${required?.description ?? '미션 없음'}</div>
+          </div>
+          <div class="mission-reveal-card optional">
+            <div class="mission-reveal-label">선택 미션 · ${optional?.points ?? 0}pt</div>
+            <div class="mission-reveal-desc">${optional?.description ?? '미션 없음'}</div>
+          </div>
+        </div>
+        <div class="mission-reveal-win">
+          <strong>승리조건</strong>
+          <span>3매치 동안 미션 점수, 생존 점수, 용 처치 보너스를 합산해 최종 승자를 정합니다.</span>
+        </div>
+        <button id="mission-reveal-continue">전투 시작</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#mission-reveal-continue').addEventListener('click', () => {
+      overlay.classList.add('fade-out');
+      setTimeout(() => { overlay.remove(); resolve(); }, 260);
+    });
+  });
+}
+
 function showMatchResult(state, scores, matchIndex, reason) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
@@ -368,6 +404,7 @@ async function main() {
   let state = startMatch(createInitialState({ seed: SEED, players: PLAYERS }));
   state = rollTurnOrder(state);
   console.log(`Seed: ${SEED}`);
+  await showMissionReveal(state);
 
   let stepScheduled = false;
   function scheduleStep(delay) {

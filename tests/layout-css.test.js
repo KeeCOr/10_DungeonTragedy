@@ -29,7 +29,7 @@ test('layout: board uses the play area without decorative dead space', () => {
   const playerPanel = ruleFor('#player-panel');
 
   assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+14\.75rem\s*;/);
-  assert.match(app, /grid-template-rows:\s*1\.95rem\s+5\.15rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.35rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
   assert.match(boardWrap, /align-items:\s*stretch\s*;/);
   assert.match(boardWrap, /padding:\s*0\s*;/);
   assert.match(boardWrap, /justify-self:\s*center\s*;/);
@@ -110,7 +110,7 @@ test('visual: combat scene borrows lava arena depth from the reference image', (
   assert.match(appAfter, /radial-gradient\(ellipse at 50% 58%, rgba\(255,\s*96,\s*22,\s*0\.2\)/);
   assert.match(boardBefore, /linear-gradient\(115deg,\s*transparent 0 18%/);
   assert.match(boardAfter, /radial-gradient\(circle at 50% 48%, rgba\(255,\s*126,\s*32,\s*0\.18\)/);
-  assert.match(dragonStrip, /linear-gradient\(90deg,\s*rgba\(201,\s*152,\s*88,\s*0\.55\)/);
+  assert.match(dragonStrip, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(card, /clip-path:\s*polygon\(/);
 });
 
@@ -128,11 +128,12 @@ test('visual: generated image assets are wired into the main combat UI', () => {
   const dragonStrip = ruleFor('#dragon-strip');
   const board = ruleFor('#board');
   const card = ruleFor('.card');
-  const portrait = ruleFor('.portrait-medallion');
+  const portrait = css.match(/(?:^|\n)\.portrait-medallion\s*\{([\s\S]*?)\n\}/m)?.[1] ?? '';
 
-  assert.match(dragonStrip, /url\(['"]?\.\.\/public\/assets\/dragon-boss-banner\.png['"]?\)/);
+  assert.match(dragonStrip, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(board, /url\(['"]?\.\.\/public\/assets\/lava-board-texture\.png['"]?\)/);
   assert.match(card, /url\(['"]?\.\.\/public\/assets\/fantasy-card-frame\.png['"]?\)/);
+  assert.ok(portrait, 'missing base portrait medallion rule');
   assert.match(portrait, /url\(['"]?\.\.\/public\/assets\/race-portrait-atlas\.png['"]?\)/);
 });
 
@@ -174,4 +175,53 @@ test('visual: start screen hides empty game chrome and reuses generated frames',
   assert.match(startScreen, /#000\s*;/);
   assert.match(startContent, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(startContent, /box-shadow:\s*0 18px 56px rgba\(0,\s*0,\s*0,\s*0\.72\)/);
+});
+
+test('layout: boss bar is compact and uses a real dragon medallion', () => {
+  const app = ruleFor('#app');
+  const dragonStrip = ruleFor('#dragon-strip');
+  const dragonPortrait = ruleFor('.dragon-medallion');
+
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.35rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
+  assert.match(dragonStrip, /grid-template-columns:\s*4\.15rem minmax\(0,\s*1fr\)\s*;/);
+  assert.match(dragonPortrait, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-boss-medallion\.png['"]?\)\s*;/);
+});
+
+test('layout: right turn panel owns turn and health status', () => {
+  const rightColumn = ruleFor('#right-column');
+  const turnPanel = ruleFor('#turn-panel');
+  const turnRoster = ruleFor('.turn-roster');
+  const turnBanner = ruleFor('.turn-banner');
+
+  assert.match(rightColumn, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s*;/);
+  assert.match(turnPanel, /grid-area:\s*turn\s*;/);
+  assert.match(turnPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+  assert.match(turnRoster, /grid-template-columns:\s*1fr\s*;/);
+  assert.match(turnBanner, /display:\s*none\s*;/);
+});
+
+test('visual: board pieces use generated race token atlas', () => {
+  const token = ruleFor('.token-image');
+  const elf = ruleFor('.token-image.elf');
+
+  assert.match(token, /background-image:\s*url\(['"]?\.\.\/public\/assets\/race-token-atlas\.png['"]?\)\s*;/);
+  assert.match(token, /background-size:\s*400%\s+100%\s*;/);
+  assert.match(elf, /background-position:\s*33\.333%\s+0\s*;/);
+});
+
+test('visual: mission reveal overlay presents starting objectives', () => {
+  const overlay = ruleFor('.mission-reveal-overlay');
+  const panel = ruleFor('.mission-reveal-panel');
+
+  assert.match(overlay, /z-index:\s*1100\s*;/);
+  assert.match(panel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
+});
+
+test('visual: onboarding overlay covers empty game chrome', () => {
+  const overlay = ruleFor('.onboarding-overlay');
+  const panel = ruleFor('.ob-panel');
+
+  assert.match(overlay, /url\(['"]?\.\.\/public\/assets\/dragon-boss-banner\.png['"]?\)/);
+  assert.match(overlay, /#000\s*;/);
+  assert.match(panel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
 });
