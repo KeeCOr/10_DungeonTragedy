@@ -99,10 +99,15 @@ export function startMatch(state) {
     };
   }
 
+  // Match 0 & 1: fire dragon. Match 2: ice dragon (harder final encounter).
+  const DRAGON_TYPES = ['fire', 'fire', 'ice'];
+  const dragonType = DRAGON_TYPES[state.matchIndex] ?? 'fire';
+
   const dragonDeck = rng.shuffle(buildDragonCards(1));
   const [firstReveal, ...restDeck] = dragonDeck;
   const dragon = {
     hp: 12, maxHp: 12, phase: 1,
+    type: dragonType,
     deck: restDeck, discard: [], revealed: [resolveRandomizedReveal(firstReveal, rng)],
     position: null, // off-grid
     markedCells: [],

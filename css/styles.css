@@ -1985,3 +1985,63 @@ button:disabled {
 .ally-card .ally-name { color: #c0a878; font-weight: 600; }
 .ally-card .ally-hp { color: #ff8060; font-weight: 700; margin-left: auto; }
 .ally-card .ally-hand-count { color: #a89878; font-size: 0.9em; }
+
+/* ---------- Ice dragon theme (match 3) ---------- */
+
+/* Board: replace lava texture with forest texture for visual variety on fire matches.
+   On ice match (#app[data-dragon-type="ice"]) swap to icy board tones. */
+#app[data-dragon-type="ice"] #board {
+  background:
+    linear-gradient(rgba(6, 14, 26, 0.32), rgba(6, 14, 26, 0.52)),
+    url('../public/assets/dragon-ice-boss-banner.png') center / cover no-repeat,
+    radial-gradient(circle at 50% 0%, rgba(60, 160, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #0e1a2a 0%, #08101c 48%, #040810 100%);
+  border-color: #1e4a7a;
+  box-shadow:
+    inset 0 0 34px rgba(0, 0, 0, 0.82),
+    inset 0 1px 0 rgba(120, 200, 255, 0.16),
+    0 0 22px rgba(30, 100, 200, 0.48);
+}
+
+/* Forest board variant class (can be manually applied for future forest match) */
+#app[data-dragon-type="forest"] #board {
+  background:
+    linear-gradient(rgba(4, 14, 6, 0.30), rgba(4, 14, 6, 0.48)),
+    url('../public/assets/forest-board-texture.png') center / cover no-repeat,
+    radial-gradient(circle at 50% 0%, rgba(40, 200, 80, 0.12), transparent 34%),
+    linear-gradient(135deg, #0e1a0e 0%, #081408 48%, #04080a 100%);
+  border-color: #2e5a1e;
+  box-shadow:
+    inset 0 0 34px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(100, 220, 80, 0.14),
+    0 0 22px rgba(30, 120, 30, 0.42);
+}
+
+/* Ice dragon medallion uses the ice boss banner as its image */
+.dragon-medallion-ice {
+  background-image: url('../public/assets/dragon-ice-boss-banner.png') !important;
+  box-shadow: 0 0 0 1px #4a90c8, 0 0 14px rgba(80, 180, 255, 0.55) !important;
+}
+
+/* Ice dragon strip accent colours */
+#dragon-strip.dragon-ice .dstrip-title {
+  color: #60b0f0;
+  text-shadow: 0 0 8px rgba(80, 160, 240, 0.7);
+}
+#dragon-strip.dragon-ice .hp-bar .fill {
+  background: linear-gradient(90deg, #2060b0, #60c0ff);
+  box-shadow: 0 0 8px rgba(80, 180, 255, 0.6);
+}
+
+/* Ice match start screen and overlays use the ice boss banner */
+#app[data-dragon-type="ice"] .start-screen,
+#app[data-dragon-type="ice"] .mission-reveal-overlay,
+#app[data-dragon-type="ice"] .onboarding-overlay {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.84)),
+    url('../public/assets/dragon-ice-boss-banner.png') center / cover no-repeat,
+    #000;
+}
+
+/* Dragon card art sheet: used as a CSS background-image source for card art previews */
+.dragon-card-art { background-image: url('../public/assets/dragon-card-art-sheet.png'); }

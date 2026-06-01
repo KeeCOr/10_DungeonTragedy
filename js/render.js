@@ -53,6 +53,12 @@ export function render(state, ui) {
     && state.dragon && prevState.dragon.phase !== state.dragon.phase
     ? state.dragon.phase : null;
 
+  // Apply dragon-type class to #app so CSS can theme the board and overlays.
+  const app = document.getElementById('app');
+  if (app && state.dragon) {
+    app.dataset.dragonType = state.dragon.type ?? 'fire';
+  }
+
   renderHud(state);
   renderTurnPanel(state);
   renderDragonStrip(state, ui);
@@ -331,18 +337,21 @@ function renderDragonStrip(state, ui) {
   const d = state.dragon;
   if (!d) { el.innerHTML = ''; return; }
   el.classList.toggle('attackable', !!ui?.canAttackDragon);
+  el.classList.toggle('dragon-ice', d.type === 'ice');
   const pips = [1, 2, 3].map((p) =>
     `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
   const hintBodyClean = ui?.canAttackDragon
     ? '지금 용을 공격할 수 있습니다.'
     : '상단 행에 있을 때 용을 공격할 수 있습니다.';
+  const dragonName = d.type === 'ice' ? '빙하 용' : '용';
+  const medallionClass = d.type === 'ice' ? 'dragon-medallion dragon-medallion-ice' : 'dragon-medallion';
   el.innerHTML = `
     <div class="dstrip-left phase-${d.phase}">
-      <div class="dragon-medallion"></div>
+      <div class="${medallionClass}"></div>
     </div>
     <div class="dstrip-center">
       <div class="dstrip-title-row">
-        <div class="dstrip-title">용</div>
+        <div class="dstrip-title">${dragonName}</div>
         <div class="dstrip-sub">페이즈 ${d.phase}</div>
       </div>
       <div class="hp-bar">
