@@ -3,6 +3,7 @@ import { buildPlayerDeck, drawFromDeck } from './cards.js';
 import { allRaceIds, baseMaxHp } from './races.js';
 import { assignMissions } from './missions.js';
 import { buildDragonCards, resolveRandomizedReveal } from './dragon.js';
+import { pickDragonType } from './dragons.js';
 
 const BOARD_ROWS = 3;
 const BOARD_COLS = 5;
@@ -28,11 +29,14 @@ const FIXED_POSITIONS = {
   5: [{ r: 2, c: 0 }, { r: 2, c: 1 }, { r: 2, c: 2 }, { r: 2, c: 3 }, { r: 2, c: 4 }],
 };
 
-export function createInitialState({ seed, players }) {
+export function createInitialState({ seed, players, targetDragonKills = 3 }) {
+  const target = Math.max(1, Math.min(5, Number(targetDragonKills) || 3));
   return {
     seed,
     matchIndex: 0,
-    matchScores: [[], [], []],
+    targetDragonKills: target,
+    dragonKills: 0,
+    matchScores: Array.from({ length: target }, () => []),
     round: 0,
     phase: 'setup',
     board: Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(null)),
@@ -99,15 +103,16 @@ export function startMatch(state) {
     };
   }
 
-  // Match 0 & 1: fire dragon. Match 2: ice dragon (harder final encounter).
-  const DRAGON_TYPES = ['fire', 'fire', 'ice'];
-  const dragonType = DRAGON_TYPES[state.matchIndex] ?? 'fire';
+  const dragonType = pickDragonType(state.seed, state.matchIndex);
 
   const dragonDeck = rng.shuffle(buildDragonCards(1));
   const [firstReveal, ...restDeck] = dragonDeck;
   const dragon = {
-    hp: 12, maxHp: 12, phase: 1,
-    type: dragonType,
+    hp: dragonType.maxHp, maxHp: dragonType.maxHp, phase: 1,
+    type: dragonType.id,
+    name: dragonType.name,
+    atlasClass: dragonType.atlasClass,
+    element: dragonType.element,
     deck: restDeck, discard: [], revealed: [resolveRandomizedReveal(firstReveal, rng)],
     position: null, // off-grid
     markedCells: [],

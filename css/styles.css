@@ -167,7 +167,7 @@ html, body {
   animation: your-turn-pulse 1.2s ease-in-out infinite;
 }
 #dragon-strip.attackable::before {
-  content: '⚔️ 클릭해서 공격';
+  content: '?뷂툘 ?대┃?댁꽌 怨듦꺽';
   position: absolute;
   top: -0.9rem; left: 50%;
   transform: translateX(-50%);
@@ -185,9 +185,9 @@ html, body {
   width: 3.45rem;
   height: 3.45rem;
   border-radius: 50%;
-  background-image: url('../public/assets/dragon-boss-medallion.png');
-  background-size: cover;
-  background-position: center;
+  background-image: url('../public/assets/dragon-type-atlas.png');
+  background-size: 500% 100%;
+  background-position: 0 0;
   box-shadow: 0 0 0 1px #9c7438, 0 0 14px rgba(255, 86, 34, 0.45);
 }
 .dragon-mini {
@@ -195,9 +195,22 @@ html, body {
   width: 1.9rem;
   height: 1.9rem;
   border-radius: 50%;
-  background: url('../public/assets/dragon-boss-medallion.png') center / cover no-repeat;
+  background-image: url('../public/assets/dragon-type-atlas.png');
+  background-size: 500% 100%;
+  background-position: 0 0;
   box-shadow: 0 0 0 1px #9c7438;
 }
+.dragon-medallion.fire,
+.dragon-mini.fire { background-position: 0 0; }
+.dragon-medallion.ice,
+.dragon-mini.ice { background-position: 25% 0; }
+.dragon-medallion.venom,
+.dragon-mini.venom { background-position: 50% 0; }
+.dragon-medallion.storm,
+.dragon-mini.storm { background-position: 75% 0; }
+.dragon-medallion.gold,
+.dragon-mini.gold { background-position: 100% 0; }
+.dragon-medallion.gold { background-position: 100% 0; }
 .dstrip-title-row {
   display: flex;
   align-items: baseline;
@@ -877,6 +890,10 @@ button:disabled .btn-cost { color: #6a5a40; }
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
+  border: 1px solid #4a321d;
+  border-radius: 5px;
+  background: linear-gradient(to bottom, rgba(26, 15, 8, 0.84), rgba(8, 4, 2, 0.72));
+  padding: 0.26rem;
 }
 .hand-title {
   font-size: 0.8em;
@@ -885,6 +902,12 @@ button:disabled .btn-cost { color: #6a5a40; }
   line-height: 1;
 }
 .hand-count { color: #e8c890; font-weight: 700; }
+.hand-help {
+  color: #8e8068;
+  font-size: 0.68em;
+  line-height: 1.15;
+  padding-left: 0.2rem;
+}
 .hand {
   display: flex;
   gap: 0.28rem;
@@ -1008,6 +1031,35 @@ button:disabled .btn-cost { color: #6a5a40; }
   grid-template-rows: repeat(3, 1fr);
   gap: 0.22rem;
   align-content: stretch;
+}
+.turn-choice-panel {
+  display: grid;
+  grid-template-rows: auto repeat(3, 1fr);
+  gap: 0.22rem;
+  border: 1px solid #6a4a24;
+  border-radius: 5px;
+  padding: 0.3rem;
+  background: linear-gradient(to bottom, rgba(42, 26, 12, 0.9), rgba(12, 6, 3, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 220, 150, 0.08);
+}
+.choice-panel-title {
+  color: #e8c890;
+  font-size: 0.78em;
+  font-weight: 800;
+  line-height: 1;
+}
+.choice-panel-title::after {
+  content: "Card use or draw";
+  display: none;
+}
+.choice-panel-hint {
+  color: #9a8a70;
+  font-size: 0.66em;
+  line-height: 1.15;
+}
+.turn-choice-panel.card-mode .action-buttons {
+  opacity: 0.42;
+  filter: grayscale(0.35);
 }
 .action-buttons button {
   position: relative;

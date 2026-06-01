@@ -227,7 +227,7 @@ function renderTurnPanel(state) {
   if (!el) return;
   const actorId = state.turnOrder?.[state.currentTurnIndex];
   const actor = actorId === 'dragon'
-    ? { id: 'dragon', name: 'Dragon', race: 'dragon', hp: state.dragon?.hp, maxHp: state.dragon?.maxHp }
+    ? { id: 'dragon', name: state.dragon?.name ?? 'Dragon', race: 'dragon', hp: state.dragon?.hp, maxHp: state.dragon?.maxHp }
     : state.players.find((p) => p.id === actorId);
   const actorName = actorId === 'dragon'
     ? '용 차례'
@@ -235,7 +235,7 @@ function renderTurnPanel(state) {
   el.innerHTML = `
     <div class="turn-panel-title">현재 턴</div>
     <div class="turn-current ${actorId === 'dragon' ? 'dragon' : ''}">
-      <span class="${actorId === 'dragon' ? 'dragon-mini' : `portrait-medallion ${actor?.race ?? 'human'}`}"></span>
+      <span class="${actorId === 'dragon' ? `dragon-mini ${state.dragon?.atlasClass ?? state.dragon?.type ?? 'fire'}` : `portrait-medallion ${actor?.race ?? 'human'}`}"></span>
       <div>
         <div class="turn-current-name">${actorName}</div>
         <div class="turn-current-hp">HP ${actor?.hp ?? '-'} / ${actor?.maxHp ?? '-'}</div>
@@ -261,7 +261,7 @@ function renderHud(state) {
     : '';
   hud.innerHTML = `
     <div class="hud-title">🐉 Dragon Tactics</div>
-    <div class="hud-meta">매치 ${state.matchIndex + 1}/3 · 라운드 ${state.round} · 페이즈 ${state.dragon?.phase ?? '-'}</div>
+    <div class="hud-meta">매치 ${state.matchIndex + 1} · 처치 ${state.dragonKills ?? 0}/${state.targetDragonKills ?? 3} · 라운드 ${state.round} · 페이즈 ${state.dragon?.phase ?? '-'}</div>
     ${turnBanner}
     <div class="turn-order">
       ${(state.turnOrder ?? []).map((id, i) =>
@@ -337,6 +337,32 @@ function renderDragonStrip(state, ui) {
   const d = state.dragon;
   if (!d) { el.innerHTML = ''; return; }
   el.classList.toggle('attackable', !!ui?.canAttackDragon);
+  el.dataset.dragonType = d.type ?? 'fire';
+  const newPips = [1, 2, 3].map((p) =>
+    `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
+  const newHint = ui?.canAttackDragon
+    ? '지금 용을 공격할 수 있습니다.'
+    : '상단 행에 있을 때 용을 공격할 수 있습니다.';
+  el.innerHTML = `
+    <div class="dstrip-left phase-${d.phase}">
+      <div class="dragon-medallion ${d.atlasClass ?? d.type ?? 'fire'}"></div>
+    </div>
+    <div class="dstrip-center">
+      <div class="dstrip-title-row">
+        <div class="dstrip-title">${d.name ?? '용'}</div>
+        <div class="dstrip-sub">${d.element ?? '용'} · 페이즈 ${d.phase}</div>
+      </div>
+      <div class="hp-bar">
+        <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
+        <div class="label">HP ${d.hp} / ${d.maxHp}</div>
+      </div>
+      <div class="dstrip-phase" title="${newHint}">
+        ${newPips}
+        <span>상단 행에서 공격</span>
+      </div>
+    </div>
+  `;
+  return;
   el.classList.toggle('dragon-ice', d.type === 'ice');
   const pips = [1, 2, 3].map((p) =>
     `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
@@ -476,15 +502,19 @@ function renderPlayerPanel(state, ui) {
         ? '<div class="turn-mark">▶ 당신 차례<span class="one-action-hint">(행동 1회 후 턴 종료)</span></div>'
         : '<div class="turn-mark waiting">대기중...</div>'}
     </div>
-    <div class="hand-wrap">
+    <div class="hand-wrap ${cardSelected ? 'choice-active' : ''}">
       <div class="hand-title">손패 <span class="hand-count">${human.hand.length}/5</span></div>
+      <div class="hand-help">${cardSelected ? '대상을 선택하면 카드 사용으로 턴이 종료됩니다.' : '패를 1장 선택해 사용합니다.'}</div>
       <div class="hand">
         ${human.hand.length > 0
           ? human.hand.map((c) => renderCard(c, ui?.selectedCardId === c.id)).join('')
           : '<span class="muted">(빈 손)</span>'}
       </div>
     </div>
-    <div class="action-buttons">
+    <div class="turn-choice-panel ${cardSelected ? 'card-mode' : ''}">
+      <div class="choice-panel-title">&#52852;&#46300; &#49324;&#50857; &#46608;&#45716; &#46300;&#47196;&#50864;</div>
+      <div class="choice-panel-hint">${cardSelected ? '&#52852;&#46300;&#47484; &#50416;&#45716; &#51473;&#51060;&#46972; &#46300;&#47196;&#50864; &#49440;&#53469;&#51008; &#51104;&#44541;&#45768;&#45796;.' : '&#51060;&#48264; &#53556;&#50640;&#45716; &#50500;&#47000; &#54665;&#46041; &#51473; &#54616;&#45208;&#47564; &#49440;&#53469;&#54633;&#45768;&#45796;.'}</div>
+      <div class="action-buttons">
       <button id="btn-draw-two" ${drawDisabled ? 'disabled' : ''} title="${drawTip}">
         🂠 드로우 +2
       </button>
@@ -494,6 +524,7 @@ function renderPlayerPanel(state, ui) {
       <button id="btn-swap-missions" ${swapDisabled ? 'disabled' : ''} title="${swapTip}">
         🔄 미션 교체 <span class="btn-cost">(-4장)</span>
       </button>
+      </div>
     </div>
   `;
 }

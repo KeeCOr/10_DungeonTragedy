@@ -20,3 +20,9 @@ test('render: board tokens expose generated race atlas classes', () => {
   assert.match(renderSource, /renderTurnPanel\(state\)/);
   assert.match(renderSource, /turn-panel/);
 });
+
+test('render: dragon medallion and lower panel expose encounter choice UI', () => {
+  assert.match(renderSource, /dragon-medallion \$\{d\.atlasClass/);
+  assert.match(renderSource, /turn-choice-panel/);
+  assert.match(renderSource, /choice-panel-title/);
+});

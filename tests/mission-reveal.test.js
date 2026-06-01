@@ -8,5 +8,11 @@ test('main: start flow shows mission reveal before play continues', () => {
   assert.match(mainSource, /function showMissionReveal/);
   assert.match(mainSource, /await showMissionReveal\(state\)/);
   assert.match(mainSource, /mission-reveal-overlay/);
-  assert.match(mainSource, /승리조건/);
+  assert.match(mainSource, /mission-reveal-win/);
+});
+
+test('main: start flow asks players to vote target dragon kills', () => {
+  assert.match(mainSource, /function showDragonVote/);
+  assert.match(mainSource, /targetDragonKills/);
+  assert.match(mainSource, /data-kills/);
 });

@@ -184,7 +184,7 @@ test('layout: boss bar is compact and uses a real dragon medallion', () => {
 
   assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.35rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
   assert.match(dragonStrip, /grid-template-columns:\s*4\.15rem minmax\(0,\s*1fr\)\s*;/);
-  assert.match(dragonPortrait, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-boss-medallion\.png['"]?\)\s*;/);
+  assert.match(dragonPortrait, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-type-atlas\.png['"]?\)\s*;/);
 });
 
 test('layout: right turn panel owns turn and health status', () => {
@@ -198,6 +198,28 @@ test('layout: right turn panel owns turn and health status', () => {
   assert.match(turnPanel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
   assert.match(turnRoster, /grid-template-columns:\s*1fr\s*;/);
   assert.match(turnBanner, /display:\s*none\s*;/);
+});
+
+test('layout: player panel separates card use from turn choice actions', () => {
+  const playerPanel = ruleFor('#player-panel');
+  const handWrap = ruleFor('.hand-wrap');
+  const turnChoice = ruleFor('.turn-choice-panel');
+  const choiceTitle = ruleFor('.choice-panel-title');
+
+  assert.match(playerPanel, /grid-template-columns:\s*7\.4rem\s+minmax\(0,\s*1fr\)\s+13\.25rem\s*;/);
+  assert.match(handWrap, /border:\s*1px solid #4a321d\s*;/);
+  assert.match(turnChoice, /border:\s*1px solid #6a4a24\s*;/);
+  assert.match(turnChoice, /grid-template-rows:\s*auto repeat\(3,\s*1fr\)\s*;/);
+  assert.match(choiceTitle, /font-weight:\s*800\s*;/);
+});
+
+test('visual: dragon type atlas supports five boss portraits', () => {
+  const medallion = ruleFor('.dragon-medallion');
+  const gold = ruleFor('.dragon-medallion.gold');
+
+  assert.match(medallion, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-type-atlas\.png['"]?\)\s*;/);
+  assert.match(medallion, /background-size:\s*500%\s+100%\s*;/);
+  assert.match(gold, /background-position:\s*100%\s+0\s*;/);
 });
 
 test('visual: board pieces use generated race token atlas', () => {

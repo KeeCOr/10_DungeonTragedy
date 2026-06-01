@@ -66,6 +66,50 @@ function showStartScreen() {
   });
 }
 
+function showDragonVote() {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'start-screen dragon-vote-screen';
+    overlay.innerHTML = `
+      <div class="start-content dragon-vote-content">
+        <div class="start-dragon">&#50857;</div>
+        <h1 class="start-title">&#50857; &#52376;&#52824; &#47785;&#54364; &#53804;&#54364;</h1>
+        <p class="start-sub">&#51060;&#48264; &#50896;&#51221;&#50640;&#49436; &#47751; &#47560;&#47532;&#44620;&#51648; &#52376;&#52824;&#54624;&#51648; &#51221;&#54616;&#49464;&#50836;.</p>
+        <div class="start-rules">
+          <div class="rule-item">5&#51333; &#50857; &#51473; &#54616;&#45208;&#44032; &#51204;&#53804;&#47560;&#45796; &#47004;&#45924;&#51004;&#47196; &#46321;&#51109;&#54633;&#45768;&#45796;.</div>
+          <div class="rule-item">&#53804;&#54364;&#54620; &#47785;&#54364; &#49688;&#47564;&#53372; &#50857;&#51012; &#52376;&#52824;&#54616;&#47732; &#44172;&#51076;&#51060; &#51333;&#47308;&#46121;&#45768;&#45796;.</div>
+        </div>
+        <div class="start-player-select">
+          <label class="start-label">&#52376;&#52824; &#47785;&#54364;</label>
+          <div class="start-buttons dragon-kill-buttons">
+            <button class="start-btn" data-kills="1">1&#47560;&#47532;</button>
+            <button class="start-btn" data-kills="2">2&#47560;&#47532;</button>
+            <button class="start-btn selected" data-kills="3">3&#47560;&#47532;</button>
+            <button class="start-btn" data-kills="4">4&#47560;&#47532;</button>
+            <button class="start-btn" data-kills="5">5&#47560;&#47532;</button>
+          </div>
+        </div>
+        <button class="start-play-btn" id="dragon-vote-confirm">&#50896;&#51221; &#49884;&#51089;</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    let targetDragonKills = 3;
+    overlay.querySelectorAll('[data-kills]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        overlay.querySelectorAll('[data-kills]').forEach((b) => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        targetDragonKills = Number(btn.dataset.kills);
+      });
+    });
+
+    overlay.querySelector('#dragon-vote-confirm').addEventListener('click', () => {
+      overlay.classList.add('fade-out');
+      setTimeout(() => { overlay.remove(); resolve(targetDragonKills); }, 500);
+    });
+  });
+}
+
 // ── Onboarding Overlay ──
 function showOnboarding() {
   return new Promise((resolve) => {
@@ -392,6 +436,7 @@ async function main() {
   initAudio();
   await showOnboarding();
   const playerCount = await showStartScreen();
+  const targetDragonKills = await showDragonVote();
 
   const SEED = Math.floor(Math.random() * 1e9);
   const PLAYERS = [
@@ -401,7 +446,7 @@ async function main() {
     })),
   ];
 
-  let state = startMatch(createInitialState({ seed: SEED, players: PLAYERS }));
+  let state = startMatch(createInitialState({ seed: SEED, players: PLAYERS, targetDragonKills }));
   state = rollTurnOrder(state);
   console.log(`Seed: ${SEED}`);
   await showMissionReveal(state);
@@ -512,12 +557,13 @@ async function main() {
     const scores = scoreMatch(state, reason, finisher);
     const newScores = [...state.matchScores];
     newScores[state.matchIndex] = scores;
-    state = { ...state, matchScores: newScores };
+    const dragonKills = state.dragonKills + (reason === 'dragon-dead' ? 1 : 0);
+    state = { ...state, matchScores: newScores, dragonKills };
     console.log(`Match ${state.matchIndex + 1} ended: ${reason}`, scores);
 
     await showMatchResult(state, scores, state.matchIndex, reason);
 
-    if (state.matchIndex >= 2) return showGameEnd(state);
+    if (state.dragonKills >= state.targetDragonKills) return showGameEnd(state);
     state = { ...state, matchIndex: state.matchIndex + 1 };
     state = startMatch(state);
     state = rollTurnOrder(state);
