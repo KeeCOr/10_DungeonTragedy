@@ -120,6 +120,35 @@ test('dragon.shield absorbs full damage and is consumed', () => {
   assert.equal(next.players.find(p => p.id === 'P0').statusEffects.shieldActive, false);
 });
 
+test('dragon.gimmick.fire: pattern attacks deal +1 damage', () => {
+  const s = bs({ dragon: { ...bs().dragon, type: 'fire' } });
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hp, 2);
+  assert.equal(next.players.find(p => p.id === 'P1').hp, 2);
+});
+
+test('dragon.gimmick.venom: damaged players are poisoned', () => {
+  const s = bs({ dragon: { ...bs().dragon, type: 'venom' } });
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').statusEffects.poisoned, true);
+  assert.equal(next.players.find(p => p.id === 'P2').statusEffects.poisoned, undefined);
+});
+
+test('dragon.gimmick.ice: damaged players discard one card', () => {
+  const base = bs();
+  const s = {
+    ...base,
+    commonDiscard: [],
+    dragon: { ...base.dragon, type: 'ice' },
+    players: base.players.map((p) => p.id === 'P0'
+      ? { ...p, hand: [{ id: 'ice-test-card', type: 'move', range: 1 }] }
+      : p),
+  };
+  const next = resolveDragonCard(s, { type: 'row-attack', rowIndex: 0 }, {});
+  assert.equal(next.players.find(p => p.id === 'P0').hand.length, 0);
+  assert.equal(next.commonDiscard.at(-1).id, 'ice-test-card');
+});
+
 test('preview: getDragonCardPreview for row-attack returns 5 cells', () => {
   const pv = getDragonCardPreview({ type: 'row-attack', rowIndex: 0 });
   assert.equal(pv.cells.length, 5);

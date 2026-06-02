@@ -217,6 +217,41 @@ html, body {
   justify-content: space-between;
   gap: 0.5rem;
 }
+.dstrip-center {
+  position: relative;
+  min-width: 0;
+  z-index: 1;
+}
+.dragon-fullbody {
+  position: absolute;
+  right: 0.15rem;
+  bottom: -0.4rem;
+  width: 7.8rem;
+  height: 4.85rem;
+  background-image: url('../public/assets/dragon-fullbody-atlas.png');
+  background-size: 500% 100%;
+  background-position: 0 0;
+  opacity: 0.42;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px rgba(255, 100, 40, 0.32));
+}
+.dragon-fullbody.fire { background-position: 0 0; }
+.dragon-fullbody.ice { background-position: 25% 0; }
+.dragon-fullbody.venom { background-position: 50% 0; }
+.dragon-fullbody.storm { background-position: 75% 0; }
+.dragon-fullbody.gold { background-position: 100% 0; }
+.dstrip-gimmick {
+  position: relative;
+  color: #bfae8a;
+  font-size: 0.68rem;
+  line-height: 1.1;
+  max-width: 68%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: -0.05rem 0 0.1rem;
+  z-index: 1;
+}
 .dstrip-emoji {
   font-size: 2.35rem;
   line-height: 1;

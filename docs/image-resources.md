@@ -16,6 +16,7 @@ This list is based on `docs/DragonTragedy_gameplay_preview.png`: a dark fantasy 
 | Race token atlas | `public/assets/race-token-atlas.png` | 2172x724 | Board piece tokens for human, elf, dwarf, and orc. Crop as a 4x1 atlas. |
 | Dragon boss medallion | `public/assets/dragon-boss-medallion.png` | 1254x1254 | Compact boss portrait for the top boss bar and dragon turn indicator. |
 | Dragon type atlas | `public/assets/dragon-type-atlas.png` | 2048x682 | Five boss portraits for fire, ice, venom, storm, and gold dragon encounters. Crop as a 5x1 atlas. |
+| Dragon fullbody atlas | `public/assets/dragon-fullbody-atlas.png` | 2048x682 | Five full-body dragon illustrations for boss bar silhouettes and encounter flavor. Crop as a 5x1 atlas. |
 
 ## Recommended Next Assets
 
@@ -68,3 +69,7 @@ One circular boss portrait medallion with a black-red dragon head, gold-black fr
 ### Dragon Type Atlas
 
 Five circular dragon boss medallion portraits arranged in a single horizontal row: fire, frost, venom, storm, and ancient gold. Used for randomized encounter portraits.
+
+### Dragon Fullbody Atlas
+
+Five full-body dragons arranged in a single horizontal row: fire, frost, venom, storm, and ancient gold. Used as a subtle boss-body layer behind HP and gimmick text.

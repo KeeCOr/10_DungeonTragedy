@@ -113,6 +113,8 @@ export function startMatch(state) {
     name: dragonType.name,
     atlasClass: dragonType.atlasClass,
     element: dragonType.element,
+    gimmick: dragonType.gimmick,
+    shield: dragonType.id === 'gold' ? 2 : 0,
     deck: restDeck, discard: [], revealed: [resolveRandomizedReveal(firstReveal, rng)],
     position: null, // off-grid
     markedCells: [],

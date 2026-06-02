@@ -348,10 +348,12 @@ function renderDragonStrip(state, ui) {
       <div class="dragon-medallion ${d.atlasClass ?? d.type ?? 'fire'}"></div>
     </div>
     <div class="dstrip-center">
+      <div class="dragon-fullbody ${d.atlasClass ?? d.type ?? 'fire'}"></div>
       <div class="dstrip-title-row">
         <div class="dstrip-title">${d.name ?? '용'}</div>
-        <div class="dstrip-sub">${d.element ?? '용'} · 페이즈 ${d.phase}</div>
+        <div class="dstrip-sub">${d.element ?? '용'} · 페이즈 ${d.phase}${d.shield ? ` · Shield ${d.shield}` : ''}</div>
       </div>
+      <div class="dstrip-gimmick">${d.gimmick ?? ''}</div>
       <div class="hp-bar">
         <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
         <div class="label">HP ${d.hp} / ${d.maxHp}</div>

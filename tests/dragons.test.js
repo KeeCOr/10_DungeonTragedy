@@ -16,6 +16,7 @@ test('dragons: defines five encounter dragon types', () => {
     assert.ok(dragon.name);
     assert.equal(dragon.maxHp, 12);
     assert.ok(dragon.atlasClass);
+    assert.ok(dragon.gimmick);
   }
 });
 

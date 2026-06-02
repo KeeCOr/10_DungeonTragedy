@@ -23,6 +23,15 @@ function damagePlayer(state, playerId, amount) {
       hideInPlaceCount: (p.missionProgress.hideInPlaceCount ?? 0) + 1 };
   }
   p.hp = Math.max(0, p.hp - dmg);
+  if (dmg > 0 && state.dragon?.type === 'venom') {
+    p.statusEffects.poisoned = true;
+  }
+  let newCommonDiscard = state.commonDiscard;
+  if (dmg > 0 && state.dragon?.type === 'ice' && p.hand?.length > 0) {
+    const [frozen, ...rest] = p.hand;
+    p.hand = rest;
+    newCommonDiscard = [...(state.commonDiscard ?? []), frozen];
+  }
   p.missionProgress = { ...p.missionProgress,
     damageTaken: (p.missionProgress.damageTaken ?? 0) + dmg };
   let newBoard = state.board;
@@ -31,7 +40,7 @@ function damagePlayer(state, playerId, amount) {
     newBoard = state.board.map((r) => r.slice());
     newBoard[p.position.r][p.position.c] = null;
   }
-  return { ...state, players: newPlayers, board: newBoard };
+  return { ...state, players: newPlayers, board: newBoard, commonDiscard: newCommonDiscard };
 }
 
 function affectedCells(card) {
@@ -57,16 +66,17 @@ function affectedCells(card) {
 function cellsInRow(r) { return [0,1,2,3,4].map((c) => ({ r, c })); }
 function cellsInCol(c) { return [0,1,2].map((r) => ({ r, c })); }
 
-function cardDamage(card) {
+function cardDamage(card, state = null) {
+  const bonus = state?.dragon?.type === 'fire' ? 1 : 0;
   switch (card.type) {
-    case 'row-odd':  return 1;
-    case 'row-even': return 2;
+    case 'row-odd':  return 1 + bonus;
+    case 'row-even': return 2 + bonus;
     case 'all':
-    case 'frenzy':   return 1;
-    case 'corners':  return 2;
-    case 'row-attack': return 2;
-    case 'col-attack': return 2;
-    default:         return 2;
+    case 'frenzy':   return 1 + bonus;
+    case 'corners':  return 2 + bonus;
+    case 'row-attack': return 2 + bonus;
+    case 'col-attack': return 2 + bonus;
+    default:         return 2 + bonus;
   }
 }
 
@@ -99,7 +109,7 @@ export function resolveDragonCard(state, card, _decisions) {
 
 function applyPatternCard(state, card) {
   const cells = affectedCells(card);
-  const dmg = cardDamage(card);
+  const dmg = cardDamage(card, state);
   let s = state;
   for (const cell of cells) {
     if (!inBounds(cell.r, cell.c)) continue;

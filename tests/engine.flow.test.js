@@ -97,6 +97,19 @@ test('endRound increments round, clears status, reshuffles reveals', () => {
   assert.equal(next.players[0].statusEffects.hiddenThisRound, false);
 });
 
+test('endRound: venom poison deals 1 and then clears', () => {
+  const s0 = startMatch(createInitialState({ seed: 5, players: [
+    { id: 'P0', name: 'P0', isAI: false },
+    { id: 'P1', name: 'P1', isAI: true },
+  ] }));
+  const poisoned = { ...s0, players: s0.players.map((p, i) => i === 0
+    ? { ...p, hp: 5, statusEffects: { ...p.statusEffects, poisoned: true } }
+    : p) };
+  const next = endRound(poisoned);
+  assert.equal(next.players[0].hp, 4);
+  assert.equal(next.players[0].statusEffects.poisoned, false);
+});
+
 test('checkMatchEnd: dragon HP 0 returns "dragon-dead"', () => {
   const s = { dragon: { hp: 0 }, players: [
     { isEliminated: false }, { isEliminated: true },
@@ -139,4 +152,23 @@ test('rollTurnOrder: applies roar debuff when current round matches roarDebuffAc
   const futureDebuff = rollTurnOrder({ ...s0, round: 5,
     dragon: { ...s0.dragon, roarDebuffActiveForRound: 10 } });
   assert.deepEqual(futureDebuff.turnOrder, normal.turnOrder);
+});
+
+test('executeDragonTurn: storm dragon resolves one extra card', () => {
+  const s0 = startMatch(createInitialState({ seed: 12, players: playerCfg(2) }));
+  const s = {
+    ...s0,
+    turnOrder: ['dragon'],
+    currentTurnIndex: 0,
+    dragon: {
+      ...s0.dragon,
+      type: 'storm',
+      phase: 1,
+      revealed: [{ id: 'r1', type: 'rest' }, { id: 'r2', type: 'rest' }],
+      deck: [],
+      discard: [],
+    },
+  };
+  const next = executeDragonTurn(s, () => ({}));
+  assert.equal(next.dragon.lastResolvedCount, 2);
 });

@@ -19,6 +19,20 @@ export function canAttackDragonFrom(position) {
   return position && position.r === ATTACK_ROW;
 }
 
+function applyDamageToDragon(dragon, amount) {
+  let remaining = amount;
+  let shield = dragon.shield ?? 0;
+  if (shield > 0 && remaining > 0) {
+    const absorbed = Math.min(shield, remaining);
+    shield -= absorbed;
+    remaining -= absorbed;
+  }
+  return {
+    dragon: { ...dragon, shield, hp: Math.max(0, dragon.hp - remaining) },
+    dealt: remaining,
+  };
+}
+
 /**
  * Drops: each time dragon HP crosses a 2-HP threshold (10, 8, 6, 4, 2),
  * a random treasure is dropped onto a dice-rolled board cell. Any player
@@ -201,11 +215,13 @@ function applyAttackCard(state, player, card, target) {
   let eventTarget;
   if (target.type === 'dragon') {
     const prevHp = newDragon.hp;
-    newDragon = { ...newDragon, hp: Math.max(0, newDragon.hp - damage) };
+    const hit = applyDamageToDragon(newDragon, damage);
+    newDragon = hit.dragon;
+    const dealt = hit.dealt;
     newDrops = rollDropsForHpChange(prevHp, newDragon.hp, state);
-    attacker.dragonDamageDealt += damage;
+    attacker.dragonDamageDealt += dealt;
     if (state.dragon.phase === 1) {
-      attacker.missionProgress.phase1DragonDamage = (attacker.missionProgress.phase1DragonDamage ?? 0) + damage;
+      attacker.missionProgress.phase1DragonDamage = (attacker.missionProgress.phase1DragonDamage ?? 0) + dealt;
     }
     if (newDragon.hp === 0) attacker.missionProgress.killedDragon = true;
     eventTarget = { type: 'dragon' };
@@ -486,14 +502,16 @@ function incTreasuresUsed(player) {
 function applyTreasureSword(state, player, card) {
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
   const prevHp = state.dragon.hp;
-  const newDragon = { ...state.dragon, hp: Math.max(0, state.dragon.hp - 3) };
+  const hit = applyDamageToDragon(state.dragon, 3);
+  const newDragon = hit.dragon;
+  const dealt = hit.dealt;
   const drops = rollDropsForHpChange(prevHp, newDragon.hp, state);
   const newPlayers = state.players.map((p) => p.id === player.id
-    ? { ...p, hand, dragonDamageDealt: p.dragonDamageDealt + 3,
+    ? { ...p, hand, dragonDamageDealt: p.dragonDamageDealt + dealt,
         missionProgress: { ...incTreasuresUsed(p),
           killedDragon: newDragon.hp === 0 ? true : p.missionProgress.killedDragon,
           phase1DragonDamage: state.dragon.phase === 1
-            ? (p.missionProgress.phase1DragonDamage ?? 0) + 3
+            ? (p.missionProgress.phase1DragonDamage ?? 0) + dealt
             : p.missionProgress.phase1DragonDamage } } : p);
   const result = { ...state, players: newPlayers, dragon: newDragon,
     commonDiscard: [...state.commonDiscard, consumed],
@@ -504,8 +522,8 @@ function applyTreasureSword(state, player, card) {
       kind: 'treasure',
       from: { ...player.position },
       target: { type: 'dragon' },
-      damage: 3,
-      summary: `${playerName(state, player.id)} used Hero's Sword for 3`,
+      damage: dealt,
+      summary: `${playerName(state, player.id)} used Hero's Sword for ${dealt}`,
     }) };
   const withPhase = maybeTransitionPhase(result);
   return applyDropsToState(withPhase, drops);
@@ -690,7 +708,32 @@ export function clearRoundStatus(state) {
       ...p.statusEffects,
       hiddenThisRound: false,
       tauntThisRound: false,
+      poisoned: false,
     } })) };
+}
+
+function applyPoisonTicks(state) {
+  let board = state.board;
+  const players = state.players.map((p) => {
+    if (!p.statusEffects?.poisoned || p.isEliminated) return p;
+    const hp = Math.max(0, p.hp - 1);
+    const next = {
+      ...p,
+      hp,
+      statusEffects: { ...p.statusEffects },
+      missionProgress: {
+        ...p.missionProgress,
+        damageTaken: (p.missionProgress.damageTaken ?? 0) + 1,
+      },
+    };
+    if (hp === 0) {
+      next.isEliminated = true;
+      board = board.map((row) => row.slice());
+      board[p.position.r][p.position.c] = null;
+    }
+    return next;
+  });
+  return { ...state, players, board };
 }
 
 export function resolveMarkedCells(state) {
@@ -752,7 +795,8 @@ export function refillRevealed(state) {
 }
 
 export function endRound(state) {
-  let s = clearRoundStatus(state);
+  let s = applyPoisonTicks(state);
+  s = clearRoundStatus(s);
   s = { ...s, round: s.round + 1 };
   s = resolveMarkedCells(s);
   s = refillRevealed(s);
@@ -785,16 +829,22 @@ export function applyTurnStartPassives(state, playerId) {
 }
 
 export function executeDragonTurn(state, aiDecisionFn) {
-  const actions = state.dragon.phase;
+  const actions = state.dragon.phase + (state.dragon.type === 'storm' ? 1 : 0);
   let s = state;
+  let resolvedCount = 0;
   for (let i = 0; i < actions; i++) {
     if (s.dragon.revealed.length === 0) break;
     const [card, ...rest] = s.dragon.revealed;
     const decisions = aiDecisionFn(s, card);
     s = resolveDragonCard(s, card, decisions);
     s = { ...s, dragon: { ...s.dragon, revealed: rest, discard: [...s.dragon.discard, card] } };
+    resolvedCount += 1;
     s = maybeTransitionPhase(s);
   }
   s = refillRevealed(s);
-  return { ...s, currentTurnIndex: s.currentTurnIndex + 1 };
+  return {
+    ...s,
+    dragon: { ...s.dragon, lastResolvedCount: resolvedCount },
+    currentTurnIndex: s.currentTurnIndex + 1,
+  };
 }

@@ -94,3 +94,13 @@ test('combat: lastDragonHitterId set to attacker when dragon takes damage', () =
   const next = executePlayerAction(s, { type: 'playCard', playerId: 'P0', cardId: 'a1', target: { type: 'dragon' } });
   assert.equal(next.lastDragonHitterId, 'P0');
 });
+
+test('combat: gold dragon absorbs the first 2 damage with its shield', () => {
+  const s = baseState();
+  const next = executePlayerAction({
+    ...s,
+    dragon: { ...s.dragon, type: 'gold', shield: 2 },
+  }, { type: 'playCard', playerId: 'P0', cardId: 'a1', target: { type: 'dragon' } });
+  assert.equal(next.dragon.hp, s.dragon.hp);
+  assert.equal(next.dragon.shield, 1);
+});

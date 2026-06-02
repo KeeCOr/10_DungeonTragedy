@@ -222,6 +222,16 @@ test('visual: dragon type atlas supports five boss portraits', () => {
   assert.match(gold, /background-position:\s*100%\s+0\s*;/);
 });
 
+test('visual: dragon fullbody atlas sits behind boss status', () => {
+  const fullbody = ruleFor('.dragon-fullbody');
+  const gimmick = ruleFor('.dstrip-gimmick');
+
+  assert.match(fullbody, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-fullbody-atlas\.png['"]?\)\s*;/);
+  assert.match(fullbody, /background-size:\s*500%\s+100%\s*;/);
+  assert.match(fullbody, /opacity:\s*0\.42\s*;/);
+  assert.match(gimmick, /text-overflow:\s*ellipsis\s*;/);
+});
+
 test('visual: board pieces use generated race token atlas', () => {
   const token = ruleFor('.token-image');
   const elf = ruleFor('.token-image.elf');
