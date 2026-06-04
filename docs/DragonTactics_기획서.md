@@ -265,3 +265,38 @@ AI 턴 → ally-ai/dragon-ai → engine → render → 다음 턴
 - 드래곤 3페이즈, 패턴 기반 공격
 - 보물 드롭 시스템
 
+<!-- APPLIED_RESOURCES_START -->
+## 적용 리소스
+
+> 자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.
+
+- 이미지/스프라이트: `public/assets/dragon-boss-banner.png`, `public/assets/dragon-card-art-sheet.png`, `public/assets/dragon-fullbody-atlas.png`, `public/assets/dragon-ice-boss-banner.png`, `public/assets/dragon-type-atlas.png`, `public/assets/fantasy-card-frame.png`, `public/assets/forest-board-texture.png`, `public/assets/lava-board-texture.png`, `public/assets/race-portrait-atlas.png`, `public/assets/race-token-atlas.png`, `public/assets/skill-icon-atlas.png`, `public/assets/ui-button-frame-atlas.png` 외 1개
+
+메모:
+- 리소스 후보 14개 중 자동 참조 확인 13개.
+<!-- APPLIED_RESOURCES_END -->
+
+<!-- RESOURCE_PREVIEWS_START -->
+## 공유용 이미지 미리보기
+
+> 자동 갱신: 2026-06-04. 공유 시 문서와 함께 아래 이미지 경로가 포함되어야 합니다.
+
+![10_DT skill-icon-atlas](../public/assets/skill-icon-atlas.png)
+- `public/assets/skill-icon-atlas.png`
+
+![10_DT ui-button-frame-atlas](../public/assets/ui-button-frame-atlas.png)
+- `public/assets/ui-button-frame-atlas.png`
+
+![10_DT dragon-boss-banner](../public/assets/dragon-boss-banner.png)
+- `public/assets/dragon-boss-banner.png`
+
+![10_DT dragon-fullbody-atlas](../public/assets/dragon-fullbody-atlas.png)
+- `public/assets/dragon-fullbody-atlas.png`
+
+![10_DT dragon-ice-boss-banner](../public/assets/dragon-ice-boss-banner.png)
+- `public/assets/dragon-ice-boss-banner.png`
+
+![10_DT dragon-type-atlas](../public/assets/dragon-type-atlas.png)
+- `public/assets/dragon-type-atlas.png`
+
+<!-- RESOURCE_PREVIEWS_END -->
