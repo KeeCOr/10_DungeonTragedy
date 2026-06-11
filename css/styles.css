@@ -25,7 +25,7 @@ html, body {
   color: #e6e3d8;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 14.75rem;
-  grid-template-rows: 1.95rem 4.35rem minmax(0, 1fr) 6.25rem;
+  grid-template-rows: 1.95rem 4.6rem minmax(0, 1fr) 7.35rem;
   grid-template-areas:
     "hud     hud"
     "dragon  right"
@@ -226,8 +226,8 @@ html, body {
   position: absolute;
   right: 0.15rem;
   bottom: -0.4rem;
-  width: 7.8rem;
-  height: 4.85rem;
+  width: 16rem;
+  height: 5.4rem;
   background-image: url('../public/assets/dragon-fullbody-atlas.png');
   background-size: 500% 100%;
   background-position: 0 0;
@@ -304,28 +304,64 @@ html, body {
 /* ---------- Board ---------- */
 #board-wrap {
   grid-area: board;
+  position: relative;
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   justify-content: center;
-  justify-self: center;
-  width: fit-content;
+  justify-self: stretch;
+  width: 100%;
   min-height: 0;
-  padding: 0;
+  padding: 0.45rem 0.65rem 0.55rem;
+  background:
+    url('../public/assets/dragon-fullbody-atlas.png') center 12% / 500% 100% no-repeat,
+    url('../public/assets/lava-board-texture.png') center / cover no-repeat,
+    radial-gradient(ellipse at 50% 58%, rgba(255, 95, 28, 0.24), transparent 44%);
+  background-size: 500% 100%, cover, auto;
+  border: 1px solid rgba(124, 72, 34, 0.55);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 90px rgba(0, 0, 0, 0.74),
+    inset 0 -38px 46px rgba(255, 74, 18, 0.14),
+    0 0 20px rgba(0, 0, 0, 0.46);
+  overflow: hidden;
 }
+#board-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(255, 86, 24, 0.32), transparent 30%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.18), transparent 34%, rgba(0, 0, 0, 0.5));
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+#board-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 16%, transparent 0 34%, rgba(0, 0, 0, 0.44) 76%);
+  pointer-events: none;
+}
+#app[data-dragon-type="fire"] #board-wrap { background-position: 0% 12%, center, center; }
+#app[data-dragon-type="ice"] #board-wrap { background-position: 25% 12%, center, center; }
+#app[data-dragon-type="venom"] #board-wrap { background-position: 50% 12%, center, center; }
+#app[data-dragon-type="storm"] #board-wrap { background-position: 75% 12%, center, center; }
+#app[data-dragon-type="gold"] #board-wrap { background-position: 100% 12%, center, center; }
 #board {
   position: relative;
+  align-self: end;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 0.22rem;
   aspect-ratio: 5 / 3;
-  height: 100%;
+  height: 44%;
   width: auto;
-  max-width: 100%;
+  max-width: min(76%, 42rem);
   max-height: 100%;
   padding: 0.55rem;
   background:
-    linear-gradient(rgba(9, 6, 4, 0.28), rgba(9, 6, 4, 0.46)),
+    linear-gradient(rgba(9, 6, 4, 0.38), rgba(9, 6, 4, 0.58)),
     url('../public/assets/lava-board-texture.png') center / cover no-repeat,
     radial-gradient(circle at 50% 0%, rgba(255, 105, 38, 0.16), transparent 34%),
     linear-gradient(135deg, #2a1810 0%, #15100c 48%, #0d0805 100%);
@@ -334,8 +370,10 @@ html, body {
   box-shadow:
     inset 0 0 34px rgba(0, 0, 0, 0.82),
     inset 0 1px 0 rgba(255, 180, 90, 0.16),
-    0 0 22px rgba(120, 48, 24, 0.48);
+    0 0 28px rgba(255, 82, 24, 0.28),
+    0 18px 40px rgba(0, 0, 0, 0.68);
   overflow: hidden;
+  z-index: 1;
 }
 #board::before {
   content: '';
@@ -796,7 +834,7 @@ html, body {
   border-radius: 6px;
   padding: 0.28rem 0.45rem;
   display: grid;
-  grid-template-columns: 7.4rem minmax(0, 1fr) 13.25rem;
+  grid-template-columns: 7.2rem minmax(0, 1fr) 19rem;
   grid-template-rows: 1fr;
   gap: 0.28rem;
   align-items: stretch;
@@ -966,8 +1004,8 @@ button:disabled .btn-cost { color: #6a5a40; }
   border: 2px solid #6a4828;
   border-radius: 7px;
   cursor: pointer;
-  width: 3.25rem;
-  min-width: 3.25rem;
+  width: 4.2rem;
+  min-width: 4.2rem;
   padding: 0.2rem 0.18rem;
   text-align: center;
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
@@ -1063,13 +1101,14 @@ button:disabled .btn-cost { color: #6a5a40; }
 
 .action-buttons {
   display: grid;
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
   gap: 0.22rem;
   align-content: stretch;
 }
 .turn-choice-panel {
   display: grid;
-  grid-template-rows: auto repeat(3, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 0.22rem;
   border: 1px solid #6a4a24;
   border-radius: 5px;
@@ -1100,14 +1139,16 @@ button:disabled .btn-cost { color: #6a5a40; }
   position: relative;
   width: 100%;
   min-height: 0;
-  padding: 0.26rem 0.42rem 0.26rem 2.18rem;
+  padding: 2.12rem 0.28rem 0.38rem;
   border: 1px solid #9c7438;
   background:
     linear-gradient(rgba(22, 12, 6, 0.12), rgba(8, 4, 2, 0.18)),
     url('../public/assets/ui-button-frame-atlas.png') center 0% / 100% 300% no-repeat,
     linear-gradient(180deg, #4b3318 0%, #261609 58%, #120905 100%);
   background-size: 100% 300%;
-  text-align: left;
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.1;
 }
 .action-buttons button::before {
   content: '';
@@ -1120,11 +1161,11 @@ button:disabled .btn-cost { color: #6a5a40; }
 .action-buttons button::after {
   content: '';
   position: absolute;
-  left: 0.32rem;
-  top: 50%;
+  left: 50%;
+  top: 0.42rem;
   width: 1.32rem;
   height: 1.32rem;
-  transform: translateY(-50%);
+  transform: translateX(-50%);
   background-image: url('../public/assets/skill-icon-atlas.png');
   background-size: 300% 200%;
   background-position: 50% 100%;

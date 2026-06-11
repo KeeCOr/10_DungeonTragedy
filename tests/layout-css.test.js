@@ -29,12 +29,12 @@ test('layout: board uses the play area without decorative dead space', () => {
   const playerPanel = ruleFor('#player-panel');
 
   assert.match(app, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+14\.75rem\s*;/);
-  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.35rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
-  assert.match(boardWrap, /align-items:\s*stretch\s*;/);
-  assert.match(boardWrap, /padding:\s*0\s*;/);
-  assert.match(boardWrap, /justify-self:\s*center\s*;/);
-  assert.match(boardWrap, /width:\s*fit-content\s*;/);
-  assert.match(playerPanel, /grid-template-columns:\s*7\.4rem\s+minmax\(0,\s*1fr\)\s+13\.25rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.6rem\s+minmax\(0,\s*1fr\)\s+7\.35rem\s*;/);
+  assert.match(boardWrap, /align-items:\s*flex-end\s*;/);
+  assert.match(boardWrap, /padding:\s*0\.45rem 0\.65rem 0\.55rem\s*;/);
+  assert.match(boardWrap, /justify-self:\s*stretch\s*;/);
+  assert.match(boardWrap, /width:\s*100%\s*;/);
+  assert.match(playerPanel, /grid-template-columns:\s*7\.2rem\s+minmax\(0,\s*1fr\)\s+19rem\s*;/);
   assert.match(playerPanel, /justify-self:\s*stretch\s*;/);
 });
 
@@ -62,10 +62,11 @@ test('layout: reference-style HUD keeps the battlefield dominant', () => {
   assert.match(dragonStrip, /min-height:\s*0\s*;/);
   assert.match(rightColumn, /overflow:\s*hidden\s*;/);
   assert.match(playerPanel, /padding:\s*0\.28rem 0\.45rem\s*;/);
-  assert.match(card, /width:\s*3\.25rem\s*;/);
-  assert.match(card, /min-width:\s*3\.25rem\s*;/);
+  assert.match(card, /width:\s*4\.2rem\s*;/);
+  assert.match(card, /min-width:\s*4\.2rem\s*;/);
   assert.match(actionButtons, /display:\s*grid\s*;/);
-  assert.match(actionButtons, /grid-template-rows:\s*repeat\(3,\s*1fr\)\s*;/);
+  assert.match(actionButtons, /grid-template-columns:\s*repeat\(3,\s*1fr\)\s*;/);
+  assert.match(actionButtons, /grid-template-rows:\s*1fr\s*;/);
 });
 
 test('layout: enabled turn actions are visually promoted over disabled actions', () => {
@@ -182,7 +183,7 @@ test('layout: boss bar is compact and uses a real dragon medallion', () => {
   const dragonStrip = ruleFor('#dragon-strip');
   const dragonPortrait = ruleFor('.dragon-medallion');
 
-  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.35rem\s+minmax\(0,\s*1fr\)\s+6\.25rem\s*;/);
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.6rem\s+minmax\(0,\s*1fr\)\s+7\.35rem\s*;/);
   assert.match(dragonStrip, /grid-template-columns:\s*4\.15rem minmax\(0,\s*1fr\)\s*;/);
   assert.match(dragonPortrait, /background-image:\s*url\(['"]?\.\.\/public\/assets\/dragon-type-atlas\.png['"]?\)\s*;/);
 });
@@ -206,10 +207,10 @@ test('layout: player panel separates card use from turn choice actions', () => {
   const turnChoice = ruleFor('.turn-choice-panel');
   const choiceTitle = ruleFor('.choice-panel-title');
 
-  assert.match(playerPanel, /grid-template-columns:\s*7\.4rem\s+minmax\(0,\s*1fr\)\s+13\.25rem\s*;/);
+  assert.match(playerPanel, /grid-template-columns:\s*7\.2rem\s+minmax\(0,\s*1fr\)\s+19rem\s*;/);
   assert.match(handWrap, /border:\s*1px solid #4a321d\s*;/);
   assert.match(turnChoice, /border:\s*1px solid #6a4a24\s*;/);
-  assert.match(turnChoice, /grid-template-rows:\s*auto repeat\(3,\s*1fr\)\s*;/);
+  assert.match(turnChoice, /grid-template-rows:\s*auto auto minmax\(0,\s*1fr\)\s*;/);
   assert.match(choiceTitle, /font-weight:\s*800\s*;/);
 });
 
@@ -230,6 +231,39 @@ test('visual: dragon fullbody atlas sits behind boss status', () => {
   assert.match(fullbody, /background-size:\s*500%\s+100%\s*;/);
   assert.match(fullbody, /opacity:\s*0\.42\s*;/);
   assert.match(gimmick, /text-overflow:\s*ellipsis\s*;/);
+});
+
+test('layout: raid scene makes dragon the central battlefield subject', () => {
+  const app = ruleFor('#app');
+  const boardWrap = ruleFor('#board-wrap');
+  const boardWrapBefore = ruleFor('#board-wrap::before');
+  const board = ruleFor('#board');
+  const dragonFullbody = ruleFor('.dragon-fullbody');
+
+  assert.match(app, /grid-template-rows:\s*1\.95rem\s+4\.6rem\s+minmax\(0,\s*1fr\)\s+7\.35rem\s*;/);
+  assert.match(boardWrap, /background:\s*[^;]*url\(['"]?\.\.\/public\/assets\/dragon-fullbody-atlas\.png['"]?\)[^;]*;/);
+  assert.match(boardWrap, /background-size:\s*500%\s+100%,\s*cover,\s*auto\s*;/);
+  assert.match(boardWrapBefore, /content:\s*''\s*;/);
+  assert.match(boardWrapBefore, /radial-gradient\(ellipse at 50% 72%, rgba\(255,\s*86,\s*24,\s*0\.32\)/);
+  assert.match(board, /height:\s*44%\s*;/);
+  assert.match(board, /align-self:\s*end\s*;/);
+  assert.match(dragonFullbody, /width:\s*16rem\s*;/);
+});
+
+test('layout: bottom actions behave like numbered raid skill slots', () => {
+  const playerPanel = ruleFor('#player-panel');
+  const actionButtons = ruleFor('.action-buttons');
+  const actionButton = ruleFor('.action-buttons button');
+  const actionButtonAfter = ruleFor('.action-buttons button::after');
+  const card = ruleFor('.card');
+
+  assert.match(playerPanel, /grid-template-columns:\s*7\.2rem\s+minmax\(0,\s*1fr\)\s+19rem\s*;/);
+  assert.match(actionButtons, /grid-template-columns:\s*repeat\(3,\s*1fr\)\s*;/);
+  assert.match(actionButtons, /grid-template-rows:\s*1fr\s*;/);
+  assert.match(actionButton, /text-align:\s*center\s*;/);
+  assert.match(actionButton, /padding:\s*2\.12rem 0\.28rem 0\.38rem\s*;/);
+  assert.match(actionButtonAfter, /top:\s*0\.42rem\s*;/);
+  assert.match(card, /width:\s*4\.2rem\s*;/);
 });
 
 test('visual: board pieces use generated race token atlas', () => {
