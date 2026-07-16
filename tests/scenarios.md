@@ -63,3 +63,11 @@ Run `npm run serve` (requires python3) or any other static server, then open htt
 - [ ] Dragon HP 0 → match ends, alert shows scores
 - [ ] Party wipe → match ends
 - [ ] Game-end alert shows totals across 3 matches
+
+## Dragon Activation Timing Tutorial Scenarios - v0.3.0
+
+These scenarios are also represented as data in js/tutorial-scenarios.js and covered by tests/dragon-timing-scenarios.test.js.
+
+1. Early: preview shows a row hit before dragon activation; use hide or move before the dragon turn to reduce damage.
+2. Delayed: preview shows survivable damage; spend the action on dragon pressure, then absorb or reposition next window.
+3. Missed: preview marks broad damage; ignoring the timing window results in confirmed team-wide damage.

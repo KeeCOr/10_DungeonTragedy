@@ -28,3 +28,8 @@ test('render: dragon medallion and lower panel expose encounter choice UI', () =
   assert.match(renderSource, /turn-choice-panel/);
   assert.match(renderSource, /choice-panel-title/);
 });
+test('render: threatened board cells reserve a decal layer below tactical labels', () => {
+  assert.match(renderSource, /threat-decal/);
+  assert.match(renderSource, /threat-order/);
+  assert.match(renderSource, /threat-marker/);
+});

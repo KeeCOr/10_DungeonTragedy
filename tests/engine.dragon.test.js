@@ -1,6 +1,6 @@
-import { test } from 'node:test';
+﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveDragonCard, getDragonCardPreview } from '../js/dragon.js';
+import { resolveDragonCard, getDragonCardPreview, getDragonActivationPreview } from '../js/dragon.js';
 
 function bs(overrides = {}) {
   return {
@@ -158,4 +158,37 @@ test('preview: getDragonCardPreview for row-attack returns 5 cells', () => {
 test('preview: getDragonCardPreview for rest returns no cells', () => {
   const pv = getDragonCardPreview({ type: 'rest' });
   assert.equal(pv.cells.length, 0);
+});
+
+test('activation preview: totals expected hits before dragon use', () => {
+  const s = bs({
+    dragon: { ...bs().dragon, revealed: [
+      { id: 'r0', type: 'row-attack', rowIndex: 0 },
+      { id: 'c2', type: 'col-attack', colIndex: 2 },
+    ] },
+  });
+  const preview = getDragonActivationPreview(s);
+  assert.equal(preview.cards.length, 2);
+  assert.equal(preview.totalExpectedDamage, 6);
+  assert.deepEqual(preview.affectedPlayers.map((p) => [p.id, p.expectedDamage]), [
+    ['P0', 2],
+    ['P1', 2],
+    ['P2', 2],
+  ]);
+});
+
+test('activation preview: accounts for shield and hide mitigation before dragon use', () => {
+  const s = bs({
+    players: bs().players.map((p) =>
+      p.id === 'P0' ? { ...p, statusEffects: { shieldActive: true } } :
+      p.id === 'P1' ? { ...p, statusEffects: { hiddenThisRound: true } } :
+      p),
+    dragon: { ...bs().dragon, revealed: [{ id: 'r0', type: 'row-attack', rowIndex: 0 }] },
+  });
+  const preview = getDragonActivationPreview(s);
+  assert.equal(preview.totalExpectedDamage, 1);
+  assert.deepEqual(preview.affectedPlayers.map((p) => [p.id, p.expectedDamage, p.mitigation]), [
+    ['P0', 0, 'shield'],
+    ['P1', 1, 'hide'],
+  ]);
 });

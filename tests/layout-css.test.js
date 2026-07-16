@@ -291,3 +291,17 @@ test('visual: onboarding overlay covers empty game chrome', () => {
   assert.match(overlay, /#000\s*;/);
   assert.match(panel, /url\(['"]?\.\.\/public\/assets\/ui-panel-frame\.png['"]?\)/);
 });
+test('visual: threat cells use an atlas decal under labels and pieces', () => {
+  const threat = ruleFor('.cell.threat');
+  const threatDecal = ruleFor('.cell .threat-decal');
+  const threatOrder = ruleFor('.cell .threat-order');
+  const threatMarker = ruleFor('.cell .threat-marker');
+
+  assert.match(threat, /overflow:\s*hidden\s*;/);
+  assert.match(threatDecal, /background-image:\s*url\(['"]?\.\.\/public\/assets\/threat-marker-decal-atlas\.png['"]?\)\s*;/);
+  assert.match(threatDecal, /background-size:\s*300%\s+100%\s*;/);
+  assert.match(threatDecal, /z-index:\s*0\s*;/);
+  assert.match(threatDecal, /pointer-events:\s*none\s*;/);
+  assert.match(threatOrder, /z-index:\s*4\s*;/);
+  assert.match(threatMarker, /z-index:\s*4\s*;/);
+});

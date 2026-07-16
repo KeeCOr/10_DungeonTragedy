@@ -3,384 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dragon Tactics 기획서</title>
+  <title>DragonTactics 기획서 v0.4.0</title>
   <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', 'Malgun Gothic', -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0e0705 0%, #1a0d08 50%, #0a0403 100%);
-      color: #e6e3d8;
-      margin: 0; padding: 0;
-      line-height: 1.7;
-    }
-    header {
-      background: linear-gradient(to bottom, #1a0d08, #0a0403);
-      border-bottom: 2px solid #4a2a1a;
-      padding: 2rem 2rem 1.5rem;
-      text-align: center;
-    }
-    header h1 {
-      font-size: 2.5rem;
-      color: #e86050;
-      text-shadow: 0 0 20px rgba(232, 96, 80, 0.5);
-      margin: 0 0 0.3rem;
-      letter-spacing: 0.06em;
-    }
-    header .subtitle {
-      color: #c0a870;
-      font-size: 1rem;
-    }
-    header .version {
-      display: inline-block;
-      background: #3a6a2a;
-      color: #eaffd0;
-      padding: 0.2rem 0.8rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-top: 0.5rem;
-    }
-    main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 2rem 4rem;
-    }
-    h2 {
-      color: #e8c080;
-      font-size: 1.5rem;
-      border-bottom: 2px solid #4a3018;
-      padding-bottom: 0.4rem;
-      margin-top: 3rem;
-    }
-    h3 {
-      color: #d4b878;
-      font-size: 1.15rem;
-      margin-top: 1.5rem;
-    }
-    p { margin: 0.8rem 0; }
-    ul, ol { padding-left: 1.5rem; }
-    li { margin: 0.3rem 0; }
-    strong { color: #ffd860; }
-    code {
-      background: #1a1208;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 0.9em;
-      color: #e8c890;
-    }
-    pre {
-      background: #0d0705;
-      border: 1px solid #3a2418;
-      border-radius: 8px;
-      padding: 1rem 1.2rem;
-      overflow-x: auto;
-      font-size: 0.85rem;
-      line-height: 1.5;
-    }
-    pre code { background: transparent; padding: 0; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-    }
-    th {
-      background: #1a0d08;
-      color: #e8c080;
-      font-weight: 700;
-      text-align: left;
-      padding: 0.6rem 0.8rem;
-      border-bottom: 2px solid #4a3018;
-    }
-    td {
-      padding: 0.5rem 0.8rem;
-      border-bottom: 1px solid #2a1810;
-      color: #d4c8a8;
-    }
-    tr:nth-child(even) td { background: rgba(30, 15, 8, 0.4); }
-    .emoji-icon { font-size: 1.2em; margin-right: 0.3rem; }
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 0.8rem;
-      margin: 1rem 0;
-    }
-    .card-item {
-      background: linear-gradient(135deg, #2a1a10, #1a0e08);
-      border: 1px solid #4a3018;
-      border-radius: 8px;
-      padding: 0.8rem 1rem;
-    }
-    .card-item .card-name {
-      color: #e8c890;
-      font-weight: 700;
-      font-size: 1rem;
-    }
-    .card-item .card-desc {
-      color: #a89878;
-      font-size: 0.85rem;
-      margin-top: 0.3rem;
-    }
-    .highlight-box {
-      background: linear-gradient(135deg, #2a1810, #1a0a05);
-      border: 1px solid #6a3e1e;
-      border-radius: 10px;
-      padding: 1.2rem 1.5rem;
-      margin: 1.5rem 0;
-    }
-    .race-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.8rem;
-      margin: 1rem 0;
-    }
-    .race-card {
-      background: linear-gradient(135deg, #1a1008, #0a0503);
-      border: 1px solid #3a2418;
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-    }
-    .race-card .race-glyph { font-size: 2.5rem; }
-    .race-card .race-name { color: #e8c890; font-weight: 700; font-size: 1.1rem; margin-top: 0.3rem; }
-    .race-card .race-hp { color: #ff8060; font-weight: 700; }
-    .race-card .race-passive { color: #a89878; font-size: 0.85rem; margin-top: 0.3rem; }
-    .changelog {
-      background: #0d0705;
-      border: 1px solid #3a2418;
-      border-radius: 8px;
-      padding: 1rem 1.5rem;
-    }
-    .changelog h3 { margin-top: 0.8rem; }
-    .changelog ul { color: #b8a890; }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      color: #5a4838;
-      font-size: 0.85rem;
-      border-top: 1px solid #2a1810;
-    }
+    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #10131a; color: #eef3f8; line-height: 1.65; }
+    main { max-width: 980px; margin: 0 auto; padding: 40px 22px 72px; }
+    h1, h2 { color: #ffd27a; line-height: 1.2; }
+    h1 { font-size: 34px; margin-bottom: 8px; }
+    h2 { margin-top: 34px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; background: #151b25; }
+    th, td { border: 1px solid #334155; padding: 10px 12px; vertical-align: top; }
+    th { background: #263247; color: #ffffff; text-align: left; }
+    code { background: #222b3a; padding: 2px 5px; border-radius: 4px; }
+    .meta { color: #b8c7d9; margin-bottom: 24px; }
+    .note { background: #172033; border-left: 4px solid #7dd3fc; padding: 12px 14px; }
+    li { margin: 5px 0; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🐉 Dragon Tactics</h1>
-    <p class="subtitle">3x5 보드 위의 턴제 카드 전술 게임</p>
-    <span class="version">v0.2.0 · 2026-05-29</span>
-  </header>
-  <main>
+<main>
+  <h1>DragonTactics 기획서 v0.4.0</h1>
+  <div class="meta">최종 갱신: 2026-07-16 KST · 플랫폼: 웹 브라우저 · 검증: <code>npm test</code></div>
 
-    <h2>플레이 미리보기</h2>
+  <h2>문제 정의</h2>
+  <p>짧은 시간에 전략 퍼즐을 즐기고 싶은 PC 인디 전략 플레이어는, 보스 패턴의 예고와 행동 결과가 충분히 명확하지 않으면 선택의 의미를 느끼기 어렵다. DragonTactics는 드래곤의 다음 공격을 읽고 카드 1장으로 피해를 줄이거나 보상을 노리는 3x5 보드 전술 게임이다.</p>
 
-<h3>플레이 미리보기</h3>
-<img src="./DragonTragedy_gameplay_preview.png" alt="플레이 미리보기" style="max-width:100%;border-radius:8px;margin:12px 0;">
+  <h2>주 페르소나</h2>
+  <ul><li>한승민, 35세, 기획팀 과장</li><li>Into the Breach식 격자 전술과 짧은 PC 인디 전략 게임 선호</li><li>퇴근 후 10~20분 동안 한 판을 집중해서 플레이</li><li>예상 피해와 실제 결과가 바로 보여야 다음 판단을 납득한다</li></ul>
 
-<h2>1. 게임 개요</h2>
-    <p>턴제 카드 + 보드 전술 게임. 1명의 플레이어가 AI 아군 2~4명과 함께 3x5 그리드 위에서 3페이즈 드래곤 보스에 맞서 싸웁니다.</p>
-    <div class="highlight-box">
-      <strong>핵심 루프:</strong> 시작 화면 → 매치 시작 → 턴 반복(이동/공격/카드) → 매치 종료(스코어보드) → 3매치 후 최종 결과
-    </div>
-    <ul>
-      <li><strong>3매치 토너먼트</strong> — 매치별 점수 합산, 최종 승자 결정</li>
-      <li><strong>히든 미션</strong> — 각 플레이어에게 숨겨진 필수/선택 미션</li>
-      <li><strong>배신 요소</strong> — 오크 종족은 적대적 미션 수행 가능</li>
-    </ul>
+  <h2>핵심 루프</h2>
+  <ol><li>드래곤 공개 카드와 위협 셀 확인</li><li>손패에서 행동 1개 선택</li><li>보드 위치와 미션 조건에 맞게 실행</li><li>드래곤 턴 피해와 결과 요약 확인</li><li>다음 공격 프리뷰를 보고 새 판단으로 복귀</li></ol>
 
-    <h2>2. 보드 & 배치</h2>
-    <ul>
-      <li><strong>3행 × 5열</strong> CSS Grid 보드</li>
-      <li><strong>드래곤</strong>: 맵 밖(off-grid)에 위치, 셀 점유 안 함</li>
-      <li><strong>공격존</strong>: 행 0 (상단행)에서만 드래곤 공격 가능</li>
-      <li><strong>시작 위치</strong>: 전원 행 2 (하단행)에서 시작</li>
-      <li><strong>보물 드롭</strong>: 드래곤 HP 감소 시 보드 위에 생성</li>
-    </ul>
+  <h2>게임 구성</h2>
+  <table><tr><th>항목</th><th>현재 구현</th></tr><tr><td>보드</td><td>3행 x 5열 CSS Grid</td></tr><tr><td>드래곤</td><td>보드 밖 상단 존재, 행/열/전체/모서리 패턴 공격</td></tr><tr><td>플레이어</td><td>1명 + AI 아군 2~4명</td></tr><tr><td>종족</td><td>Human, Elf, Dwarf, Orc</td></tr><tr><td>진행</td><td>3매치 토너먼트, 드래곤 처치 목표 투표</td></tr></table>
 
-    <h2>3. 종족</h2>
-    <div class="race-grid">
-      <div class="race-card">
-        <div class="race-glyph">🧙</div>
-        <div class="race-name">인간</div>
-        <div class="race-hp">HP 5</div>
-        <div class="race-passive">턴 시작 시 5% 확률 추가 드로우</div>
-      </div>
-      <div class="race-card">
-        <div class="race-glyph">🧝</div>
-        <div class="race-name">엘프</div>
-        <div class="race-hp">HP 5</div>
-        <div class="race-passive">공격 사거리 +1</div>
-      </div>
-      <div class="race-card">
-        <div class="race-glyph">🪓</div>
-        <div class="race-name">드워프</div>
-        <div class="race-hp">HP 6</div>
-        <div class="race-passive">최대 HP +1</div>
-      </div>
-      <div class="race-card">
-        <div class="race-glyph">👹</div>
-        <div class="race-name">오크</div>
-        <div class="race-hp">HP 5</div>
-        <div class="race-passive">공격 피해 +1</div>
-      </div>
-    </div>
+  <h2>v0.4.0 핵심 개선</h2>
+  <ul><li>드래곤 활성화 전 예상 총 피해, 피격 대상, shield/hide 완화 여부를 Preview 패널로 표시</li><li>드래곤 턴 해결 후 실제 피해, 피해 대상, 탈락 여부를 Last result 패널로 표시</li><li><code>getDragonActivationPreview(state)</code>와 <code>dragon.lastActivationSummary</code> 추가</li><li>조기 사용, 지연 사용, 기회 상실 튜토리얼 시나리오 3개 추가</li><li><code>public/assets/threat-marker-decal-atlas.png</code>로 위협 셀 가시성 강화</li></ul>
 
-    <h2>4. 카드 시스템</h2>
-    <h3>플레이어 공용 덱 (52장)</h3>
-    <table>
-      <thead><tr><th>카드</th><th>수량</th><th>효과</th></tr></thead>
-      <tbody>
-        <tr><td>👣 이동 (사거리 2)</td><td>8</td><td>직교 방향 최대 2칸 이동</td></tr>
-        <tr><td>👣 이동 (사거리 3)</td><td>7</td><td>직교 방향 최대 3칸 이동</td></tr>
-        <tr><td>👣 이동 (사거리 4)</td><td>5</td><td>직교 방향 최대 4칸 이동</td></tr>
-        <tr><td>⚔️ 공격 (사거리 1)</td><td>8</td><td>인접 대상에 1 피해</td></tr>
-        <tr><td>⚔️ 공격 (사거리 2)</td><td>5</td><td>2칸 내 대상에 1 피해</td></tr>
-        <tr><td>⚔️ 공격 (사거리 3)</td><td>2</td><td>3칸 내 대상에 1 피해</td></tr>
-        <tr><td>🛡️ 숨기</td><td>4</td><td>이번 라운드 피격 시 1 피해 감소</td></tr>
-        <tr><td>❤️ 응급처치</td><td>3</td><td>자신/인접 아군 +1 HP</td></tr>
-        <tr><td>👁️ 정찰</td><td>2</td><td>드래곤 카드 추가 공개</td></tr>
-        <tr><td>📣 도발</td><td>2</td><td>드래곤 공격 유도</td></tr>
-        <tr><td>🗡️ 용사의 검</td><td>1</td><td>드래곤에 3 피해</td></tr>
-        <tr><td>🧪 생명의 물약</td><td>1</td><td>HP 완전 회복</td></tr>
-        <tr><td>🌬️ 바람의 망토</td><td>1</td><td>1~2칸 무료 이동</td></tr>
-        <tr><td>🛡️ 용비늘 방패</td><td>1</td><td>다음 피격 완전 무효</td></tr>
-        <tr><td>🔮 고대 룬</td><td>1</td><td>다음 주사위 +2</td></tr>
-        <tr><td>📜 고대의 서적</td><td>1</td><td>카드 2장 드로우</td></tr>
-      </tbody>
-    </table>
-
-    <h2>5. 드래곤</h2>
-    <table>
-      <thead><tr><th>페이즈</th><th>HP 범위</th><th>행동 수</th><th>공개 카드</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>12~9</td><td>1</td><td>1</td></tr>
-        <tr><td>2</td><td>8~5</td><td>2</td><td>2</td></tr>
-        <tr><td>3</td><td>4~1</td><td>3</td><td>3</td></tr>
-      </tbody>
-    </table>
-
-    <h2>6. 미션 시스템</h2>
-    <p>플레이어당 <strong>필수 1 + 선택 1</strong> 미션이 숨겨진 상태로 배정됩니다.</p>
-    <h3>점수 계산</h3>
-    <ul>
-      <li>미션 완수 점수 합산</li>
-      <li>마무리 보너스: 드래곤에 최종 타격 시 <strong>+3점</strong></li>
-      <li>생존 보너스: 매치 종료 시 생존 시 <strong>+1점</strong></li>
-      <li>3매치 합산 → 최고점 승리</li>
-    </ul>
-
-    <h2>7. UI/UX 기능 (v0.2.0)</h2>
-    <div class="card-grid">
-      <div class="card-item">
-        <div class="card-name">📖 온보딩 튜토리얼</div>
-        <div class="card-desc">최초 실행 시 3단계 슬라이드 (카드 드래프트·전투·종족). localStorage로 재표시 여부 설정 가능.</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">🎮 시작 화면</div>
-        <div class="card-desc">파티 인원 선택 (3/4/5인)</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">📊 매치 결과</div>
-        <div class="card-desc">점수 상세 + 순위 오버레이</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">🏆 최종 결과</div>
-        <div class="card-desc">3매치 합산 + 재시작</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">👥 아군 정보</div>
-        <div class="card-desc">종족/HP/손패 실시간 표시</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">⚠️ 위협 표시</div>
-        <div class="card-desc">드래곤 공격 대상 셀 하이라이트</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">🔊 사운드</div>
-        <div class="card-desc">Web Audio 효과음 11종 + 음소거</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">🃏 카드 연출</div>
-        <div class="card-desc">사용 카드 확대 오버레이</div>
-      </div>
-      <div class="card-item">
-        <div class="card-name">💥 페이즈 전환</div>
-        <div class="card-desc">풀스크린 텍스트 + 플래시</div>
-      </div>
-    </div>
-
-    <h2>8. 변경 이력</h2>
-    <table>
-      <thead><tr><th>버전</th><th>날짜</th><th>내용</th></tr></thead>
-      <tbody>
-        <tr><td>v0.2.0</td><td>2026-05-29</td><td>UX 온보딩 추가 — 카드 드래프트 방법, 전투 흐름, 종족 특성 설명 3단계 슬라이드</td></tr>
-        <tr><td>v0.1.0</td><td>—</td><td>초기 MVP</td></tr>
-      </tbody>
-    </table>
-    <div class="changelog">
-      <h3>v0.2.0 (2026-05-29) — 온보딩 UX + 폴리싱</h3>
-      <ul>
-        <li><strong>온보딩 오버레이 추가</strong> — 최초 실행 시 3단계 슬라이드 튜토리얼 (카드 드래프트 / 전투 시스템 / 종족 특성)</li>
-        <li>localStorage 기반 "다음부터 표시 안 함" 기능</li>
-        <li>시작 화면 추가 (파티 인원 선택)</li>
-        <li>매치 결과 오버레이 (alert 제거)</li>
-        <li>최종 결과 화면 (3매치 합산 + 재시작)</li>
-        <li>아군 정보 패널</li>
-        <li>Web Audio 사운드 효과 11종</li>
-        <li>음소거 버튼</li>
-        <li>테스트 111개 전체 통과</li>
-      </ul>
-      <h3>v0.1.0 — 초기 MVP</h3>
-      <ul>
-        <li>3x5 보드, 3매치 토너먼트</li>
-        <li>4종족, 히든 미션, AI 아군</li>
-        <li>드래곤 3페이즈, 패턴 기반 공격</li>
-        <li>보물 드롭 시스템</li>
-      </ul>
-    </div>
-  </main>
-  <footer>Dragon Tactics &copy; 2026 — 바닐라 JS 웹 게임</footer>
-<!-- APPLIED_RESOURCES_START -->
-<section class="applied-resources">
   <h2>적용 리소스</h2>
-  <p>자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.</p>
-  <ul>
-    <li><strong>이미지/스프라이트</strong>: <code>public/assets/dragon-boss-banner.png</code>, <code>public/assets/dragon-card-art-sheet.png</code>, <code>public/assets/dragon-fullbody-atlas.png</code>, <code>public/assets/dragon-ice-boss-banner.png</code>, <code>public/assets/dragon-type-atlas.png</code>, <code>public/assets/fantasy-card-frame.png</code>, <code>public/assets/forest-board-texture.png</code>, <code>public/assets/lava-board-texture.png</code>, <code>public/assets/race-portrait-atlas.png</code>, <code>public/assets/race-token-atlas.png</code>, <code>public/assets/skill-icon-atlas.png</code>, <code>public/assets/ui-button-frame-atlas.png</code> 외 1개</li>
-  </ul>
-  <p><strong>메모:</strong></p><ul><li>리소스 후보 14개 중 자동 참조 확인 13개.</li></ul>
-</section>
-<!-- APPLIED_RESOURCES_END -->
+  <table><tr><th>리소스</th><th>용도</th></tr><tr><td><code>dragon-type-atlas.png</code></td><td>드래곤 타입 메달리온</td></tr><tr><td><code>dragon-fullbody-atlas.png</code></td><td>보스 바 배경 실루엣</td></tr><tr><td><code>race-token-atlas.png</code></td><td>보드 토큰</td></tr><tr><td><code>skill-icon-atlas.png</code></td><td>카드 아이콘</td></tr><tr><td><code>threat-marker-decal-atlas.png</code></td><td>드래곤 위협 셀 데칼</td></tr></table>
 
-<!-- RESOURCE_PREVIEWS_START -->
-<section class="resource-previews">
-  <h2>공유용 이미지 미리보기</h2>
-  <p>자동 갱신: 2026-06-04. 공유 시 문서와 함께 아래 이미지 경로가 포함되어야 합니다.</p>
-  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/skill-icon-atlas.png" alt="10_DT skill-icon-atlas" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/skill-icon-atlas.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/ui-button-frame-atlas.png" alt="10_DT ui-button-frame-atlas" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/ui-button-frame-atlas.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/dragon-boss-banner.png" alt="10_DT dragon-boss-banner" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/dragon-boss-banner.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/dragon-fullbody-atlas.png" alt="10_DT dragon-fullbody-atlas" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/dragon-fullbody-atlas.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/dragon-ice-boss-banner.png" alt="10_DT dragon-ice-boss-banner" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/dragon-ice-boss-banner.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/dragon-type-atlas.png" alt="10_DT dragon-type-atlas" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/dragon-type-atlas.png</code></figcaption>
-</figure>
-  </div>
-</section>
-<!-- RESOURCE_PREVIEWS_END -->
+  <h2>구현 상태</h2>
+  <table><tr><th>영역</th><th>상태</th></tr><tr><td>코어 전투/이동/카드</td><td>구현 및 테스트 통과</td></tr><tr><td>드래곤 프리뷰/결과 요약</td><td>v0.4.0 구현 완료</td></tr><tr><td>튜토리얼 시나리오</td><td>데이터와 테스트 추가 완료</td></tr><tr><td>실행파일 패키징</td><td>미구현, 현재 정적 웹/Node 서버 프로젝트</td></tr></table>
+
+  <h2>빌드, 테스트, 실행</h2>
+  <p>테스트: <code>npm test</code><br />실행: <code>npm start</code> 또는 <code>npm run serve</code><br />빌드/릴리스: 현재 <code>package.json</code>에 별도 build/release 스크립트 없음</p>
+  <p class="note">2026-07-16 검증: <code>npm test</code> 통과, 161 tests, 0 failures.</p>
+
+  <h2>남은 리스크와 다음 우선순위</h2>
+  <ol><li>상업 출시를 위해 Electron 포터블 또는 Vite 빌드 구성이 필요하다.</li><li>차별점은 드래곤 활성화 타이밍 읽기와 미션 기반 점수 경쟁으로 더 선명하게 밀어야 한다.</li><li>남은 SVG/코드 드로잉 리소스는 실제 참조 확인 뒤 PNG/아틀라스로 교체한다.</li><li>결과 화면의 짧은 리플레이 문장이 다음 고가치 개선이다.</li></ol>
+</main>
 </body>
 </html>

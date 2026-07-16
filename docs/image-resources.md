@@ -17,12 +17,12 @@ This list is based on `docs/DragonTragedy_gameplay_preview.png`: a dark fantasy 
 | Dragon boss medallion | `public/assets/dragon-boss-medallion.png` | 1254x1254 | Compact boss portrait for the top boss bar and dragon turn indicator. |
 | Dragon type atlas | `public/assets/dragon-type-atlas.png` | 2048x682 | Five boss portraits for fire, ice, venom, storm, and gold dragon encounters. Crop as a 5x1 atlas. |
 | Dragon fullbody atlas | `public/assets/dragon-fullbody-atlas.png` | 2048x682 | Five full-body dragon illustrations for boss bar silhouettes and encounter flavor. Crop as a 5x1 atlas. |
+| Threat marker decal atlas | `public/assets/threat-marker-decal-atlas.png` | 2172x724 | Three-slot warning decal atlas for revealed dragon attack preview cells. CSS layers it under tokens, HP, order, and damage labels. |
 
 ## Recommended Next Assets
 
 | Priority | Asset | Why |
 | --- | --- | --- |
-| High | Threat marker decal atlas | Dragon attack preview cells need more visual punch than CSS-only red overlays. |
 | High | Movement/attack effect sprites | Other users' actions become clearer with short trail, slash, impact, heal, and taunt effects. |
 | Medium | Small resource/status icons | HP, shield, hidden, taunt, mission, treasure, and turn status can become compact chips instead of text-heavy panels. |
 | Medium | Mini-map or round timer frame | The reference image uses a decorative circular side widget; this can replace some empty/verbose side UI. |
@@ -73,3 +73,14 @@ Five circular dragon boss medallion portraits arranged in a single horizontal ro
 ### Dragon Fullbody Atlas
 
 Five full-body dragons arranged in a single horizontal row: fire, frost, venom, storm, and ancient gold. Used as a subtle boss-body layer behind HP and gimmick text.
+
+## Runtime SVG / Code-Drawn Resource Note - 2026-06-29
+
+This batch did not delete runtime SVG or code-drawn dragon, board, or VFX resources. The current runtime already references generated PNG atlas/bitmap assets for dragon portraits, full-body dragon art, board texture, card frames, buttons, panels, race portraits, race tokens, and skill icons. Future visual polish should first prove whether any remaining SVG/code-drawn resource is actually referenced at runtime, then replace references before deleting old assets.
+### Threat Marker Decal Atlas
+
+Three horizontal fantasy warning decals for dragon attack preview cells: severe red, orange ember, and muted gold delayed warning sigils. Dark fantasy mobile RPG UI style, no text, no numbers, center kept open for HTML tactical labels.
+
+## Runtime Threat Decal Note - 2026-06-29
+
+`public/assets/threat-marker-decal-atlas.png` is now wired into `.cell .threat-decal` as a 3x1 CSS atlas. Threat order and expected damage remain HTML labels above the decal, and board tokens/HP/drop labels keep higher z-index values so the warning graphic does not obscure pieces or numbers.

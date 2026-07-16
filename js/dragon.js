@@ -1,5 +1,5 @@
 // Dragon card definitions and effect resolvers.
-// Dragon is OFF the board grid — all attacks are pattern-based (rows,
+// Dragon is OFF the board grid - all attacks are pattern-based (rows,
 // columns, parity) so players can read the telegraphed card and react.
 
 const inBounds = (r, c) => r >= 0 && r < 3 && c >= 0 && c < 5;
@@ -81,7 +81,7 @@ function cardDamage(card, state = null) {
 }
 
 /**
- * Some dragon cards are "thrown" — their specific row/column is decided
+ * Some dragon cards are "thrown" - their specific row/column is decided
  * by a dice roll at reveal time so the player sees the resolved target
  * in the preview and can plan around it.
  */
@@ -138,7 +138,7 @@ function burnDropsInCells(state, cells) {
   if (burned.length === 0) return state;
   const burnLogs = burned.map((d) => ({
     round: state.round, turn: state.currentTurnIndex, actor: 'dragon',
-    message: `🔥 용이 (${d.r},${d.c})의 ${d.card.treasure} 카드를 태웠다!`,
+    message: `Dragon burned the ${d.card.treasure} card at (${d.r},${d.c}).`,
   }));
   return {
     ...state,
@@ -150,8 +150,8 @@ function burnDropsInCells(state, cells) {
 export function getDragonCardPreview(card) {
   // Returns { cells: [{r,c}...], damage, label } for display.
   if (!card) return null;
-  if (card.type === 'rest') return { cells: [], damage: 0, label: '휴식' };
-  if (card.type === 'roar') return { cells: [], damage: 0, label: '위협 (주사위 -1)' };
+  if (card.type === 'rest') return { cells: [], damage: 0, label: 'Rest' };
+  if (card.type === 'roar') return { cells: [], damage: 0, label: 'Roar (player rolls -1)' };
   return {
     cells: affectedCells(card),
     damage: cardDamage(card),
@@ -159,16 +159,81 @@ export function getDragonCardPreview(card) {
   };
 }
 
+
+function estimateDamageForPlayer(player, rawDamage) {
+  let damage = rawDamage;
+  let mitigation = null;
+  const statusEffects = { ...(player.statusEffects ?? {}) };
+  if (statusEffects.shieldActive) {
+    statusEffects.shieldActive = false;
+    damage = 0;
+    mitigation = 'shield';
+  }
+  if (damage > 0 && statusEffects.hiddenThisRound) {
+    statusEffects.hiddenThisRound = false;
+    damage = Math.max(0, damage - 1);
+    mitigation = 'hide';
+  }
+  return { damage, mitigation, statusEffects };
+}
+
+export function getDragonActivationPreview(state) {
+  const revealed = state?.dragon?.revealed ?? [];
+  const playerState = new Map((state?.players ?? []).map((p) => [p.id, {
+    id: p.id,
+    name: p.name ?? p.id,
+    hp: p.hp,
+    maxHp: p.maxHp,
+    isEliminated: p.isEliminated,
+    statusEffects: { ...(p.statusEffects ?? {}) },
+  }]));
+  const affected = new Map();
+  const cards = [];
+
+  for (const [index, card] of revealed.entries()) {
+    const cells = affectedCells(card).filter((cell) => inBounds(cell.r, cell.c));
+    const damage = cardDamage(card, state);
+    const hits = [];
+    for (const cell of cells) {
+      const occupant = state.board?.[cell.r]?.[cell.c];
+      if (!occupant || occupant === 'dragon') continue;
+      const player = playerState.get(occupant);
+      if (!player || player.isEliminated) continue;
+      const estimate = estimateDamageForPlayer(player, damage);
+      player.statusEffects = estimate.statusEffects;
+      player.hp = Math.max(0, player.hp - estimate.damage);
+      const prev = affected.get(player.id) ?? {
+        id: player.id,
+        name: player.name,
+        expectedDamage: 0,
+        mitigation: null,
+        firstCardIndex: index + 1,
+      };
+      prev.expectedDamage += estimate.damage;
+      prev.mitigation = prev.mitigation ?? estimate.mitigation;
+      affected.set(player.id, prev);
+      hits.push({ id: player.id, expectedDamage: estimate.damage, mitigation: estimate.mitigation });
+    }
+    cards.push({ id: card.id, type: card.type, label: DRAGON_LABEL[card.type] ?? card.type, cells, damage, hits });
+  }
+
+  const affectedPlayers = [...affected.values()].sort((a, b) => a.firstCardIndex - b.firstCardIndex || a.id.localeCompare(b.id));
+  return {
+    cards,
+    affectedPlayers,
+    totalExpectedDamage: affectedPlayers.reduce((sum, p) => sum + p.expectedDamage, 0),
+  };
+}
 export const DRAGON_LABEL = {
-  'row-attack':   '행 공격 (주사위)',
-  'col-attack':   '열 공격 (주사위)',
-  'row-odd':      '홀수 행 공격',
-  'row-even':     '짝수 행 집중 공격',
-  'all':          '전체 공격',
-  'frenzy':       '광폭 (전체)',
-  'corners':      '네 모서리 공격',
-  'rest':         '휴식',
-  'roar':         '위협',
+  'row-attack':   'Row attack (die)',
+  'col-attack':   'Column attack (die)',
+  'row-odd':      'Outer rows attack',
+  'row-even':     'Middle row focus',
+  'all':          'All board attack',
+  'frenzy':       'Frenzy (all board)',
+  'corners':      'Corner attack',
+  'rest':         'Rest',
+  'roar':         'Roar',
 };
 
 export const DRAGON_CARD_DEFS = [

@@ -1,41 +1,41 @@
 import { renderLog } from './log.js';
-import { getDragonCardPreview, DRAGON_LABEL } from './dragon.js';
+import { getDragonCardPreview, getDragonActivationPreview, DRAGON_LABEL } from './dragon.js';
 
 const CARD_DEFS = {
-  move:   { name: '이동',     meta: (c) => `사거리 ${c.range}`, glyph: '👣' },
-  attack: { name: '공격',     meta: (c) => `사거리 ${c.range}`, glyph: '⚔️' },
-  hide:   { name: '숨기',     meta: () => '이번 라운드', glyph: '🛡️' },
-  heal:   { name: '응급처치', meta: () => '+1 HP', glyph: '❤️‍🩹' },
-  scout:  { name: '정찰',     meta: () => '용 카드 공개', glyph: '👁️' },
-  taunt:  { name: '도발',     meta: () => '타겟 유도', glyph: '📣' },
+  move:   { name: 'Move',   meta: (c) => `Range ${c.range}`, glyph: 'M' },
+  attack: { name: 'Attack', meta: (c) => `Range ${c.range}`, glyph: 'A' },
+  hide:   { name: 'Hide',   meta: () => 'Reduce next hit', glyph: 'H' },
+  heal:   { name: 'Heal',   meta: () => '+1 HP', glyph: '+' },
+  scout:  { name: 'Scout',  meta: () => 'Reveal dragon card', glyph: 'S' },
+  taunt:  { name: 'Taunt',  meta: () => 'Draw threat', glyph: 'T' },
 };
 
 const TREASURE_DEFS = {
-  sword:  { name: '용사의 검',    meta: '용에 3 피해',       glyph: '🗡️' },
-  potion: { name: '생명의 물약',  meta: 'HP 완전 회복',      glyph: '🧪' },
-  cloak:  { name: '바람의 망토',  meta: '1~2칸 공짜 이동',    glyph: '🌬️' },
-  shield: { name: '용비늘 방패',  meta: '다음 피격 무효',     glyph: '🛡️' },
-  rune:   { name: '고대 룬',      meta: '다음 주사위 +2',     glyph: '🔮' },
-  tome:   { name: '고대의 서적',  meta: '카드 2장 드로우',    glyph: '📜' },
+  sword:  { name: 'Hero Sword', meta: '3 damage to dragon', glyph: 'SW' },
+  potion: { name: 'Potion',     meta: 'Full heal',          glyph: 'P' },
+  cloak:  { name: 'Cloak',      meta: 'Move 1-2 free',      glyph: 'C' },
+  shield: { name: 'Shield',     meta: 'Block next hit',     glyph: 'SH' },
+  rune:   { name: 'Rune',       meta: 'Next roll +2',       glyph: 'R' },
+  tome:   { name: 'Tome',       meta: 'Draw 2 cards',       glyph: 'T' },
 };
 
 const RACE_INFO = {
-  human: { name: '인간',   glyph: '🧙' },
-  elf:   { name: '엘프',   glyph: '🧝' },
-  dwarf: { name: '드워프', glyph: '🪓' },
-  orc:   { name: '오크',   glyph: '👹' },
+  human: { name: 'Human', glyph: 'H' },
+  elf:   { name: 'Elf',   glyph: 'E' },
+  dwarf: { name: 'Dwarf', glyph: 'D' },
+  orc:   { name: 'Orc',   glyph: 'O' },
 };
 
 const DRAGON_CARD_INFO = {
-  'row-attack':   { name: '행 공격 🎲',     desc: (c) => c.rowIndex != null ? `행 ${c.rowIndex} 전체 2 피해` : '행 공격 (주사위로 결정)' },
-  'col-attack':   { name: '열 공격 🎲',     desc: (c) => c.colIndex != null ? `열 ${c.colIndex} 전체 2 피해` : '열 공격 (주사위로 결정)' },
-  'row-odd':      { name: '홀수 행 공격',   desc: () => '행 0+2 각 1 피해' },
-  'row-even':     { name: '짝수 행 집중',   desc: () => '행 1 전체 2 피해' },
-  'all':          { name: '전체 공격',      desc: () => '모든 칸 1 피해' },
-  'frenzy':       { name: '광폭',           desc: () => '모든 칸 1 피해' },
-  'corners':      { name: '네 모서리',      desc: () => '4개 모서리 각 2 피해' },
-  'rest':         { name: '휴식',           desc: () => '이번 턴 행동 없음' },
-  'roar':         { name: '위협',           desc: () => '다음 라운드 주사위 -1' },
+  'row-attack': { name: 'Row attack',    desc: (c) => c.rowIndex != null ? `Row ${c.rowIndex}: 2 damage` : 'Random row: 2 damage' },
+  'col-attack': { name: 'Column attack', desc: (c) => c.colIndex != null ? `Column ${c.colIndex}: 2 damage` : 'Random column: 2 damage' },
+  'row-odd':    { name: 'Outer rows',    desc: () => 'Rows 0 and 2: 1 damage' },
+  'row-even':   { name: 'Middle row',    desc: () => 'Row 1: 2 damage' },
+  'all':        { name: 'All board',     desc: () => 'Every cell: 1 damage' },
+  'frenzy':     { name: 'Frenzy',        desc: () => 'Every cell: 1 damage' },
+  'corners':    { name: 'Corners',       desc: () => 'Four corners: 2 damage' },
+  'rest':       { name: 'Rest',          desc: () => 'No action' },
+  'roar':       { name: 'Roar',          desc: () => 'Next round player rolls -1' },
 };
 function dragonCardLabel(card) {
   const info = DRAGON_CARD_INFO[card.type];
@@ -135,10 +135,10 @@ function triggerPhaseTransition(phase) {
 
   const overlay = document.createElement('div');
   overlay.className = 'phase-overlay';
-  const label = phase >= 3 ? '광폭화' : '각성';
+  const label = phase >= 3 ? 'Frenzy' : 'Awakened';
   overlay.innerHTML = `
     <div class="phase-overlay-text">PHASE ${phase}</div>
-    <div class="phase-overlay-sub">용이 ${label}했다!</div>
+    <div class="phase-overlay-sub">Dragon is ${label}!</div>
   `;
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 1500);
@@ -150,13 +150,13 @@ function renderMissionPanel(state) {
   const human = state.players.find((p) => !p.isAI);
   if (!human || !human.missions) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <div class="mission-panel-title">🎯 내 미션</div>
-    <div class="mission-card required" title="필수 미션">
-      <div class="m-head">🎯 필수 · ${human.missions.required.points}pt</div>
+    <div class="mission-panel-title">Hidden Missions</div>
+    <div class="mission-card required" title="Required mission">
+      <div class="m-head">Required - ${human.missions.required.points}pt</div>
       <div class="m-desc">${human.missions.required.description}</div>
     </div>
-    <div class="mission-card optional" title="선택 미션">
-      <div class="m-head">⭐ 선택 · ${human.missions.optional.points}pt</div>
+    <div class="mission-card optional" title="Optional mission">
+      <div class="m-head">Optional - ${human.missions.optional.points}pt</div>
       <div class="m-desc">${human.missions.optional.description}</div>
     </div>
   `;
@@ -215,11 +215,11 @@ function spawnDamageNumber(anchor, text, type) {
 }
 
 function actorLabel(state, id) {
-  if (id === 'dragon') return '🐉 용';
+  if (id === 'dragon') return 'Dragon';
   const p = state.players?.find((x) => x.id === id);
   if (!p) return id;
-  const glyph = RACE_INFO[p.race]?.glyph ?? '?';
-  return `${glyph} ${p.isAI ? p.name : '당신'}`;
+    const glyph = RACE_INFO[p.race]?.glyph ?? '?';
+  return `${glyph} ${p.isAI ? p.name : 'You'}`;
 }
 
 function renderTurnPanel(state) {
@@ -230,10 +230,10 @@ function renderTurnPanel(state) {
     ? { id: 'dragon', name: state.dragon?.name ?? 'Dragon', race: 'dragon', hp: state.dragon?.hp, maxHp: state.dragon?.maxHp }
     : state.players.find((p) => p.id === actorId);
   const actorName = actorId === 'dragon'
-    ? '용 차례'
-    : actor?.isAI ? `${actor.name} 차례` : '당신 차례';
+    ? 'Dragon turn'
+    : actor?.isAI ? `${actor.name} turn` : 'Your turn';
   el.innerHTML = `
-    <div class="turn-panel-title">현재 턴</div>
+    <div class="turn-panel-title">Current Turn</div>
     <div class="turn-current ${actorId === 'dragon' ? 'dragon' : ''}">
       <span class="${actorId === 'dragon' ? `dragon-mini ${state.dragon?.atlasClass ?? state.dragon?.type ?? 'fire'}` : `portrait-medallion ${actor?.race ?? 'human'}`}"></span>
       <div>
@@ -245,7 +245,7 @@ function renderTurnPanel(state) {
       ${state.players.map((p) => `
         <div class="turn-roster-row ${p.id === actorId ? 'current' : ''} ${p.isEliminated ? 'eliminated' : ''}">
           <span class="portrait-medallion ${p.race}" title="${RACE_INFO[p.race]?.name ?? p.race}"></span>
-          <span class="turn-roster-name">${p.isAI ? p.name : '당신'}</span>
+          <span class="turn-roster-name">${p.isAI ? p.name : 'You'}</span>
           <span class="turn-roster-hp">${p.isEliminated ? 'OUT' : `${p.hp}/${p.maxHp}`}</span>
         </div>`).join('')}
     </div>
@@ -257,11 +257,11 @@ function renderHud(state) {
   const actor = state.turnOrder?.[state.currentTurnIndex];
   const isYou = !!state.players.find((p) => p.id === actor && !p.isAI);
   const turnBanner = actor
-    ? `<span class="turn-banner ${isYou ? 'your-turn' : ''}">${isYou ? '▶ 당신 차례' : `${actorLabel(state, actor)} 차례`}</span>`
+    ? `<span class="turn-banner ${isYou ? 'your-turn' : ''}">${isYou ? 'Your turn' : `${actorLabel(state, actor)} turn`}</span>`
     : '';
   hud.innerHTML = `
-    <div class="hud-title">🐉 Dragon Tactics</div>
-    <div class="hud-meta">매치 ${state.matchIndex + 1} · 처치 ${state.dragonKills ?? 0}/${state.targetDragonKills ?? 3} · 라운드 ${state.round} · 페이즈 ${state.dragon?.phase ?? '-'}</div>
+    <div class="hud-title">Dragon Tactics</div>
+    <div class="hud-meta">Match ${state.matchIndex + 1} / 3 - Kills ${state.dragonKills ?? 0}/${state.targetDragonKills ?? 3} - Round ${state.round} - Phase ${state.dragon?.phase ?? '-'}</div>
     ${turnBanner}
     <div class="turn-order">
       ${(state.turnOrder ?? []).map((id, i) =>
@@ -269,7 +269,6 @@ function renderHud(state) {
     </div>
   `;
 }
-
 function renderBoard(state, ui) {
   const board = document.getElementById('board');
   board.innerHTML = '';
@@ -300,27 +299,29 @@ function renderBoard(state, ui) {
       let body = '';
       if (occ && occ !== 'dragon') {
         const p = state.players.find((x) => x.id === occ);
-        const glyph = RACE_INFO[p?.race]?.glyph ?? '🧙';
+        const glyph = RACE_INFO[p?.race]?.glyph ?? '?';
         const isSelf = p && !p.isAI;
         if (isSelf) cell.classList.add('is-self');
         body = `<span class="token token-image ${p.race} ${isSelf ? 'token-self' : ''}"
                       style="view-transition-name: token-${p.id}"
                       title="${p.id} (${p.race}) HP ${p.hp}"><span class="token-glyph-fallback">${glyph}</span></span>`;
         body += `<span class="cell-hp">${p.hp}</span>`;
-        if (isSelf) body += `<span class="self-ring"></span><span class="self-label">나</span>`;
+        if (isSelf) body += `<span class="self-ring"></span><span class="self-label">YOU</span>`;
       }
       body += `<span class="cell-coords">${r},${c}</span>`;
       const threat = threatCells.get(`${r},${c}`);
       if (threat) {
-        body += `<span class="threat-order" title="${threat.firstOrder}번째 공격">#${threat.firstOrder}</span>`;
-        body += `<span class="threat-marker">⚠ -${threat.damage}</span>`;
+        const threatOrder = Math.min(threat.firstOrder, 3);
+        body += `<span class="threat-decal threat-decal-${threatOrder}" aria-hidden="true"></span>`;
+        body += `<span class="threat-order" title="Dragon attack order ${threat.firstOrder}">#${threat.firstOrder}</span>`;
+        body += `<span class="threat-marker" title="Expected damage">-${threat.damage}</span>`;
         cell.classList.add('threat');
-        cell.classList.add(`threat-order-${threat.firstOrder}`);
+        cell.classList.add(`threat-order-${threatOrder}`);
       }
       const cellDrops = drops.filter((d) => d.r === r && d.c === c);
       if (cellDrops.length > 0) {
-        const glyphs = cellDrops.map((d) => TREASURE_DEFS[d.card.treasure]?.glyph ?? '💎').join('');
-        body += `<span class="drop-marker" title="떨어진 카드">${glyphs}</span>`;
+        const glyphs = cellDrops.map((d) => TREASURE_DEFS[d.card.treasure]?.glyph ?? '?').join('');
+        body += `<span class="drop-marker" title="Dropped treasure">${glyphs}</span>`;
         cell.classList.add('has-drop');
       }
       cell.innerHTML = body;
@@ -338,11 +339,11 @@ function renderDragonStrip(state, ui) {
   if (!d) { el.innerHTML = ''; return; }
   el.classList.toggle('attackable', !!ui?.canAttackDragon);
   el.dataset.dragonType = d.type ?? 'fire';
-  const newPips = [1, 2, 3].map((p) =>
+  const pips = [1, 2, 3].map((p) =>
     `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
-  const newHint = ui?.canAttackDragon
-    ? '지금 용을 공격할 수 있습니다.'
-    : '상단 행에 있을 때 용을 공격할 수 있습니다.';
+  const hint = ui?.canAttackDragon
+    ? 'You can attack the dragon now.'
+    : 'Move to row 0 to attack the dragon.';
   el.innerHTML = `
     <div class="dstrip-left phase-${d.phase}">
       <div class="dragon-medallion ${d.atlasClass ?? d.type ?? 'fire'}"></div>
@@ -350,78 +351,21 @@ function renderDragonStrip(state, ui) {
     <div class="dstrip-center">
       <div class="dragon-fullbody ${d.atlasClass ?? d.type ?? 'fire'}"></div>
       <div class="dstrip-title-row">
-        <div class="dstrip-title">${d.name ?? '용'}</div>
-        <div class="dstrip-sub">${d.element ?? '용'} · 페이즈 ${d.phase}${d.shield ? ` · Shield ${d.shield}` : ''}</div>
+        <div class="dstrip-title">${d.name ?? 'Dragon'}</div>
+        <div class="dstrip-sub">${d.element ?? 'Element'} - Phase ${d.phase}${d.shield ? ` - Shield ${d.shield}` : ''}</div>
       </div>
       <div class="dstrip-gimmick">${d.gimmick ?? ''}</div>
       <div class="hp-bar">
         <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
         <div class="label">HP ${d.hp} / ${d.maxHp}</div>
       </div>
-      <div class="dstrip-phase" title="${newHint}">
-        ${newPips}
-        <span>상단 행에서 공격</span>
-      </div>
-    </div>
-  `;
-  return;
-  el.classList.toggle('dragon-ice', d.type === 'ice');
-  const pips = [1, 2, 3].map((p) =>
-    `<div class="phase-pip ${p <= d.phase ? 'active' : ''}"></div>`).join('');
-  const hintBodyClean = ui?.canAttackDragon
-    ? '지금 용을 공격할 수 있습니다.'
-    : '상단 행에 있을 때 용을 공격할 수 있습니다.';
-  const dragonName = d.type === 'ice' ? '빙하 용' : '용';
-  const medallionClass = d.type === 'ice' ? 'dragon-medallion dragon-medallion-ice' : 'dragon-medallion';
-  el.innerHTML = `
-    <div class="dstrip-left phase-${d.phase}">
-      <div class="${medallionClass}"></div>
-    </div>
-    <div class="dstrip-center">
-      <div class="dstrip-title-row">
-        <div class="dstrip-title">${dragonName}</div>
-        <div class="dstrip-sub">페이즈 ${d.phase}</div>
-      </div>
-      <div class="hp-bar">
-        <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
-        <div class="label">HP ${d.hp} / ${d.maxHp}</div>
-      </div>
-      <div class="dstrip-phase" title="${hintBodyClean}">
+      <div class="dstrip-phase" title="${hint}">
         ${pips}
-        <span>상단 행에서 공격</span>
+        <span>Attack from top row</span>
       </div>
-    </div>
-  `;
-  return;
-  const phaseClass = `phase-${d.phase}`;
-  const hintBody = ui?.canAttackDragon
-    ? '지금 용을 클릭해 공격하세요!'
-    : '⚠ 상단행(행 0)에 있을 때만 용을 공격할 수 있습니다.';
-  el.innerHTML = `
-    <div class="dstrip-left ${phaseClass}">
-      <div class="dstrip-emoji">🐉</div>
-      <div class="dstrip-title-wrap">
-        <div class="dstrip-title">고대의 용</div>
-        <div class="dstrip-sub">맵 밖에서 노려보는 중</div>
-      </div>
-    </div>
-    <div class="dstrip-center">
-      <div class="hp-bar">
-        <div class="fill" style="width:${(d.hp / d.maxHp) * 100}%"></div>
-        <div class="label">HP ${d.hp} / ${d.maxHp}</div>
-      </div>
-      <div class="dstrip-phase">
-        ${pips}
-        <span>페이즈 ${d.phase}</span>
-      </div>
-    </div>
-    <div class="dstrip-right">
-      <div class="dstrip-zone-hint">⚔️ 공격존: 상단행</div>
-      <div>${hintBody}</div>
     </div>
   `;
 }
-
 function renderAllyInfo(state) {
   const logPanel = document.getElementById('log-panel');
   if (!logPanel) return;
@@ -436,23 +380,52 @@ function renderAllyInfo(state) {
   const allies = state.players.filter((p) => p.isAI);
   if (allies.length === 0) { strip.innerHTML = ''; return; }
   strip.innerHTML = allies.map((p) => {
-    const glyph = RACE_INFO[p.race]?.glyph ?? '❓';
+    const glyph = RACE_INFO[p.race]?.glyph ?? '?';
     const raceName = RACE_INFO[p.race]?.name ?? p.race;
     return `<div class="ally-card ${p.isEliminated ? 'eliminated' : ''}">
       <span class="portrait-medallion ${p.race}" title="${raceName}"></span>
       <span class="ally-name">${p.name}</span>
-      <span class="ally-hand-count">🃏${p.hand.length}</span>
-      <span class="ally-hp">${p.isEliminated ? '💀' : `❤️${p.hp}/${p.maxHp}`}</span>
+      <span class="ally-hand-count">Cards ${p.hand.length}</span>
+      <span class="ally-hp">${p.isEliminated ? 'OUT' : `HP ${p.hp}/${p.maxHp}`}</span>
     </div>`;
   }).join('');
 }
 
+function renderActivationPreview(state) {
+  const preview = getDragonActivationPreview(state);
+  if (!preview || preview.cards.length === 0) {
+    return '<div class="dragon-impact-panel muted">Preview: no dragon card queued.</div>';
+  }
+  const players = preview.affectedPlayers.length > 0
+    ? preview.affectedPlayers.map((p) => {
+        const mitigation = p.mitigation ? ` (${p.mitigation})` : '';
+        return `<span class="impact-chip">${p.name ?? p.id}: -${p.expectedDamage}${mitigation}</span>`;
+      }).join('')
+    : '<span class="impact-chip safe">No player hit</span>';
+  return `<div class="dragon-impact-panel preview">
+    <div class="impact-head"><span>Preview</span><strong>Expected -${preview.totalExpectedDamage}</strong></div>
+    <div class="impact-list">${players}</div>
+  </div>`;
+}
+
+function renderActivationSummary(state) {
+  const summary = state.dragon?.lastActivationSummary;
+  if (!summary || summary.resolvedCards.length === 0) return '';
+  const players = summary.affectedPlayers.length > 0
+    ? summary.affectedPlayers.map((p) => `<span class="impact-chip">${p.name ?? p.id}: -${p.damageTaken}${p.eliminated ? ' OUT' : ''}</span>`).join('')
+    : '<span class="impact-chip safe">No damage dealt</span>';
+  return `<div class="dragon-impact-panel summary">
+    <div class="impact-head"><span>Last result</span><strong>Actual -${summary.totalDamageDealt}</strong></div>
+    <div class="impact-list">${players}</div>
+  </div>`;
+}
 function renderDragonPanel(state, ui) {
   const el = document.getElementById('dragon-panel');
   const d = state.dragon;
   if (!d) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <div class="reveal-title">🐉 다음 공격 (카드 + 주사위)</div>
+    <div class="reveal-title">Dragon activation</div>
+    ${renderActivationPreview(state)}
     <div class="revealed-cards">
       ${d.revealed.length > 0
         ? d.revealed.map((c, idx) => {
@@ -463,11 +436,11 @@ function renderDragonPanel(state, ui) {
               <div class="rc-desc">${info.desc}</div>
             </div>`;
           }).join('')
-        : '<span class="muted">(준비중)</span>'}
+        : '<span class="muted">(readying)</span>'}
     </div>
+    ${renderActivationSummary(state)}
   `;
 }
-
 function renderPlayerPanel(state, ui) {
   const human = state.players.find((p) => !p.isAI);
   const el = document.getElementById('player-panel');
@@ -475,20 +448,20 @@ function renderPlayerPanel(state, ui) {
 
   const isYour = state.turnOrder?.[state.currentTurnIndex] === human.id;
   el.className = isYour ? 'your-turn' : 'awaiting-turn';
-  const raceInfo = RACE_INFO[human.race] ?? { name: human.race, glyph: '❓' };
+  const raceInfo = RACE_INFO[human.race] ?? { name: human.race, glyph: '?' };
   const hpPips = Array.from({ length: human.maxHp }, (_, i) =>
     `<div class="hp-pip ${i < human.hp ? '' : 'lost'}"></div>`).join('');
 
   const cardSelected = !!ui?.selectedCardId;
   const notYourTurn = !isYour;
-  const drawDisabled   = notYourTurn || cardSelected || human.hand.length > 3;
+  const drawDisabled = notYourTurn || cardSelected || human.hand.length > 3;
   const redrawDisabled = notYourTurn || cardSelected || human.hand.length === 0;
-  const swapDisabled   = notYourTurn || cardSelected || human.hand.length < 4;
+  const swapDisabled = notYourTurn || cardSelected || human.hand.length < 4;
 
-  const tipPrefix = notYourTurn ? '상대 턴 대기중' : (cardSelected ? '카드 선택을 해제하세요' : '');
-  const drawTip   = tipPrefix || '행동 없이 2장 드로우 (손패 ≤ 3일 때만)';
-  const redrawTip = tipPrefix || '손패 전부 버리고 같은 수 새로 뽑기';
-  const swapTip   = tipPrefix || '손패 4장을 버리고 미션 2장 재배정 (손패 ≥ 4 필요)';
+  const tipPrefix = notYourTurn ? 'Waiting for your turn' : (cardSelected ? 'Finish selected card first' : '');
+  const drawTip = tipPrefix || 'Draw 2 cards when hand has 3 or fewer cards';
+  const redrawTip = tipPrefix || 'Discard hand and draw the same count';
+  const swapTip = tipPrefix || 'Discard 4 cards to swap missions';
 
   el.innerHTML = `
     <div class="player-identity ${isYour ? 'your-turn' : ''}">
@@ -501,45 +474,38 @@ function renderPlayerPanel(state, ui) {
       </div>
       <div class="hp-pips" title="HP ${human.hp}/${human.maxHp}">${hpPips}</div>
       ${isYour
-        ? '<div class="turn-mark">▶ 당신 차례<span class="one-action-hint">(행동 1회 후 턴 종료)</span></div>'
-        : '<div class="turn-mark waiting">대기중...</div>'}
+        ? '<div class="turn-mark">Your turn <span class="one-action-hint">(one action ends turn)</span></div>'
+        : '<div class="turn-mark waiting">Waiting...</div>'}
     </div>
     <div class="hand-wrap ${cardSelected ? 'choice-active' : ''}">
-      <div class="hand-title">손패 <span class="hand-count">${human.hand.length}/5</span></div>
-      <div class="hand-help">${cardSelected ? '대상을 선택하면 카드 사용으로 턴이 종료됩니다.' : '패를 1장 선택해 사용합니다.'}</div>
+      <div class="hand-title">Hand <span class="hand-count">${human.hand.length}/5</span></div>
+      <div class="hand-help">${cardSelected ? 'Pick a target to play the selected card.' : 'Select one card to use it.'}</div>
       <div class="hand">
         ${human.hand.length > 0
           ? human.hand.map((c) => renderCard(c, ui?.selectedCardId === c.id)).join('')
-          : '<span class="muted">(빈 손)</span>'}
+          : '<span class="muted">(empty)</span>'}
       </div>
     </div>
     <div class="turn-choice-panel ${cardSelected ? 'card-mode' : ''}">
-      <div class="choice-panel-title">&#52852;&#46300; &#49324;&#50857; &#46608;&#45716; &#46300;&#47196;&#50864;</div>
-      <div class="choice-panel-hint">${cardSelected ? '&#52852;&#46300;&#47484; &#50416;&#45716; &#51473;&#51060;&#46972; &#46300;&#47196;&#50864; &#49440;&#53469;&#51008; &#51104;&#44541;&#45768;&#45796;.' : '&#51060;&#48264; &#53556;&#50640;&#45716; &#50500;&#47000; &#54665;&#46041; &#51473; &#54616;&#45208;&#47564; &#49440;&#53469;&#54633;&#45768;&#45796;.'}</div>
+      <div class="choice-panel-title">Card use or draw</div>
+      <div class="choice-panel-hint">${cardSelected ? 'Draw choices are locked while a card is selected.' : 'Choose exactly one action this turn.'}</div>
       <div class="action-buttons">
-      <button id="btn-draw-two" ${drawDisabled ? 'disabled' : ''} title="${drawTip}">
-        🂠 드로우 +2
-      </button>
-      <button id="btn-redraw" ${redrawDisabled ? 'disabled' : ''} title="${redrawTip}">
-        🔁 전체 재드로우
-      </button>
-      <button id="btn-swap-missions" ${swapDisabled ? 'disabled' : ''} title="${swapTip}">
-        🔄 미션 교체 <span class="btn-cost">(-4장)</span>
-      </button>
+        <button id="btn-draw-two" ${drawDisabled ? 'disabled' : ''} title="${drawTip}">Draw +2</button>
+        <button id="btn-redraw" ${redrawDisabled ? 'disabled' : ''} title="${redrawTip}">Redraw hand</button>
+        <button id="btn-swap-missions" ${swapDisabled ? 'disabled' : ''} title="${swapTip}">Swap missions <span class="btn-cost">(-4)</span></button>
       </div>
     </div>
   `;
 }
-
 function renderCard(card, selected) {
   let name, meta, glyph;
   let isTreasure = false;
   if (card.type === 'treasure') {
     isTreasure = true;
-    const t = TREASURE_DEFS[card.treasure] ?? { name: card.treasure, meta: '', glyph: '💎' };
+    const t = TREASURE_DEFS[card.treasure] ?? { name: card.treasure, meta: '', glyph: '?' };
     name = t.name; meta = t.meta; glyph = t.glyph;
   } else {
-    const def = CARD_DEFS[card.type] ?? { name: card.type, meta: () => '', glyph: '❓' };
+    const def = CARD_DEFS[card.type] ?? { name: card.type, meta: () => '', glyph: '?' };
     name = def.name; meta = def.meta(card); glyph = def.glyph;
   }
   const cardKindClass = cardAssetClass(card);
@@ -573,10 +539,10 @@ export function showCardPlayOverlay(card) {
   let isTreasure = false;
   if (card.type === 'treasure') {
     isTreasure = true;
-    const t = TREASURE_DEFS[card.treasure] ?? { name: card.treasure, meta: '', glyph: '💎' };
+    const t = TREASURE_DEFS[card.treasure] ?? { name: card.treasure, meta: '', glyph: '?' };
     name = t.name; meta = t.meta; glyph = t.glyph;
   } else {
-    const def = CARD_DEFS[card.type] ?? { name: card.type, meta: () => '', glyph: '❓' };
+    const def = CARD_DEFS[card.type] ?? { name: card.type, meta: () => '', glyph: '?' };
     name = def.name; meta = def.meta(card); glyph = def.glyph;
   }
   const overlay = document.createElement('div');

@@ -5,7 +5,7 @@ import { assignMissions } from './missions.js';
 import { resolveDragonCard, resolveRandomizedReveal } from './dragon.js';
 
 function roundRng(state) {
-  // Distinct RNG per (seed, match, round) — keeps inter-round rolls independent.
+  // Distinct RNG per (seed, match, round) - keeps inter-round rolls independent.
   return createRng((state.seed + 1) * 1000003 + state.matchIndex * 9973 + state.round * 31);
 }
 
@@ -64,7 +64,7 @@ function applyDropsToState(state, drops) {
   let newState = { ...state, dragon: { ...state.dragon, drops: [...currentDrops, ...drops] } };
   for (const d of drops) {
     newState = { ...newState,
-      log: logEntry(newState, `🎁 용이 (${d.r},${d.c})에 ${d.card.treasure} 카드를 떨어뜨렸다!`, 'drop') };
+      log: logEntry(newState, `Dragon dropped ${d.card.treasure} at (${d.r},${d.c}).`, 'drop') };
   }
   // Auto-pickup: any player standing on the drop cell picks it up immediately.
   newState = autoPickupDrops(newState);
@@ -98,7 +98,7 @@ function pickupDrop(state, playerId, drop) {
         dropsPickedUp: (p.missionProgress.dropsPickedUp ?? 0) + 1 } };
   });
   return { ...state, players: newPlayers,
-    log: logEntry(state, `✨ ${playerId}이(가) 떨어진 ${drop.card.treasure} 카드를 획득!`, playerId) };
+    log: logEntry(state, `${playerId} picked up ${drop.card.treasure}.`, playerId) };
 }
 
 function findPlayer(state, id) { return state.players.find((p) => p.id === id); }
@@ -189,7 +189,7 @@ function applyAttackCard(state, player, card, target) {
   // to reach it. Range does not matter against the dragon itself.
   if (target.type === 'dragon') {
     if (!canAttackDragonFrom(player.position)) {
-      throw new Error('공격 위치가 아닙니다: 상단 행(행 0)에서만 용을 공격할 수 있습니다');
+      throw new Error('Attack position invalid: only row 0 can attack the dragon');
     }
   } else if (target.type === 'player') {
     const t = findPlayer(state, target.id);
@@ -447,7 +447,7 @@ function applyDiscardAndRedraw(state, player) {
   });
   return withActionEvent({
     ...state, players: newPlayers, commonDeck: deck, commonDiscard: discard,
-    log: logEntry(state, `${player.id} 손패 전부 버리고 ${count}장 새로 뽑음`, player.id),
+    log: logEntry(state, `${player.id} redrew ${count} cards`, player.id),
   }, {
     actorId: player.id,
     kind: 'redraw',
@@ -459,7 +459,7 @@ function applyDiscardAndRedraw(state, player) {
 const MISSION_SWAP_COST = 4;
 function applyDiscardAndSwapMissions(state, player) {
   if (player.hand.length < MISSION_SWAP_COST) {
-    throw new Error(`미션 교체에는 손패 ${MISSION_SWAP_COST}장이 필요합니다`);
+    throw new Error(`mission swap requires ${MISSION_SWAP_COST} cards`);
   }
   const racesPresent = new Set(state.players.filter((p) => !p.isEliminated).map((p) => p.race));
   const rng = createRng(state.seed + state.round * 100003 + state.currentTurnIndex * 31);
@@ -473,7 +473,7 @@ function applyDiscardAndSwapMissions(state, player) {
   return withActionEvent({
     ...state, players: newPlayers,
     commonDiscard: [...state.commonDiscard, ...discarded],
-    log: logEntry(state, `${player.id} 손패 ${MISSION_SWAP_COST}장을 버리고 미션 재배정`, player.id),
+    log: logEntry(state, `${player.id} swaps missions for ${MISSION_SWAP_COST} cards`, player.id),
   }, {
     actorId: player.id,
     kind: 'mission',
@@ -597,7 +597,7 @@ function applyTreasureShield(state, player, card) {
 
 function applyTreasureTome(state, player, card) {
   if (player.hand.length > 4) {
-    throw new Error('손패가 너무 많아 고대의 서적을 쓸 수 없습니다 (≤ 4 필요)');
+    throw new Error('hand too large for tome: 4 or fewer cards required');
   }
   const { card: consumed, hand } = removeCardFromHand(player, card.id);
   const rng = createRng(state.seed + state.round * 7 + state.currentTurnIndex * 13 + 42);
@@ -621,7 +621,7 @@ function applyTreasureTome(state, player, card) {
   return withActionEvent({ ...state, players: newPlayers,
     commonDeck: deck,
     commonDiscard: [...discard, consumed],
-    log: logEntry(state, `${player.id} 고대의 서적으로 카드 2장 드로우`, player.id) }, {
+    log: logEntry(state, `${player.id} uses tome to draw 2 cards`, player.id) }, {
     actorId: player.id,
     kind: 'treasure',
     count: drawn.length,
@@ -691,7 +691,7 @@ export function rollTurnOrder(state) {
 export function maybeTransitionPhase(state) {
   const hp = state.dragon.hp;
   let phase = state.dragon.phase;
-  // Thresholds scaled to dragon HP = 12: phase 2 at ≤8, phase 3 at ≤4.
+  // Thresholds scaled to dragon HP = 12: phase 2 at <=8, phase 3 at <=4.
   if (hp <= 4) phase = 3;
   else if (hp <= 8) phase = Math.max(phase, 2);
   if (phase !== state.dragon.phase) {
@@ -828,23 +828,57 @@ export function applyTurnStartPassives(state, playerId) {
   };
 }
 
+function buildDragonActivationSummary(before, after, resolvedCards) {
+  const affectedPlayers = [];
+  for (const prev of before.players ?? []) {
+    const next = after.players?.find((p) => p.id === prev.id);
+    if (!next) continue;
+    const damageTaken = Math.max(0, (prev.hp ?? 0) - (next.hp ?? 0));
+    if (damageTaken <= 0) continue;
+    affectedPlayers.push({
+      id: prev.id,
+      name: prev.name ?? prev.id,
+      damageTaken,
+      hpBefore: prev.hp,
+      hpAfter: next.hp,
+      eliminated: !!next.isEliminated && !prev.isEliminated,
+    });
+  }
+  return {
+    resolvedCards: resolvedCards.map((card) => ({
+      id: card.id,
+      type: card.type,
+      rowIndex: card.rowIndex,
+      colIndex: card.colIndex,
+    })),
+    affectedPlayers,
+    totalDamageDealt: affectedPlayers.reduce((sum, p) => sum + p.damageTaken, 0),
+  };
+}
 export function executeDragonTurn(state, aiDecisionFn) {
   const actions = state.dragon.phase + (state.dragon.type === 'storm' ? 1 : 0);
+  const before = state;
   let s = state;
   let resolvedCount = 0;
+  const resolvedCards = [];
   for (let i = 0; i < actions; i++) {
     if (s.dragon.revealed.length === 0) break;
     const [card, ...rest] = s.dragon.revealed;
     const decisions = aiDecisionFn(s, card);
     s = resolveDragonCard(s, card, decisions);
     s = { ...s, dragon: { ...s.dragon, revealed: rest, discard: [...s.dragon.discard, card] } };
+    resolvedCards.push(card);
     resolvedCount += 1;
     s = maybeTransitionPhase(s);
   }
   s = refillRevealed(s);
   return {
     ...s,
-    dragon: { ...s.dragon, lastResolvedCount: resolvedCount },
+    dragon: {
+      ...s.dragon,
+      lastResolvedCount: resolvedCount,
+      lastActivationSummary: buildDragonActivationSummary(before, s, resolvedCards),
+    },
     currentTurnIndex: s.currentTurnIndex + 1,
   };
 }

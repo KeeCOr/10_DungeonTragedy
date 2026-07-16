@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, startMatch } from '../js/state.js';
 import { rollTurnOrder, maybeTransitionPhase, clearRoundStatus, resolveMarkedCells, refillRevealed, executeDragonTurn, endRound, checkMatchEnd } from '../js/engine.js';
@@ -35,13 +35,13 @@ test('engine.flow: rollTurnOrder output is deterministic given same seed', () =>
   assert.deepEqual(make().turnOrder, make().turnOrder);
 });
 
-test('phase: HP 8 → phase 2', () => {
+test('phase: HP 8 ??phase 2', () => {
   const s = { dragon: { hp: 8, phase: 1, deck: [], discard: [], revealed: [] } };
   const next = maybeTransitionPhase(s);
   assert.equal(next.dragon.phase, 2);
 });
 
-test('phase: HP 4 → phase 3', () => {
+test('phase: HP 4 ??phase 3', () => {
   const s = { dragon: { hp: 4, phase: 2, deck: [], discard: [], revealed: [] } };
   const next = maybeTransitionPhase(s);
   assert.equal(next.dragon.phase, 3);
@@ -171,4 +171,36 @@ test('executeDragonTurn: storm dragon resolves one extra card', () => {
   };
   const next = executeDragonTurn(s, () => ({}));
   assert.equal(next.dragon.lastResolvedCount, 2);
+});
+
+test('executeDragonTurn: stores actual activation summary after dragon use', () => {
+  const s0 = startMatch(createInitialState({ seed: 31, players: playerCfg(3) }));
+  const s = {
+    ...s0,
+    turnOrder: ['dragon'],
+    currentTurnIndex: 0,
+    board: [
+      [null, 'P0', null, 'P1', null],
+      [null, null, null, null, null],
+      [null, null, 'P2', null, null],
+    ],
+    players: s0.players.map((p) =>
+      p.id === 'P0' ? { ...p, hp: 5, maxHp: 5, position: { r: 0, c: 1 } } :
+      p.id === 'P1' ? { ...p, hp: 5, maxHp: 5, position: { r: 0, c: 3 } } :
+      { ...p, hp: 5, maxHp: 5, position: { r: 2, c: 2 } }),
+    dragon: {
+      ...s0.dragon,
+      phase: 1,
+      revealed: [{ id: 'r0', type: 'row-attack', rowIndex: 0 }],
+      deck: [],
+      discard: [],
+    },
+  };
+  const next = executeDragonTurn(s, () => ({}));
+  assert.equal(next.dragon.lastActivationSummary.resolvedCards.length, 1);
+  assert.equal(next.dragon.lastActivationSummary.totalDamageDealt, 4);
+  assert.deepEqual(next.dragon.lastActivationSummary.affectedPlayers.map((p) => [p.id, p.damageTaken]), [
+    ['P0', 2],
+    ['P1', 2],
+  ]);
 });
