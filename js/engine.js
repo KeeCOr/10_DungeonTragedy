@@ -2,7 +2,7 @@ import { createRng } from './rng.js';
 import { attackRangeBonus, attackDamageBonus, extraDrawChance } from './races.js';
 import { drawFromDeck } from './cards.js';
 import { assignMissions } from './missions.js';
-import { resolveDragonCard, resolveRandomizedReveal } from './dragon.js';
+import { resolveDragonCard, resolveRandomizedReveal, getDragonActivationPreview } from './dragon.js';
 
 function roundRng(state) {
   // Distinct RNG per (seed, match, round) - keeps inter-round rolls independent.
@@ -828,7 +828,7 @@ export function applyTurnStartPassives(state, playerId) {
   };
 }
 
-function buildDragonActivationSummary(before, after, resolvedCards) {
+function buildDragonActivationSummary(before, after, resolvedCards, forecast = null) {
   const affectedPlayers = [];
   for (const prev of before.players ?? []) {
     const next = after.players?.find((p) => p.id === prev.id);
@@ -853,11 +853,15 @@ function buildDragonActivationSummary(before, after, resolvedCards) {
     })),
     affectedPlayers,
     totalDamageDealt: affectedPlayers.reduce((sum, p) => sum + p.damageTaken, 0),
+    forecastDamage: forecast?.totalExpectedDamage ?? null,
+    forecastRisk: forecast?.affectedPlayers?.length ?? null,
+    damageDelta: forecast ? affectedPlayers.reduce((sum, p) => sum + p.damageTaken, 0) - forecast.totalExpectedDamage : null,
   };
 }
 export function executeDragonTurn(state, aiDecisionFn) {
   const actions = state.dragon.phase + (state.dragon.type === 'storm' ? 1 : 0);
   const before = state;
+  const forecast = getDragonActivationPreview(state);
   let s = state;
   let resolvedCount = 0;
   const resolvedCards = [];
@@ -877,7 +881,7 @@ export function executeDragonTurn(state, aiDecisionFn) {
     dragon: {
       ...s.dragon,
       lastResolvedCount: resolvedCount,
-      lastActivationSummary: buildDragonActivationSummary(before, s, resolvedCards),
+      lastActivationSummary: buildDragonActivationSummary(before, s, resolvedCards, forecast),
     },
     currentTurnIndex: s.currentTurnIndex + 1,
   };

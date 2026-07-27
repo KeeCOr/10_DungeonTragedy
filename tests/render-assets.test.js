@@ -33,3 +33,11 @@ test('render: threatened board cells reserve a decal layer below tactical labels
   assert.match(renderSource, /threat-order/);
   assert.match(renderSource, /threat-marker/);
 });
+
+
+test('render: dragon activation panels compare forecast and actual using shared metric labels', () => {
+  assert.match(renderSource, /renderImpactMetrics\('forecast'/);
+  assert.match(renderSource, /renderImpactMetrics\('actual'/);
+  assert.match(renderSource, /\$\{kind\}-metric/);
+  assert.match(renderSource, /Delta vs forecast/);
+});

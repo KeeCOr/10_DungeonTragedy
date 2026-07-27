@@ -1,4 +1,4 @@
-﻿import { test } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, startMatch } from '../js/state.js';
 import { rollTurnOrder, maybeTransitionPhase, clearRoundStatus, resolveMarkedCells, refillRevealed, executeDragonTurn, endRound, checkMatchEnd } from '../js/engine.js';
@@ -199,6 +199,8 @@ test('executeDragonTurn: stores actual activation summary after dragon use', () 
   const next = executeDragonTurn(s, () => ({}));
   assert.equal(next.dragon.lastActivationSummary.resolvedCards.length, 1);
   assert.equal(next.dragon.lastActivationSummary.totalDamageDealt, 4);
+  assert.equal(next.dragon.lastActivationSummary.forecastDamage, 4);
+  assert.equal(next.dragon.lastActivationSummary.damageDelta, 0);
   assert.deepEqual(next.dragon.lastActivationSummary.affectedPlayers.map((p) => [p.id, p.damageTaken]), [
     ['P0', 2],
     ['P1', 2],

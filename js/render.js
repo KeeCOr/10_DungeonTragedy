@@ -391,6 +391,21 @@ function renderAllyInfo(state) {
   }).join('');
 }
 
+function impactRiskLabel(count) {
+  if (count <= 0) return 'Safe';
+  if (count === 1) return 'Focused';
+  return 'Party danger';
+}
+
+function renderImpactMetrics(kind, damage, riskCount, delta = null) {
+  const deltaText = delta == null ? '' : `<span class="impact-metric delta">Delta vs forecast ${delta >= 0 ? '+' : ''}${delta}</span>`;
+  return `<div class="impact-metrics ${kind}-metric">
+    <span class="impact-metric">Damage ${damage}</span>
+    <span class="impact-metric">Risk ${impactRiskLabel(riskCount)}</span>
+    ${deltaText}
+  </div>`;
+}
+
 function renderActivationPreview(state) {
   const preview = getDragonActivationPreview(state);
   if (!preview || preview.cards.length === 0) {
@@ -404,6 +419,7 @@ function renderActivationPreview(state) {
     : '<span class="impact-chip safe">No player hit</span>';
   return `<div class="dragon-impact-panel preview">
     <div class="impact-head"><span>Preview</span><strong>Expected -${preview.totalExpectedDamage}</strong></div>
+    ${renderImpactMetrics('forecast', preview.totalExpectedDamage, preview.affectedPlayers.length)}
     <div class="impact-list">${players}</div>
   </div>`;
 }
@@ -416,10 +432,10 @@ function renderActivationSummary(state) {
     : '<span class="impact-chip safe">No damage dealt</span>';
   return `<div class="dragon-impact-panel summary">
     <div class="impact-head"><span>Last result</span><strong>Actual -${summary.totalDamageDealt}</strong></div>
+    ${renderImpactMetrics('actual', summary.totalDamageDealt, summary.affectedPlayers.length, summary.damageDelta)}
     <div class="impact-list">${players}</div>
   </div>`;
-}
-function renderDragonPanel(state, ui) {
+}function renderDragonPanel(state, ui) {
   const el = document.getElementById('dragon-panel');
   const d = state.dragon;
   if (!d) { el.innerHTML = ''; return; }
