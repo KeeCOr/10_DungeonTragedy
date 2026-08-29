@@ -1,11 +1,47 @@
 {
   "name": "dragon-tactics",
   "version": "0.4.0",
+  "main": "electron/main.cjs",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test --test-reporter=spec tests/**/*.test.js",
     "start": "node server.js",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "electron": "electron .",
+    "electron:build": "electron-builder --config.win.signAndEditExecutable=false"
+  },
+  "build": {
+    "appId": "com.stoic.dragontactics",
+    "productName": "Dragon Tactics",
+    "directories": {
+      "output": "releases"
+    },
+    "files": [
+      "css/**/*",
+      "js/**/*",
+      "index.html",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowDirChange": true,
+      "shortcutName": "Dragon Tactics",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "optionalDependencies": {
+    "steamworks.js": "^0.3.1"
+  },
+  "devDependencies": {
+    "electron": "^41.2.2",
+    "electron-builder": "^26.8.1"
   }
 }

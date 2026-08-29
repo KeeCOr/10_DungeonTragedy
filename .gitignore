@@ -1,3 +1,9 @@
 node_modules/
 .DS_Store
 *.log
+releases/
+*.exe
+
+# Steam App ID — 480 = Spacewar (test). Replace with real ID before release.
+# Uncomment to exclude from version control once real App ID is assigned:
+# steam_appid.txt
