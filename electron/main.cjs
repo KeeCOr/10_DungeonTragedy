@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const pkg = require('../package.json');
 
 // Steamworks SDK — graceful fallback if running outside Steam
 // TODO: Replace APP_ID (480 = Spacewar test app) with actual Steam App ID before release
@@ -14,6 +15,19 @@ try {
 } catch (e) {
   console.warn('[Steam] Not available — game runs without Steam features:', e.message);
 }
+
+// ── Steam IPC 핸들러 ──────────────────────────────────────────────────────────
+ipcMain.on('steam:available',   e => { e.returnValue = steam !== null; });
+ipcMain.on('steam:getUserName', e => { e.returnValue = steam ? steam.localplayer.getName() : null; });
+
+ipcMain.handle('achievement:unlock', async (_, id) => {
+  if (!steam) return false;
+  try { steam.achievement.activate(id); return true; }
+  catch (e) { console.error('[Achievement] unlock:', e); return false; }
+});
+ipcMain.on('achievement:isUnlocked', (e, id) => {
+  e.returnValue = steam ? steam.achievement.isActivated(id) : false;
+});
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -64,8 +78,9 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.cjs'),
     },
-    title: 'Dragon Tactics',
+    title: `Dragon Tactics v${pkg.version}`,
     autoHideMenuBar: true,
   });
 
