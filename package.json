@@ -9,7 +9,9 @@
     "start": "node server.js",
     "serve": "node server.js",
     "electron": "electron .",
-    "electron:build": "electron-builder --config.win.signAndEditExecutable=false"
+    "electron:build": "electron-builder --config.win.signAndEditExecutable=false",
+    "build:steam": "electron-builder --config.win.signAndEditExecutable=false",
+    "dist:steam": "electron-builder --config.win.signAndEditExecutable=false"
   },
   "build": {
     "appId": "com.stoic.dragontactics",
@@ -21,7 +23,8 @@
       "css/**/*",
       "js/**/*",
       "index.html",
-      "electron/**/*"
+      "electron/**/*",
+      "steam_appid.txt"
     ],
     "win": {
       "target": [
