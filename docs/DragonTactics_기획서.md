@@ -86,3 +86,11 @@
 
 - Dragon activation UX now compares forecast and last result with the same Damage/Risk metrics, and stores forecastDamage plus damageDelta in lastActivationSummary so the player can read expected damage against the actual outcome before the next choice.
 - Scope: one small safe improvement inside DragonTactics; deprecated planning docs unchanged.
+
+
+## v0.6.0 Audio Quality Update (2026-09-08)
+
+- Eight real Kenney CC0 OGG files are mapped to BGM and UI/action/danger/success/failure/transition/recovery cues.
+- BGM starts after the first trusted user gesture; BGM and SFX volume/mute settings persist independently.
+- Visibility lifecycle pauses/resumes BGM safely, SFX polyphony is capped at eight, and danger/result cues duck BGM for about 350 ms.
+- Electron loads the packaged game through its local 127.0.0.1 HTTP server rather than file://.

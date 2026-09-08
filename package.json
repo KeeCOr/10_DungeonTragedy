@@ -1,11 +1,24 @@
 {
   "name": "dragon-tactics",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
-    "test": "node --test --test-reporter=spec tests/**/*.test.js",
+    "test": "node --test --test-reporter=spec tests/*.test.js tests/*.test.cjs tests/electron/*.test.js",
     "start": "node server.js",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "package": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.ojinwoo.dragon-tactics",
+    "productName": "DragonTactics",
+    "directories": { "output": "release" },
+    "win": { "target": ["portable"] },
+    "portable": { "artifactName": "DragonTactics_v${version}_portable.exe" }
   }
 }

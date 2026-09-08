@@ -124,7 +124,8 @@
     if (!document.hidden && !state.settings.bgmMuted) safePlay(state.bgm);
   }
 
-  var MAX_ACTIVE_TOTAL = 12;
+  // Keep overlapping feedback legible; longer sounds replace the oldest cue.
+  var MAX_ACTIVE_TOTAL = 8;
   var MAX_ACTIVE_PER_CUE = 3;
 
   function untrackEntry(entry) {
@@ -217,7 +218,9 @@
       entry.duckStarted = true;
       state.duckCount++;
       applyBgmVolume();
-      var fallbackMs = (isFinite(node.duration) && node.duration > 0) ? node.duration * 1000 : 8000;
+      // A short, fixed tail makes warnings/results intelligible without the
+      // old eight-second fallback holding the music down after a cue fails.
+      var fallbackMs = 350;
       entry.duckTimerId = setTimeout(function () {
         removeDuckTimerId(entry.duckTimerId);
         entry.duckTimerId = null;

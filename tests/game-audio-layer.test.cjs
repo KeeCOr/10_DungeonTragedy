@@ -30,6 +30,7 @@ function element(tag, counts) {
     getAttribute(n) { return this.attributes[n] || null; },
     appendChild(c) { this.children.push(c); c.parentNode = this; return c; },
     remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter(c => c !== this); },
+    removeChild(c) { this.children = this.children.filter(x => x !== c); c.parentNode = null; return c; },
     closest() { return null; },
     play() { this.paused = false; counts.plays++; return Promise.resolve(); },
     pause() { this.paused = true; counts.pauses++; },
@@ -56,7 +57,8 @@ function load(sharedStore) {
 
 test('initializes with conservative separate defaults', () => {
   const { api } = load(); const s = api.getState();
-  assert.equal(s.bgmVolume, 0.28); assert.equal(s.sfxVolume, 0.70); assert.equal(s.muted, false);
+  assert.equal(s.bgmVolume, 0.28); assert.equal(s.sfxVolume, 0.70);
+  assert.equal(s.bgmMuted, false); assert.equal(s.sfxMuted, false);
 });
 test('clamps independent volume ranges', () => {
   const { api } = load(); api.setBgmVolume(9); api.setSfxVolume(-2);
@@ -64,7 +66,8 @@ test('clamps independent volume ranges', () => {
 });
 test('persists mute across a fresh runtime', () => {
   const store = new Map(); const first = load(store); first.api.setMuted(true);
-  assert.equal(load(store).api.getState().muted, true);
+  const s = load(store).api.getState();
+  assert.equal(s.bgmMuted, true); assert.equal(s.sfxMuted, true);
 });
 test('start is idempotent and keeps one BGM element', () => {
   const { api, counts } = load(); api.start(); const first = counts.plays; api.start();
@@ -72,4 +75,11 @@ test('start is idempotent and keeps one BGM element', () => {
 });
 test('destroy clears state and init restores it', () => {
   const { api } = load(); api.destroy(); assert.equal(api.getState(), null); api.init(); assert.ok(api.getState());
+});
+
+test('audio layer limits total simultaneous SFX voices to eight', () => {
+  const { api, counts } = load();
+  for (let i = 0; i < 10; i++) api.play(i % 2 ? 'ui_click' : 'transition');
+  assert.equal(counts.clones, 10, 'new cues are still accepted');
+  assert.ok(counts.pauses >= 2, 'the two oldest voices are evicted at the eight-voice cap');
 });

@@ -153,7 +153,8 @@ function makeTimers() {
       return id;
     },
     clearTimeout: function (id) { pending.delete(id); },
-    pendingCount: function () { return pending.size; }
+    pendingCount: function () { return pending.size; },
+    pendingDelays: function () { return Array.from(pending.values()).map(function (entry) { return entry.ms; }); }
   };
 }
 
@@ -389,6 +390,7 @@ test('danger/result cues duck bgm volume and recover on end; normal cues do not 
 
   env.GameAudioLayer.play('danger_warning');
   assert.ok(bgm.volume < normalVolume, 'duck cue must lower bgm volume');
+  assert.deepStrictEqual(env.timers.pendingDelays(), [350], 'duck tail is a short 350ms window');
   var clone1 = env.lastCreated();
   clone1.dispatchEvent({ type: 'ended' });
   assert.strictEqual(bgm.volume, normalVolume, 'bgm volume recovers after duck cue ends');
@@ -474,4 +476,3 @@ test('destroy tears down listeners, UI, timers, and audio; init can run again af
 
   env.GameAudioLayer.destroy();
 });
-

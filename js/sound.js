@@ -33,8 +33,8 @@ function play(cue) {
 }
 
 export function sfxAttack() { play('action_primary'); }
-export function sfxHeal() { play('result_success'); }
-export function sfxDragonAttack() { play('danger_warning'); play('action_primary'); }
+export function sfxHeal() { play('recovery'); }
+export function sfxDragonAttack() { play('danger_warning'); }
 export function sfxPhaseTransition() { play('transition'); }
 export function sfxCardDraw() { play('ui_click'); }
 export function sfxCardPlay() { play('action_primary'); }
