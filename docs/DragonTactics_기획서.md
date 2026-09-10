@@ -1,7 +1,18 @@
 # DragonTactics 기획서 (Game Design Document)
 
-> 현재 문서 기준 버전: 0.4.0  
-> 최종 갱신: 2026-09-03
+> 현재 문서 기준 버전: 0.6.1  
+> 최종 갱신: 2026-09-10
+
+---
+
+## v0.6.1 Battlefield Label Readability Fix (2026-09-10)
+
+- 동일 depth의 전장 UI 라벨 버그를 수정했다: `.self-label`과 `.cell-hp`가 최소 스테이지 배율에서 0.32em(약 3.6px)까지 축소되어 상속되던 문제를 해결했다.
+- 두 라벨 모두 0.56rem~0.72rem 반응형 clamp, 고정 단위 line-height, `white-space: nowrap`을 적용해 최소 크기에서도 읽을 수 있게 했다.
+- HP 숫자는 tabular figures(`font-variant-numeric: tabular-nums`)로 표시하며, self label은 상단 중앙, HP는 상단 우측에 각각 고정되어 공유 z-index 3 안에서 겹치지 않는다.
+- 계약 테스트 4종을 추가해 읽기 가능한 clamp 값, 라벨 앵커링/비중첩, 공유 depth(z-index), `DragonTactics_v${version}_portable.exe` 네이밍 계약을 검증한다.
+- 검증: `npm test` 통과, 189 tests, 0 failures.
+- 로컬 한글 지원 폰트 동작과 아틀라스/패널 크기는 이번 패치에서 변경하지 않았다.
 
 ---
 
@@ -242,6 +253,7 @@ npm run electron:build
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-09-10 | v0.6.1 전장 라벨 가독성 수정: `.self-label`/`.cell-hp` 반응형 clamp, tabular-nums, 계약 테스트 4종 추가 (189 tests) |
 | 2026-09-03 | Electron/Steam 통합, 플랫폼 배포 섹션 추가; 인코딩 깨짐 수정, GDD 전체 구조 개편 |
 | 2026-07-27 | Dragon activation UX: forecastDamage/damageDelta를 lastActivationSummary에 저장 |
 | 2026-07-16 | v0.4.0 검증 완료 (161 tests pass); UTF-8 문서 재작성 |

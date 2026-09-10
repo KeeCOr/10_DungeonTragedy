@@ -305,3 +305,54 @@ test('visual: threat cells use an atlas decal under labels and pieces', () => {
   assert.match(threatOrder, /z-index:\s*4\s*;/);
   assert.match(threatMarker, /z-index:\s*4\s*;/);
 });
+
+function parseClampMin(rule, property) {
+  const match = rule.match(new RegExp(`${property}:\\s*clamp\\(([^)]*)\\)\\s*;`));
+  assert.ok(match, `missing clamp() for ${property}`);
+  const [minPart] = match[1].split(',');
+  assert.ok(minPart.trim().endsWith('rem'), `${property} clamp minimum should be expressed in rem`);
+  return parseFloat(minPart.trim());
+}
+
+test('layout: self-label uses a readable responsive clamp while staying top-centered', () => {
+  const selfLabel = ruleFor('.self-label');
+  const minRem = parseClampMin(selfLabel, 'font-size');
+
+  assert.ok(minRem >= 0.56, `self-label clamp minimum ${minRem}rem should be at least 0.56rem`);
+  assert.match(selfLabel, /line-height:\s*1\s*;/);
+  assert.match(selfLabel, /white-space:\s*nowrap\s*;/);
+  assert.match(selfLabel, /top:\s*-1px\s*;/);
+  assert.match(selfLabel, /left:\s*50%\s*;/);
+  assert.match(selfLabel, /transform:\s*translateX\(-50%\)\s*;/);
+});
+
+test('layout: cell-hp uses a readable responsive clamp with tabular numerals while staying top-right', () => {
+  const cellHp = ruleFor('.cell-hp');
+  const minRem = parseClampMin(cellHp, 'font-size');
+
+  assert.ok(minRem >= 0.56, `cell-hp clamp minimum ${minRem}rem should be at least 0.56rem`);
+  assert.match(cellHp, /line-height:\s*1\s*;/);
+  assert.match(cellHp, /white-space:\s*nowrap\s*;/);
+  assert.match(cellHp, /font-variant-numeric:\s*tabular-nums\s*;/);
+  assert.match(cellHp, /top:\s*3px\s*;/);
+  assert.match(cellHp, /right:\s*5px\s*;/);
+});
+
+test('layout: shared label z-index stays at depth 3 while self and HP labels occupy opposite regions', () => {
+  const sharedRuleMatch = css.match(/([^{}]*\.cell \.cell-hp[^{}]*\.cell \.self-label[^{}]*)\{([\s\S]*?)\n\}/m);
+  assert.ok(sharedRuleMatch, 'missing shared z-index rule covering .cell .cell-hp and .cell .self-label');
+  assert.match(sharedRuleMatch[2], /z-index:\s*3\s*;/);
+
+  const selfLabel = ruleFor('.self-label');
+  const cellHp = ruleFor('.cell-hp');
+
+  assert.match(selfLabel, /top:\s*-1px;\s*left:\s*50%\s*;/);
+  assert.match(cellHp, /top:\s*3px;\s*right:\s*5px\s*;/);
+});
+
+test('config: portable artifact name keeps the version-qualified naming contract', () => {
+  const pkgRaw = fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+  const pkg = JSON.parse(pkgRaw);
+
+  assert.equal(pkg.build.portable.artifactName, 'DragonTactics_v${version}_portable.exe');
+});

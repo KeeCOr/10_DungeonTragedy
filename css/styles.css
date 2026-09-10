@@ -170,7 +170,7 @@ html, body {
   animation: your-turn-pulse 1.2s ease-in-out infinite;
 }
 #dragon-strip.attackable::before {
-  content: '??�귦????????곴퐣 ??��???;
+  content: '??�귦????????곴퐣 ??��???;
   position: absolute;
   top: -0.9rem; left: 50%;
   transform: translateX(-50%);
@@ -487,7 +487,9 @@ html, body {
   transform: translateX(-50%);
   background: #4a9dcf;
   color: #fff;
-  font-size: 0.32em;
+  font-size: clamp(0.56rem, 1.15vh, 0.72rem);
+  line-height: 1;
+  white-space: nowrap;
   font-weight: 800;
   padding: 1px 6px;
   border-radius: 0 0 4px 4px;
@@ -553,7 +555,10 @@ html, body {
 .cell-hp {
   position: absolute;
   top: 3px; right: 5px;
-  font-size: 0.32em;
+  font-size: clamp(0.56rem, 1.15vh, 0.72rem);
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
   color: #ff8060;
   font-weight: 700;
   background: rgba(0,0,0,0.7);
