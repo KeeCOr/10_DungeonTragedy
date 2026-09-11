@@ -2,7 +2,7 @@
 
 ## 프로젝트
 - 이름: DragonTactics
-- 버전: 0.6.0
+- 버전: 1.0.1
 - 스택: Node.js (서버 렌더링, 순수 JS)
 - 시작: npm start (node server.js)
 - 테스트: npm test
