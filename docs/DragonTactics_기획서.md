@@ -1,7 +1,16 @@
 # DragonTactics 기획서 (Game Design Document)
 
-> 현재 문서 기준 버전: 0.6.1  
-> 최종 갱신: 2026-09-10
+> 현재 문서 기준 버전: <span style="color:orange">1.0.1</span><br>
+> 최종 갱신: <span style="color:red">2026-09-11</span>
+
+---
+
+## v1.0.1 통합 (Bugfix Integration, 2026-09-11)
+
+- 1.0.1은 로컬 브랜치의 전장 라벨 가독성 수정과 origin의 1.0.0 릴리스 준비 작업을 합친 버그픽스 통합 버전이다.
+- 로컬에서 진행된 v0.6.1 전장 라벨 가독성/폰트/비율 변경(`.self-label`, `.cell-hp`의 반응형 clamp, tabular-nums, 앵커링/비중첩 계약 테스트 4종)은 그대로 보존된다.
+- origin 1.0.0에서 추가된 아이콘(`build/icon.ico`), SteamCMD 빌드 스크립트(`steam/app_build.vdf`), 릴리스 패키징 설정(`package.json`의 `portable`/`nsis` 타깃, `artifactName`)도 그대로 보존된다.
+- <span style="color:red">검증: `npm test` 통과 192/192; `electron-builder`가 `DragonTactics_v1.0.1_portable.exe`를 생성했다; 포터블 실행 파일은 23.1초 동안 생존/응답 상태로 관찰되었고, 화면에 응답 가능한 Dragon Tactics GUI 프로세스가 보였다; 연관된 127.0.0.1 HTTP 엔드포인트는 200 text/html(877 bytes)을 반환했다.</span>
 
 ---
 
@@ -253,6 +262,7 @@ npm run electron:build
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-09-11 | <span style="color:red">v1.0.1 통합: 전장 라벨 가독성/폰트/비율 수정과 origin 1.0.0 아이콘/SteamCMD/릴리스 설정을 병합; npm test 192/192 통과, v1.0.1 portable 빌드 완료, GUI 23.1초 생존 및 HTTP 200 스모크 통과</span> |
 | 2026-09-10 | v0.6.1 전장 라벨 가독성 수정: `.self-label`/`.cell-hp` 반응형 clamp, tabular-nums, 계약 테스트 4종 추가 (189 tests) |
 | 2026-09-03 | Electron/Steam 통합, 플랫폼 배포 섹션 추가; 인코딩 깨짐 수정, GDD 전체 구조 개편 |
 | 2026-07-27 | Dragon activation UX: forecastDamage/damageDelta를 lastActivationSummary에 저장 |

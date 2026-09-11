@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DragonTactics 기획??v0.6.1</title>
+  <title>DragonTactics 기획??v1.0.1</title>
   <style>
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;max-width:980px;margin:0 auto;padding:40px 24px;color:#20242a;background:#fafafa}
     h1{font-size:34px;margin:0 0 8px} h2{font-size:24px;margin-top:34px;border-bottom:1px solid #ddd;padding-bottom:6px} h3{font-size:18px;margin-top:24px}
@@ -19,10 +19,11 @@
   </style>
 </head>
 <body>
+<section><h2>v1.0.1 Bugfix Integration (2026-09-11)</h2><ul><li>1.0.1 is the bugfix integration version that merges the local battlefield label readability work with origin's 1.0.0 release preparation.</li><li>The local v0.6.1 battlefield label readability/font/ratio changes (<code>.self-label</code>/<code>.cell-hp</code> responsive clamp, tabular-nums, anchoring/non-overlap contract tests) are preserved as-is.</li><li>Origin 1.0.0's icon (<code>build/icon.ico</code>), SteamCMD build script (<code>steam/app_build.vdf</code>), and release packaging config (<code>package.json</code> portable/nsis targets, artifactName) are also preserved as-is.</li><li><span style="color:red">Verification: <code>npm test</code> passed 192/192; <code>electron-builder</code> produced <code>DragonTactics_v1.0.1_portable.exe</code>; the portable executable was observed alive and responding for 23.1 seconds, with a visible, responsive Dragon Tactics GUI process on screen; its associated 127.0.0.1 HTTP endpoint returned 200 text/html (877 bytes).</span></li></ul></section>
 <section><h2>v0.6.1 Battlefield Label Readability Fix (2026-09-10)</h2><ul><li>Fixed a same-depth battlefield UI bug where <code>.self-label</code> and <code>.cell-hp</code> inherited a 0.32em (~3.6px) size at the smallest stage scale.</li><li>Both labels now use a responsive 0.56rem-to-0.72rem clamp, unit line-height, and <code>white-space: nowrap</code> so they stay readable at minimum scale.</li><li>HP numerals use tabular figures (<code>font-variant-numeric: tabular-nums</code>); the self label stays top-centered and HP stays top-right, sharing z-index 3 without overlap.</li><li>Four new contract tests guard readable clamp values, label anchoring/non-overlap, shared depth, and the <code>DragonTactics_v${version}_portable.exe</code> naming contract.</li><li>Verification: <code>npm test</code> passes, 189 tests, 0 failures.</li><li>Local Korean-capable font behavior and atlas/panel sizing are unchanged by this patch.</li></ul></section>
 <section><h2>v0.6.0 Audio Quality Update (2026-09-08)</h2><ul><li>Eight real Kenney CC0 OGG files map BGM and semantic UI/action/danger/success/failure/transition/recovery cues.</li><li>Trusted user gesture BGM start, independent persisted BGM/SFX controls, visibility lifecycle, eight-voice cap, and 350 ms ducking are implemented.</li><li>Electron loads through an internal 127.0.0.1 HTTP server instead of file://.</li></ul></section>
-<h1>DragonTactics 기획??v0.6.1</h1>
-<p>최종 갱신: 2026-09-10 KST</p>
+<h1>DragonTactics 기획??<span style="color:orange">v1.0.1</span></h1>
+<p>최종 갱신: <span style="color:red">2026-09-11 KST</span></p>
 <p>?�랫?? ??브라?��?, ?�수 HTML/CSS/JavaScript + Node ?�적 ?�버</p>
 <p>검�?명령: <code>npm test</code></p>
 <h2>문제 ?�의</h2>
