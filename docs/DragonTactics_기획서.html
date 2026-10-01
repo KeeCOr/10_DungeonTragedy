@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DragonTactics 기획??v0.4.0</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;max-width:980px;margin:0 auto;padding:40px 24px;color:#20242a;background:#fafafa}
+    h1{font-size:34px;margin:0 0 8px} h2{font-size:24px;margin-top:34px;border-bottom:1px solid #ddd;padding-bottom:6px} h3{font-size:18px;margin-top:24px}
+    p,li,pre{font-size:15px} li{margin:5px 0} pre{white-space:pre-wrap;background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
+    table{border-collapse:collapse;width:100%;margin:12px 0} th,td{border:1px solid #ddd;padding:8px 12px;text-align:left} th{background:#f5f5f5;font-weight:600}
+    .meta{color:#666;font-size:14px;margin-bottom:32px}
+    .loop-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px 20px;font-size:15px;white-space:pre-wrap;line-height:1.8}
+    .checklist{list-style:none;padding-left:0}
+    .checklist li::before{content:"☐ ";font-size:16px}
+    hr{border:none;border-top:1px solid #ddd;margin:28px 0}
+    blockquote{border-left:4px solid #ddd;margin:0;padding:8px 16px;color:#555;background:#f9f9f9;border-radius:0 8px 8px 0}
+    code{background:#f0f0f0;border-radius:4px;padding:2px 5px;font-size:13px}
+  </style>
+</head>
+<body>
+<h1>DragonTactics 기획??v0.4.0</h1>
+<p>최종 갱신: 2026-07-16 KST</p>
+<p>?�랫?? ??브라?��?, ?�수 HTML/CSS/JavaScript + Node ?�적 ?�버</p>
+<p>검�?명령: <code>npm test</code></p>
+<h2>문제 ?�의</h2>
+<p>짧�? ?�간???�략 ?�즐??즐기�??��? PC ?�디 ?�략 ?�레?�어?? 기존 카드 ?�술 게임?�서 보스 ?�턴???�고?� ?�동 결과가 충분??명확?��? ?�으�??�내 ?�택???��? ?�었?�”는 감각???�기 ?�렵?? DragonTactics???�래곤의 ?�음 공격???�고, ?�군 ?�치?� 카드 1?�을 ?�택???�해�?줄이거나 보상???�리??3x5 보드 ?�술 게임?�다.</p>
+<h2>�??�르?�나</h2>
+<ul>
+  <li>?�름: ?�승�?- ?�이: 35??- 직업: 기획?� 과장</li>
+  <li>?�호 ?�르: Into the Breach??격자 ?�술, 짧�? PC ?�디 ?�략 게임</li>
+  <li>?�용 맥락: ?�근 ??10~20�??�안 ???�을 집중?�서 ?�레?�한??</li>
+  <li>기�?: ?�래�?공격 ?�고, ?�상 ?�해, ?�제 결과가 ?�눈??보여???�음 ?�단???�득?????�다.</li>
+</ul>
+<h2>?�심 루프</h2>
+<ol>
+  <li>?�레?�어가 ?�래곤의 공개??공격 카드?� ?�협 ?�???�인?�다.</li>
+  <li>?�패?�서 ?�동, 공격, ?�기, 치유, ?�찰, ?�발, 보물 �?1?�을 ?�택?�다.</li>
+  <li>보드 ?�치?� 미션 조건??고려???�동???�행?�다.</li>
+  <li>?�래�??�에??공개 카드가 ?�결?�고 HP, ?�해, ?�락 ?��?가 갱신?�다.</li>
+  <li>결과 ?�약�??�음 공격 ?�리뷰�? 보고 ?�음 ???�단?�로 ?�아간다.</li>
+</ol>
+<h2>게임 구성</h2>
+<table>
+  <thead><tr><th>??��</th><th>?�재 구현</th></tr></thead>
+  <tbody>
+    <tr><td>보드</td><td>3??x 5??CSS Grid</td></tr>
+    <tr><td>?�래�?</td><td>보드 �??�단 존재, ?????�체/모서�??�턴 공격</td></tr>
+    <tr><td>?�레?�어</td><td>1�?+ AI ?�군 2~4�?</td></tr>
+    <tr><td>종족</td><td>Human, Elf, Dwarf, Orc</td></tr>
+    <tr><td>카드</td><td>?�동, 공격, ?�기, 치유, ?�찰, ?�발, 보물 카드</td></tr>
+    <tr><td>진행</td><td>3매치 ?�너먼트, ?�래�?처치 목표 ?�표</td></tr>
+    <tr><td>미션</td><td>공통 미션 + 종족 미션, ?�수/?�택 미션</td></tr>
+  </tbody>
+</table>
+<h2>v0.4.0 ?�심 개선</h2>
+<ul>
+  <li>?�래�??�성???�에 ?�상 �??�해, ?�격 ?�?? shield/hide ?�화 ?��?�?<code>Preview</code> ?�널�??�시?�다.</li>
+  <li>?�래�????�결 ???�제 ?�해, ?�해 ?�?? ?�락 ?��?�?<code>Last result</code> ?�널�??�시?�다.</li>
+  <li><code>getDragonActivationPreview(state)</code>가 ?�전 ?�해 ?�측??계산?�다.</li>
+  <li><code>executeDragonTurn()</code>??<code>dragon.lastActivationSummary</code>�??�?�한??</li>
+  <li>조기 ?�용, 지???�용, 기회 ?�실???�루???�래�??�?�밍 ?�토리얼 ?�나리오 3개�? ?�이?��? ?�스?�로 추�??�다.</li>
+  <li>?�협 ?�?� <code>public/assets/threat-marker-decal-atlas.png</code> 3?�롯 ?�칼 ?��??�스�??�용??보드 ?�협?��? ??강하�?보여준??</li>
+</ul>
+<h2>UI/HUD 규칙</h2>
+<ul>
+  <li>?�협 ?� ?�칼?� ?�큰, HP, 보상, ?�해 ?�자보다 ??? ?�이?�에 ?�다.</li>
+  <li>?�래�??�널?� <code>Preview</code>, 공개 카드, <code>Last result</code> ?�서�??�히�??�다.</li>
+  <li>?�레?�어??주요 ???�택?� 카드 ?�용 ?�는 ?�로??계열 ?�동 1개로 ?�한?�다.</li>
+  <li>버튼�??�?� 44px ?�상 ?�릭 ?�역???��??�다.</li>
+  <li>�??�스?�는 ?�널 ?��??�서 줄바꿈하�? 보드 ???�심 ?�자??가리�? ?�는??</li>
+</ul>
+<h2>?�용 리소??| 리소??| ?�도 |</h2>
+<table>
+  <thead><tr><th><code>public/assets/dragon-type-atlas.png</code></th><th>?�래�??�??메달리온</th></tr></thead>
+  <tbody>
+    <tr><td><code>public/assets/dragon-fullbody-atlas.png</code></td><td>보스 �?배경 ?�루??</td></tr>
+    <tr><td><code>public/assets/race-token-atlas.png</code></td><td>보드 ?�큰</td></tr>
+    <tr><td><code>public/assets/race-portrait-atlas.png</code></td><td>?�군/?�레?�어 초상</td></tr>
+    <tr><td><code>public/assets/skill-icon-atlas.png</code></td><td>카드 ?�이�?</td></tr>
+    <tr><td><code>public/assets/ui-button-frame-atlas.png</code></td><td>?�션 버튼 ?�레??</td></tr>
+    <tr><td><code>public/assets/threat-marker-decal-atlas.png</code></td><td>?�래�??�협 ?� ?�칼</td></tr>
+  </tbody>
+</table>
+<h2>구현 ?�태</h2>
+<table>
+  <thead><tr><th>?�역</th><th>?�태</th></tr></thead>
+  <tbody>
+    <tr><td>코어 ?�투/?�동/카드</td><td>구현 �??�스???�과</td></tr>
+    <tr><td>?�래�??�리�?결과 ?�약</td><td>v0.4.0 구현 ?�료</td></tr>
+    <tr><td>?�토리얼 ?�나리오</td><td>?�이?��? ?�스??추�? ?�료</td></tr>
+    <tr><td>?�각 리소???�결</td><td>주요 PNG ?��??�스 ?�결 ?�료</td></tr>
+    <tr><td>?�행?�일 ?�키�?</td><td>미구?? ?�재???�적 ??Node ?�버 ?�로?�트</td></tr>
+  </tbody>
+</table>
+<h2>빌드, ?�스?? ?�행</h2>
+<ul>
+  <li>?�스?? <code>npm test</code></li>
+  <li>?�행: <code>npm start</code> ?�는 <code>npm run serve</code></li>
+  <li>빌드/릴리?? ?�재 <code>package.json</code>??별도 build/release ?�크립트 ?�음</li>
+</ul>
+<h2>검�?기록</h2>
+<ul>
+  <li>2026-07-16: <code>npm test</code> ?�과, 161 tests, 0 failures.</li>
+  <li>빌드 ?�출물�? ?�성?��? ?�음. ???�로?�트???�재 브라?��? ?�적 ?�으�??�행?�다.</li>
+</ul>
+<h2>?��? 리스?��? ?�음 ?�선?�위</h2>
+<ol>
+  <li>?�업 출시�?추진?�려�?Electron ?�터�??�는 Vite 기반 브라?��? 빌드 구성???�요?�다.</li>
+  <li>Into the Breach?�??차별?��? ?�드?�곤 ?�성???�?�밍 ?�기?��? ?��???기반 ?�수 경쟁?�으�????�명?�게 밀?�야 ?�다.</li>
+  <li>?��? SVG/코드 ?�로??리소?�는 ?�제 ?��???참조�??�인????PNG/?��??�스�?교체?�다.</li>
+  <li>결과 ?�면?�서 ?�왜 ???�해가 ?�는지?��? ??짧�? 문장?�로 리플?�이?�는 기능???�음 고�?�?개선?�다.</li>
+</ol>
+<hr>
+<h2>2026-07-27 UX Loop Micro Pass</h2>
+<ul>
+  <li>Dragon activation UX now compares forecast and last result with the same Damage/Risk metrics, and stores forecastDamage plus damageDelta in lastActivationSummary so the player can read expected damage against the actual outcome before the next choice.</li>
+  <li>Scope: one small safe improvement inside DragonTactics; deprecated planning docs unchanged.</li>
+</ul>
+
+<h2>2026-09-23 드래곤 전술 과제 결과</h2>
+<ul>
+  <li>매치 시작 과제를 종료 화면에서 달성 여부, 판정 근거, 다음 판단으로 되돌려준다.</li>
+  <li>불은 강화 피해 생존, 얼음·독은 무피격, 폭풍은 연속 패턴 대응, 황금은 보호막 파괴 뒤 본체 피해를 기준으로 한다.</li>
+  <li>결과를 점수보다 먼저 표시해 다음 매치에서 바꿀 행동을 하나 남긴다.</li>
+</ul>
+</body>
+</html>

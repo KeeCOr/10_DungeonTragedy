@@ -1,0 +1,11 @@
+{
+  "name": "dragon-tactics",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec tests/**/*.test.js",
+    "start": "node server.js",
+    "serve": "node server.js"
+  }
+}

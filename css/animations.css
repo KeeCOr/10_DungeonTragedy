@@ -1,0 +1,7 @@
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.mark { animation: pulse 1s infinite; }
+
+@keyframes phase-flash {
+  0% { background: #000; } 30% { background: #400; } 100% { background: #121212; }
+}
+body.phase-flash { animation: phase-flash 0.8s ease; }
