@@ -30,7 +30,7 @@ function showStartScreen() {
     overlay.innerHTML = `
       <div class="start-content">
         <div class="start-dragon">🐉</div>
-        <h1 class="start-title">Dragon Tactics</h1>
+        <img class="start-logo" src="assets/brand/title-logo.png" alt="DUNGEON TRAGEDY">
         <p class="start-sub">3x5 보드 위의 턴제 카드 전술 게임</p>
         <div class="start-rules">
           <div class="rule-item">⚔️ 상단 행에서 용을 공격하세요</div>

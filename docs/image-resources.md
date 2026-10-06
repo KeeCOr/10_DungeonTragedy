@@ -6,6 +6,7 @@ This list is based on `docs/DragonTragedy_gameplay_preview.png`: a dark fantasy 
 
 | Asset | File | Size | Purpose |
 | --- | --- | ---: | --- |
+| Title logo | `public/assets/brand/title-logo.png` | 2172x724 | Transparent DUNGEON TRAGEDY title image for the start screen. |
 | Dragon boss banner | `public/assets/dragon-boss-banner.png` | 1774x887 | Top boss/dragon strip background. Use behind dragon HP, phase, and upcoming dragon cards. |
 | Lava board texture | `public/assets/lava-board-texture.png` | 1254x1254 | Tactical board floor under the 5x3 grid. Use with a dark overlay so pieces and threat cells stay readable. |
 | Skill icon atlas | `public/assets/skill-icon-atlas.png` | 1536x1024 | Bottom action bar icons. Crop as a 3x2 atlas for attack, move, guard, fire, lightning, and roar-style actions. |

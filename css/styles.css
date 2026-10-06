@@ -1651,6 +1651,14 @@ button:disabled {
   color: #ffb070;
   font-size: 1.45rem;
 }
+.start-logo {
+  display: block;
+  width: min(540px, 86vw);
+  max-height: 190px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+}
 .dragon-encounter-brief {
   display: grid;
   grid-template-columns: minmax(8.5rem, 0.72fr) minmax(0, 1.7fr);
