@@ -1,0 +1,17 @@
+/* Generated combat-feedback atlas: text floats remain readable above the effect. */
+.dmg-float::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 3.4rem;
+  height: 3.4rem;
+  transform: translate(-50%, -50%);
+  background: url('../public/assets/combat-vfx-atlas-v1.png') 0 0 / 200% 200% no-repeat;
+  opacity: 0.78;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+.dmg-float.dmg::before { background-position: 0 0; }
+.dmg-float.heal::before { background-position: 0 100%; }
